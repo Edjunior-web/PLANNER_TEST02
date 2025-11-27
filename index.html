@@ -56,9 +56,27 @@
             transform: translateY(-2px);
             border-color: #3b82f6;
         }
+        
+        /* Loading Overlay */
+        #loading-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255,255,255,0.95); z-index: 9999;
+            display: flex; justify-content: center; align-items: center;
+            transition: opacity 0.5s ease;
+        }
+        .hidden-force {
+            display: none !important;
+        }
     </style>
 </head>
 <body class="text-gray-800">
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="flex flex-col items-center justify-center">
+        <i class="fa-solid fa-cloud-arrow-down fa-bounce text-4xl text-blue-600 mb-4"></i>
+        <p class="text-sm text-gray-600 font-semibold" id="loading-text">Iniciando Planner...</p>
+        <p class="text-xs text-gray-400 mt-2">Se demorar, verificaremos o modo offline.</p>
+    </div>
 
     <!-- Navbar -->
     <nav class="bg-slate-900 text-white shadow-lg sticky top-0 z-50">
@@ -72,6 +90,12 @@
             </div>
             <!-- Updated Desktop Header Info -->
             <div class="hidden md:flex items-center gap-6 text-right">
+                <div class="cursor-pointer hover:bg-slate-800 p-1 rounded transition" onclick="openSyncModal()" title="Status da Conexão">
+                    <p class="text-[10px] text-slate-400 uppercase tracking-wider flex items-center justify-end gap-1">
+                        <i id="status-icon-desktop" class="fa-solid fa-wifi text-gray-400"></i> Status
+                    </p>
+                    <p id="header-sync-status" class="font-mono font-bold text-white text-sm tracking-wider">Verificando...</p>
+                </div>
                 <div>
                     <p class="text-[10px] text-slate-400 uppercase tracking-wider">Data da Prova</p>
                     <p id="header-date" class="font-bold text-white text-sm">25/01/2026</p>
@@ -87,9 +111,15 @@
     <div class="container mx-auto px-4 py-6 space-y-6">
 
         <!-- Countdown Mobile -->
-        <div class="md:hidden bg-slate-800 text-white p-3 rounded-lg text-center text-sm shadow flex justify-between items-center">
-            <span id="header-date-mobile" class="text-slate-400 text-xs">25/01/2026</span>
-            <span>Prova em: <span id="countdown-mobile" class="font-bold text-yellow-400">...</span></span>
+        <div class="md:hidden bg-slate-800 text-white p-3 rounded-lg text-sm shadow flex flex-col gap-2">
+            <div class="flex justify-between items-center">
+                <span id="header-date-mobile" class="text-slate-400 text-xs">25/01/2026</span>
+                <span>Prova em: <span id="countdown-mobile" class="font-bold text-yellow-400">...</span></span>
+            </div>
+            <div class="border-t border-slate-700 pt-2 flex justify-between items-center cursor-pointer" onclick="openSyncModal()">
+                <span class="text-xs text-slate-400"><i id="status-icon-mobile" class="fa-solid fa-wifi text-gray-400 mr-1"></i> Conexão:</span>
+                <span id="header-sync-status-mobile" class="font-mono font-bold text-white text-xs">Verificando...</span>
+            </div>
         </div>
 
         <!-- Dashboard Section: Global Stats -->
@@ -153,9 +183,14 @@
                     <i class="fa-solid fa-book-open"></i> Gerenciar Matérias
                 </button>
 
-                <!-- NEW: Manage Data Button -->
+                <!-- Manage Data Button -->
                 <button onclick="openSettingsModal()" class="w-full glass-panel rounded-xl p-3 text-slate-700 font-bold hover:bg-white hover:text-blue-600 transition flex items-center justify-center gap-2 text-sm shadow-sm border border-transparent hover:border-blue-200">
                     <i class="fa-solid fa-pen-to-square"></i> Gerenciar Dados
+                </button>
+
+                <!-- Sync Button -->
+                <button onclick="openSyncModal()" class="w-full glass-panel rounded-xl p-3 text-slate-700 font-bold hover:bg-white hover:text-green-600 transition flex items-center justify-center gap-2 text-sm shadow-sm border border-transparent hover:border-green-200">
+                    <i class="fa-solid fa-rotate"></i> Configurar Nuvem
                 </button>
 
                 <div class="glass-panel rounded-xl p-4 sticky top-20">
@@ -183,9 +218,9 @@
                     </div>
 
                     <div class="mt-8 pt-4 border-t flex flex-col gap-2">
-                        <button onclick="exportData()" class="text-xs text-blue-600 hover:underline text-left"><i class="fa-solid fa-download"></i> Backup (Baixar Dados)</button>
+                        <button onclick="exportData()" class="text-xs text-blue-600 hover:underline text-left"><i class="fa-solid fa-download"></i> Backup (Arquivo JSON)</button>
                         <label class="text-xs text-blue-600 hover:underline cursor-pointer text-left">
-                            <i class="fa-solid fa-upload"></i> Restaurar Dados
+                            <i class="fa-solid fa-upload"></i> Restaurar Backup
                             <input type="file" id="import-file" class="hidden" onchange="importData(this)">
                         </label>
                         <button onclick="resetData()" class="text-xs text-red-500 hover:underline mt-2 text-left"><i class="fa-solid fa-trash"></i> Resetar Tudo</button>
@@ -321,7 +356,7 @@
         </div>
     </div>
 
-    <!-- NEW: Modal for General Settings (Gerenciar Dados) -->
+    <!-- Modal for General Settings (Gerenciar Dados) -->
     <div id="settings-modal" class="modal opacity-0 pointer-events-none fixed w-full h-full top-0 left-0 flex items-center justify-center z-50">
         <div class="modal-overlay absolute w-full h-full bg-gray-900 opacity-50" onclick="closeModal('settings-modal')"></div>
         <div class="modal-container bg-white w-11/12 md:max-w-md mx-auto rounded shadow-lg z-50 overflow-y-auto animate-fade-in-down">
@@ -357,11 +392,153 @@
         </div>
     </div>
 
+    <!-- NEW: Modal for Cloud Sync -->
+    <div id="sync-modal" class="modal opacity-0 pointer-events-none fixed w-full h-full top-0 left-0 flex items-center justify-center z-50">
+        <div class="modal-overlay absolute w-full h-full bg-gray-900 opacity-50" onclick="closeModal('sync-modal')"></div>
+        <div class="modal-container bg-white w-11/12 md:max-w-md mx-auto rounded shadow-lg z-50 overflow-y-auto animate-fade-in-down">
+            <div class="modal-content py-6 text-left px-6">
+                <div class="flex justify-between items-center pb-3 border-b mb-4">
+                    <p class="text-lg font-bold text-slate-800 flex items-center gap-2"><i class="fa-solid fa-cloud text-blue-500"></i> Configuração de Nuvem</p>
+                    <div class="cursor-pointer z-50" onclick="closeModal('sync-modal')">
+                        <i class="fa-solid fa-xmark"></i>
+                    </div>
+                </div>
+                
+                <div class="space-y-4">
+                    <div class="p-3 bg-yellow-50 border border-yellow-200 rounded text-xs text-yellow-800">
+                        <p class="font-bold mb-1"><i class="fa-solid fa-triangle-exclamation"></i> Atenção GitHub Pages:</p>
+                        <p>Para sincronizar entre dispositivos, você precisa criar um projeto gratuito no Firebase e colar a configuração abaixo. Se não configurar, o planner funcionará apenas no modo <strong>Offline (neste dispositivo)</strong>.</p>
+                    </div>
+
+                    <div id="sync-active-ui" class="hidden">
+                        <div class="bg-green-50 border border-green-200 rounded p-4 mb-4">
+                            <p class="text-green-800 font-bold text-sm mb-2"><i class="fa-solid fa-check-circle"></i> Sincronização Ativa!</p>
+                            <p class="text-xs text-green-700">Seu ID de Sincronização:</p>
+                            <div class="flex gap-2 mt-1">
+                                <input type="text" id="current-sync-id-display" readonly class="w-full bg-white border border-green-300 rounded p-2 text-lg font-mono font-bold text-center tracking-widest text-slate-700 select-all">
+                                <button onclick="copySyncId()" class="bg-green-600 text-white px-3 rounded hover:bg-green-700 transition" title="Copiar"><i class="fa-regular fa-copy"></i></button>
+                            </div>
+                        </div>
+                        <div class="border-t pt-4">
+                            <p class="text-sm font-bold text-gray-700 mb-2">Carregar dados de outro aparelho:</p>
+                            <div class="flex gap-2">
+                                <input type="text" id="input-sync-id" class="w-full border rounded p-2 text-sm font-mono uppercase" placeholder="Cole o ID aqui...">
+                                <button onclick="loadFromSyncId()" class="bg-blue-600 text-white px-4 py-2 rounded text-sm font-bold hover:bg-blue-700 whitespace-nowrap">
+                                    Carregar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="sync-setup-ui">
+                        <label class="block text-xs font-bold text-gray-500 mb-1">Cole sua Configuração do Firebase (JSON ou Objeto JS):</label>
+                        <textarea id="firebase-config-input" class="w-full h-32 border rounded p-2 text-xs font-mono bg-slate-50" placeholder='{ "apiKey": "...", "authDomain": "...", "projectId": "..." }'></textarea>
+                        <button onclick="saveFirebaseConfig()" class="w-full bg-blue-600 text-white py-2 rounded text-sm font-bold hover:bg-blue-700 mt-2">Ativar Sincronização</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Notification Container -->
     <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2"></div>
 
-    <script>
-        // --- DATA STRUCTURE ---
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, onSnapshot, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // --- GLOBAL VARIABLES ---
+        let app = null;
+        let db = null;
+        let auth = null;
+        let useFirebase = false;
+        let currentSyncId = localStorage.getItem('pcpi_sync_id') || generateId();
+        let unsubscribeSnapshot = null;
+
+        // --- CONSTANTES DO USUÁRIO (Preenchido via Modal ou LocalStorage) ---
+        let userFirebaseConfig = localStorage.getItem('pcpi_firebase_config');
+
+        // --- INITIALIZATION ---
+        window.addEventListener('load', () => {
+            initApp();
+        });
+
+        async function initApp() {
+            // Safety: Force hide loader after 4s (Offline Fallback)
+            setTimeout(() => {
+                const loader = document.getElementById('loading-overlay');
+                if(loader && !loader.classList.contains('hidden-force')) {
+                    console.log("Tempo limite de carregamento. Forçando modo Offline.");
+                    loader.classList.add('hidden-force');
+                    if(appState.items.length === 0) loadDataOffline(); // Ensure data loads
+                    updateStatusIndicator(false);
+                }
+            }, 4000);
+
+            // Try to init Firebase if config exists
+            if (userFirebaseConfig) {
+                try {
+                    const config = JSON.parse(userFirebaseConfig);
+                    app = initializeApp(config);
+                    auth = getAuth(app);
+                    db = getFirestore(app);
+                    await signInAnonymously(auth);
+                    useFirebase = true;
+                    setupRealtimeListener(currentSyncId);
+                    updateSyncUI(true);
+                } catch (e) {
+                    console.error("Erro ao iniciar Firebase:", e);
+                    showToast("Erro na configuração da nuvem. Usando modo Offline.", "error");
+                    useFirebase = false;
+                    loadDataOffline();
+                    updateSyncUI(false);
+                }
+            } else {
+                // Offline Mode
+                console.log("Nenhuma configuração de nuvem. Iniciando Offline.");
+                useFirebase = false;
+                loadDataOffline();
+                document.getElementById('loading-overlay').classList.add('hidden-force');
+                updateStatusIndicator(false);
+                updateSyncUI(false);
+            }
+
+            if (!localStorage.getItem('pcpi_sync_id')) {
+                localStorage.setItem('pcpi_sync_id', currentSyncId);
+            }
+            
+            initCountdown();
+        }
+
+        function updateStatusIndicator(online) {
+            const text = online ? "Online" : "Offline";
+            const color = online ? "text-green-400" : "text-gray-400";
+            
+            document.getElementById('header-sync-status').innerText = text;
+            document.getElementById('header-sync-status-mobile').innerText = text;
+            
+            document.getElementById('status-icon-desktop').className = `fa-solid fa-wifi ${color}`;
+            document.getElementById('status-icon-mobile').className = `fa-solid fa-wifi ${color} mr-1`;
+        }
+
+        function updateSyncUI(isActive) {
+            const activeUI = document.getElementById('sync-active-ui');
+            const setupUI = document.getElementById('sync-setup-ui');
+            
+            if (isActive) {
+                activeUI.classList.remove('hidden');
+                setupUI.classList.add('hidden');
+                document.getElementById('current-sync-id-display').value = currentSyncId;
+            } else {
+                activeUI.classList.add('hidden');
+                setupUI.classList.remove('hidden');
+                if(userFirebaseConfig) document.getElementById('firebase-config-input').value = userFirebaseConfig;
+            }
+        }
+
+        // --- DATA LOGIC ---
+
         const defaultDisciplines = [
             { id: 'port', name: 'Língua Portuguesa' },
             { id: 'rlm', name: 'Raciocínio Lógico-Matemático' },
@@ -377,87 +554,63 @@
             { id: 'medlegal', name: 'Medicina Legal' }
         ];
 
-        // Extracted topics (Annex I)
+        // Compact Syllabus for brevity
         const initialSyllabus = [
-            // Língua Portuguesa
             { d: 'port', t: 'Interpretação e Compreensão de texto / Tipologia Textual' },
             { d: 'port', t: 'Coesão, coerência e intertextualidade' },
             { d: 'port', t: 'Ortografia, Acentuação e Crase' },
-            { d: 'port', t: 'Morfologia: Classes de palavras (Substantivo, Verbo, etc.)' },
+            { d: 'port', t: 'Morfologia: Classes de palavras' },
             { d: 'port', t: 'Sintaxe: Termos da oração, Concordância e Regência' },
-            { d: 'port', t: 'Pontuação e Semântica (Sinônimos, Antônimos)' },
-            
-            // RLM
-            { d: 'rlm', t: 'Lógica Proposicional (Conectivos, Equivalências)' },
+            { d: 'port', t: 'Pontuação e Semântica' },
+            { d: 'rlm', t: 'Lógica Proposicional' },
             { d: 'rlm', t: 'Conjuntos e operações' },
             { d: 'rlm', t: 'Porcentagem, Juros e Proporcionalidade' },
-            { d: 'rlm', t: 'Estatística Básica (Média, Mediana, Moda, Dispersão)' },
+            { d: 'rlm', t: 'Estatística Básica' },
             { d: 'rlm', t: 'Geometria Básica e Plano Cartesiano' },
             { d: 'rlm', t: 'Contabilidade: Patrimônio, Balanço e DRE' },
-
-            // Informática
-            { d: 'info', t: 'Hardware e Sistemas Operacionais (Windows/Linux)' },
-            { d: 'info', t: 'Office e LibreOffice (Texto, Planilhas, Apresentações)' },
-            { d: 'info', t: 'Redes de Computadores e Internet (Protocolos, VPN)' },
-            { d: 'info', t: 'Segurança da Informação (Malware, Criptografia, Backup)' },
+            { d: 'info', t: 'Hardware e Sistemas Operacionais' },
+            { d: 'info', t: 'Office e LibreOffice' },
+            { d: 'info', t: 'Redes de Computadores e Internet' },
+            { d: 'info', t: 'Segurança da Informação' },
             { d: 'info', t: 'Legislação Digital (Marco Civil, LGPD)' },
             { d: 'info', t: 'IA Generativa e Aprendizado de Máquina' },
-
-            // Regionais
-            { d: 'regional', t: 'História do Piauí (Colônia, Império, República)' },
+            { d: 'regional', t: 'História do Piauí' },
             { d: 'regional', t: 'Geografia Física e Humana do Piauí' },
             { d: 'regional', t: 'Cultura, Economia e Indicadores Sociais do PI' },
-
-            // Direito Penal
             { d: 'penal', t: 'Princípios e Aplicação da Lei Penal' },
-            { d: 'penal', t: 'Teoria do Crime (Fato Típico, Ilicitude, Culpabilidade)' },
+            { d: 'penal', t: 'Teoria do Crime' },
             { d: 'penal', t: 'Concurso de Pessoas e Crimes' },
-            { d: 'penal', t: 'Crimes contra a Pessoa (Homicídio, Lesão, Honra)' },
-            { d: 'penal', t: 'Crimes contra o Patrimônio (Furto, Roubo, etc.)' },
+            { d: 'penal', t: 'Crimes contra a Pessoa' },
+            { d: 'penal', t: 'Crimes contra o Patrimônio' },
             { d: 'penal', t: 'Crimes contra a Administração Pública' },
-            { d: 'penal', t: 'Legislação Especial: Abuso, Drogas, Maria da Penha' },
-
-            // Processo Penal
+            { d: 'penal', t: 'Legislação Especial Penal' },
             { d: 'procpenal', t: 'Inquérito Policial' },
-            { d: 'procpenal', t: 'Provas (Cadeia de Custódia, Busca e Apreensão)' },
-            { d: 'procpenal', t: 'Prisões (Flagrante, Preventiva, Temporária)' },
+            { d: 'procpenal', t: 'Provas' },
+            { d: 'procpenal', t: 'Prisões' },
             { d: 'procpenal', t: 'Liberdade Provisória e Medidas Cautelares' },
             { d: 'procpenal', t: 'Investigação Criminal Digital' },
-            { d: 'procpenal', t: 'Leis Especiais (Execução Penal, Interceptação)' },
-
-            // Constitucional
-            { d: 'const', t: 'Direitos e Garantias Fundamentais (Art. 5º)' },
+            { d: 'procpenal', t: 'Leis Especiais Processuais' },
+            { d: 'const', t: 'Direitos e Garantias Fundamentais' },
             { d: 'const', t: 'Direitos Sociais e Nacionalidade' },
-            { d: 'const', t: 'Organização do Estado (União, Estados, Municípios)' },
-            { d: 'const', t: 'Poderes (Executivo, Legislativo, Judiciário)' },
+            { d: 'const', t: 'Organização do Estado' },
+            { d: 'const', t: 'Poderes' },
             { d: 'const', t: 'Segurança Pública (Art. 144)' },
-
-            // Administrativo
-            { d: 'adm', t: 'Princípios da Administração Pública (LIMPE)' },
+            { d: 'adm', t: 'Princípios da Administração Pública' },
             { d: 'adm', t: 'Atos Administrativos e Poderes' },
             { d: 'adm', t: 'Agentes Públicos e Responsabilidade Civil' },
-            { d: 'adm', t: 'Licitações (Lei 14.133/21) e Improbidade' },
-
-            // Legislação Institucional
-            { d: 'leginst', t: 'Estatuto da PC-PI (LC 37/2004 e alterações)' },
+            { d: 'adm', t: 'Licitações e Improbidade' },
+            { d: 'leginst', t: 'Estatuto da PC-PI' },
             { d: 'leginst', t: 'Lei Orgânica Nacional das Polícias Civis' },
-
-            // Direitos Humanos
-            { d: 'dh', t: 'Teoria Geral e Declaração Universal (DUDH)' },
+            { d: 'dh', t: 'Teoria Geral e DUDH' },
             { d: 'dh', t: 'Pacto de San José da Costa Rica' },
             { d: 'dh', t: 'Grupos Vulneráveis e Atuação Policial' },
-
-            // Criminologia
             { d: 'crim', t: 'Conceito, Objeto e Escolas Criminológicas' },
             { d: 'crim', t: 'Prevenção e Vitimologia' },
-
-            // Medicina Legal
-            { d: 'medlegal', t: 'Traumatologia Forense (Lesões, Armas)' },
-            { d: 'medlegal', t: 'Tanatologia (Fenômenos Cadavéricos)' },
+            { d: 'medlegal', t: 'Traumatologia Forense' },
+            { d: 'medlegal', t: 'Tanatologia' },
             { d: 'medlegal', t: 'Sexologia Forense e Toxicologia' }
         ];
 
-        // --- APP STATE ---
         let appState = {
             items: [],
             disciplines: [],
@@ -469,321 +622,183 @@
             }
         };
 
-        let currentFilterDiscipline = 'all';
-        let currentFilterStatus = 'all';
-        let chartInstances = {};
-        let currentEditingId = null;
+        function loadDataOffline() {
+            const stored = localStorage.getItem('pcpi_planner_v1');
+            if (stored) {
+                try {
+                    const parsed = JSON.parse(stored);
+                    appState = { ...appState, ...parsed };
+                    if (!appState.disciplines || appState.disciplines.length === 0) {
+                        appState.disciplines = JSON.parse(JSON.stringify(defaultDisciplines));
+                    }
+                } catch(e) { console.error("Erro ao ler LocalStorage", e); }
+            } else {
+                initDefaultState();
+            }
+            renderAll();
+            renderHeader();
+        }
 
-        // --- INITIALIZATION ---
-        window.onload = function() {
-            loadData();
-            renderHeader(); // New function to render dynamic header
-            initCountdown();
-            populateFilterDropdown();
+        function initDefaultState() {
+            appState.disciplines = JSON.parse(JSON.stringify(defaultDisciplines));
+            appState.items = initialSyllabus.map((item, index) => ({
+                id: Date.now() + index,
+                disciplineId: item.d,
+                topic: item.t,
+                status: 'pendente', 
+                completedDate: null,
+                reviews: [],
+                note: ''
+            }));
+            saveDataInternal(); // Save offline initially
+        }
+
+        function setupRealtimeListener(id) {
+            if (!db) return;
+            if (unsubscribeSnapshot) unsubscribeSnapshot();
+
+            const docRef = doc(db, 'planners', id);
+            
+            unsubscribeSnapshot = onSnapshot(docRef, (docSnap) => {
+                document.getElementById('loading-overlay').classList.add('hidden-force');
+                updateStatusIndicator(true);
+                
+                if (docSnap.exists()) {
+                    const data = JSON.parse(docSnap.data().json);
+                    appState = data;
+                    renderAll();
+                    renderHeader();
+                    initCountdown();
+                } else {
+                    // Sync init: if we have local data, upload it. If not, defaults.
+                    if (appState.items.length === 0) initDefaultState();
+                    saveDataInternal();
+                }
+            }, (error) => {
+                console.error("Sync error:", error);
+                document.getElementById('loading-overlay').classList.add('hidden-force');
+                showToast("Conexão perdida. Mudando para Offline.", "error");
+                useFirebase = false;
+                updateStatusIndicator(false);
+            });
+        }
+
+        async function saveDataInternal() {
+            // Always save to localStorage as backup
+            localStorage.setItem('pcpi_planner_v1', JSON.stringify(appState));
+
+            if (useFirebase && db && auth.currentUser) {
+                try {
+                    const docRef = doc(db, 'planners', currentSyncId);
+                    await setDoc(docRef, {
+                        json: JSON.stringify(appState),
+                        lastUpdated: new Date().toISOString()
+                    });
+                } catch (e) {
+                    console.error("Save error:", e);
+                    // Don't show toast on every save error to avoid spam, just status
+                    updateStatusIndicator(false);
+                }
+            }
+        }
+
+        function generateId() {
+            return Array.from(crypto.getRandomValues(new Uint8Array(4))).map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        // --- GLOBAL EXPORTS ---
+        window.saveFirebaseConfig = () => {
+            let input = document.getElementById('firebase-config-input').value.trim();
+            if (!input) return alert("Cole a configuração.");
+            
+            // Remove 'const firebaseConfig =' if user pasted it
+            if(input.indexOf('=') > -1) {
+                input = input.substring(input.indexOf('=') + 1).trim();
+            }
+            // Remove trailing semicolon
+            if(input.endsWith(';')) {
+                input = input.slice(0, -1).trim();
+            }
+
+            try {
+                // Try strict JSON parse first
+                JSON.parse(input);
+            } catch (e) {
+                try {
+                    // Try to fix unquoted keys (common in JS objects)
+                    // Regex matches keys that start after {, comma or start of line
+                    const fixed = input.replace(/(^|{|,)\s*([a-zA-Z0-9_]+)\s*:/g, '$1"$2":')
+                                       .replace(/'/g, '"'); // Ensure double quotes for values
+                    
+                    // Validate if it parsed correctly
+                    const obj = JSON.parse(fixed);
+                    
+                    // If we got here, it's valid JSON now. Save the stringified version.
+                    input = JSON.stringify(obj);
+                } catch (e2) {
+                    console.error(e2);
+                    alert("Formato inválido. Certifique-se de que está copiando o objeto corretamente (entre chaves { }).");
+                    return;
+                }
+            }
+
+            localStorage.setItem('pcpi_firebase_config', input);
+            userFirebaseConfig = input;
+            location.reload(); 
+        };
+
+        window.updateStatus = (id, newStatus) => {
+            const item = appState.items.find(i => i.id === id);
+            if (!item) return;
+            item.status = newStatus;
+            if (newStatus === 'concluido') {
+                const today = new Date();
+                item.completedDate = today.toISOString();
+                const r1 = new Date(today); r1.setDate(r1.getDate() + 1);
+                const r2 = new Date(today); r2.setDate(r2.getDate() + 7);
+                const r3 = new Date(today); r3.setDate(r3.getDate() + 30);
+                item.reviews = [
+                    { date: r1.toISOString(), done: false, label: '24h' },
+                    { date: r2.toISOString(), done: false, label: '7d' },
+                    { date: r3.toISOString(), done: false, label: '30d' }
+                ];
+                showToast(`Status atualizado!`, 'success');
+            } else {
+                item.completedDate = null;
+                item.reviews = [];
+            }
+            saveDataInternal();
             renderAll();
         };
 
-        function loadData() {
-            const stored = localStorage.getItem('pcpi_planner_v1');
-            if (stored) {
-                const parsed = JSON.parse(stored);
-                // Safe merge for config
-                appState = {
-                    ...appState,
-                    ...parsed,
-                    config: { ...appState.config, ...(parsed.config || {}) }
-                };
-                
-                // MIGRATION: If disciplines are missing from state (old versions), add defaults
-                if (!appState.disciplines || appState.disciplines.length === 0) {
-                    appState.disciplines = JSON.parse(JSON.stringify(defaultDisciplines));
-                    saveData();
-                }
-            } else {
-                // Initialize
-                appState.disciplines = JSON.parse(JSON.stringify(defaultDisciplines));
-                appState.items = initialSyllabus.map((item, index) => ({
-                    id: Date.now() + index, // More robust ID generation
-                    disciplineId: item.d,
-                    topic: item.t,
-                    status: 'pendente', 
-                    completedDate: null,
-                    reviews: [],
-                    note: ''
-                }));
-                saveData();
-            }
-        }
-
-        function saveData() {
-            localStorage.setItem('pcpi_planner_v1', JSON.stringify(appState));
-        }
-
-        // --- HEADER & SETTINGS LOGIC ---
-
-        function renderHeader() {
-            document.getElementById('header-title').innerText = appState.config.title;
-            document.getElementById('header-subtitle').innerText = appState.config.role;
-            
-            // Format date for display (YYYY-MM-DD to DD/MM/YYYY)
-            const parts = appState.config.examDate.split('-');
-            if(parts.length === 3) {
-                const formattedDate = `${parts[2]}/${parts[1]}/${parts[0]}`;
-                document.getElementById('header-date').innerText = formattedDate;
-                document.getElementById('header-date-mobile').innerText = formattedDate;
-            }
-        }
-
-        function openSettingsModal() {
-            document.getElementById('config-title').value = appState.config.title;
-            document.getElementById('config-role').value = appState.config.role;
-            document.getElementById('config-date').value = appState.config.examDate;
-            
-            const modal = document.getElementById('settings-modal');
-            modal.classList.remove('opacity-0', 'pointer-events-none');
-            document.body.classList.add('modal-active');
-        }
-
-        function saveSettings() {
-            const title = document.getElementById('config-title').value;
-            const role = document.getElementById('config-role').value;
-            const date = document.getElementById('config-date').value;
-
-            if(!title || !role || !date) return alert('Preencha todos os campos');
-
-            appState.config = { title, role, examDate: date };
-            saveData();
-            
-            renderHeader();
-            initCountdown(); // Refresh countdown with new date
-            closeModal('settings-modal');
-            showToast('Dados atualizados com sucesso!', 'success');
-        }
-
-        // --- MANAGEMENT LOGIC ---
-
-        function openManageModal() {
-            const select = document.getElementById('new-topic-disc-select');
-            select.innerHTML = '';
-            appState.disciplines.forEach(d => {
-                const opt = document.createElement('option');
-                opt.value = d.id;
-                opt.innerText = d.name;
-                select.appendChild(opt);
-            });
-
-            const delSelect = document.getElementById('del-topic-disc-select');
-            delSelect.innerHTML = '<option value="all">Todas as Disciplinas</option>';
-            appState.disciplines.forEach(d => {
-                const opt = document.createElement('option');
-                opt.value = d.id;
-                opt.innerText = d.name;
-                delSelect.appendChild(opt);
-            });
-
-            renderDeleteDiscList();
-            renderBulkDeleteTopicList();
-
-            const modal = document.getElementById('manage-modal');
-            modal.classList.remove('opacity-0', 'pointer-events-none');
-            document.body.classList.add('modal-active');
-        }
-
-        function renderDeleteDiscList() {
-            const list = document.getElementById('delete-disc-list');
-            list.innerHTML = '';
-            appState.disciplines.forEach(d => {
-                const div = document.createElement('div');
-                div.className = "flex justify-between items-center bg-gray-50 p-2 rounded border";
-                div.innerHTML = `
-                    <span class="text-sm text-gray-700">${d.name}</span>
-                    <button onclick="deleteDiscipline('${d.id}')" class="text-red-500 hover:text-red-700 text-sm px-2">
-                        <i class="fa-solid fa-trash"></i>
-                    </button>
-                `;
-                list.appendChild(div);
-            });
-        }
-        
-        function renderBulkDeleteTopicList() {
-            const list = document.getElementById('bulk-delete-list');
-            list.innerHTML = '';
-            
-            const filterDisc = document.getElementById('del-topic-disc-select').value;
-
-            const discsToRender = filterDisc === 'all' 
-                ? appState.disciplines 
-                : appState.disciplines.filter(d => d.id === filterDisc);
-            
-            let hasItems = false;
-
-            discsToRender.forEach(disc => {
-                const items = appState.items.filter(i => i.disciplineId === disc.id);
-                if(items.length > 0) {
-                    hasItems = true;
-                    const header = document.createElement('div');
-                    header.className = 'text-[10px] font-bold text-gray-500 uppercase mt-2 mb-1 px-2 py-1 bg-gray-100 border-t border-b border-gray-200 sticky top-0 z-10';
-                    header.innerText = disc.name;
-                    list.appendChild(header);
-                    
-                    items.forEach(item => {
-                        const div = document.createElement('div');
-                        div.className = "flex items-start gap-2 p-2 hover:bg-gray-50 border-b border-gray-100 last:border-0";
-                        div.innerHTML = `
-                            <input type="checkbox" class="mt-1 delete-topic-checkbox w-4 h-4 text-blue-600 rounded focus:ring-blue-500" value="${item.id}" id="del_chk_${item.id}">
-                            <label for="del_chk_${item.id}" class="text-sm text-gray-700 cursor-pointer select-none leading-tight flex-1">${item.topic}</label>
-                        `;
-                        list.appendChild(div);
-                    });
-                }
-            });
-            
-            if(!hasItems) {
-                list.innerHTML = '<p class="text-xs text-gray-400 text-center py-4">Nenhum tópico encontrado.</p>';
-            }
-            
-            const btn = document.getElementById('btn-select-all-del');
-            if(btn) btn.innerHTML = '<i class="fa-regular fa-square-check mr-1"></i> Selecionar Todos';
-        }
-
-        function toggleSelectAllDelete() {
-            const checkboxes = document.querySelectorAll('.delete-topic-checkbox');
-            if(checkboxes.length === 0) return;
-
-            const allChecked = Array.from(checkboxes).every(cb => cb.checked);
-            checkboxes.forEach(cb => cb.checked = !allChecked);
-            
-            const btn = document.getElementById('btn-select-all-del');
-            if(btn) {
-                if(!allChecked) {
-                    btn.innerHTML = '<i class="fa-solid fa-square-check mr-1"></i> Desmarcar Todos';
-                } else {
-                    btn.innerHTML = '<i class="fa-regular fa-square-check mr-1"></i> Selecionar Todos';
-                }
-            }
-        }
-
-        function deleteSelectedTopics() {
-            const checkboxes = document.querySelectorAll('.delete-topic-checkbox:checked');
-            if(checkboxes.length === 0) return alert('Selecione pelo menos um tópico para excluir.');
-            
-            if(!confirm(`Excluir ${checkboxes.length} tópicos selecionados?`)) return;
-            
-            const idsToDelete = Array.from(checkboxes).map(cb => parseInt(cb.value));
-            
-            appState.items = appState.items.filter(item => !idsToDelete.includes(item.id));
-            saveData();
-            
-            renderAll();
-            renderBulkDeleteTopicList(); 
-            showToast(`${idsToDelete.length} tópicos excluídos.`);
-        }
-
-        function switchTab(tabId) {
-            ['tab-add-topic', 'tab-add-disc', 'tab-del-disc', 'tab-del-topic'].forEach(id => {
-                const el = document.getElementById(id);
-                if(el) el.classList.add('hidden');
-                
-                const btn = document.getElementById('btn-' + id);
-                if(btn) {
-                    btn.classList.remove('tab-active');
-                    btn.classList.add('tab-inactive');
-                }
-            });
-            document.getElementById(tabId).classList.remove('hidden');
-            document.getElementById('btn-' + tabId).classList.add('tab-active');
-            document.getElementById('btn-' + tabId).classList.remove('tab-inactive');
-        }
-
-        function addNewDiscipline() {
+        window.addNewDiscipline = () => {
             const rawText = document.getElementById('new-disc-name').value;
-            
             if(!rawText.trim()) return alert('Digite os nomes das disciplinas.');
-
             const discNames = rawText.split('\n').map(t => t.trim()).filter(t => t.length > 0);
-
             if (discNames.length === 0) return;
-
             let addedCount = 0;
             discNames.forEach((name, index) => {
                 const id = 'custom_' + (Date.now() + index); 
                 appState.disciplines.push({ id: id, name: name });
                 addedCount++;
             });
-
-            saveData();
-            
+            saveDataInternal();
             document.getElementById('new-disc-name').value = '';
-            showToast(addedCount > 1 ? `${addedCount} disciplinas criadas!` : 'Disciplina criada!');
-            
-            populateFilterDropdown();
+            showToast(`${addedCount} disciplinas criadas!`, 'success');
             renderAll();
-            
-            const select = document.getElementById('new-topic-disc-select');
-            const delSelect = document.getElementById('del-topic-disc-select');
-            
-            [select, delSelect].forEach(sel => {
-                sel.innerHTML = '';
-                if(sel.id === 'del-topic-disc-select') {
-                     const allOpt = document.createElement('option');
-                     allOpt.value = 'all'; allOpt.innerText = 'Todas as Disciplinas';
-                     sel.appendChild(allOpt);
-                }
-                appState.disciplines.forEach(d => {
-                    const opt = document.createElement('option');
-                    opt.value = d.id;
-                    opt.innerText = d.name;
-                    sel.appendChild(opt);
-                });
-            });
-
-            renderDeleteDiscList();
-            renderBulkDeleteTopicList();
-            
+            openManageModal(); // Refresh modal
             switchTab('tab-add-topic');
-            if(appState.disciplines.length > 0) {
-                const lastAddedDisc = appState.disciplines[appState.disciplines.length - 1];
-                document.getElementById('new-topic-disc-select').value = lastAddedDisc.id;
-            }
-        }
+        };
 
-        function deleteDiscipline(id) {
-            if(!confirm('Tem certeza? Isso apagará a disciplina e TODAS as aulas associadas a ela.')) return;
-
-            appState.items = appState.items.filter(i => i.disciplineId !== id);
-            appState.disciplines = appState.disciplines.filter(d => d.id !== id);
-            
-            saveData();
-            renderDeleteDiscList();
-            renderBulkDeleteTopicList();
-            populateFilterDropdown();
-            renderAll();
-            
-            const select = document.getElementById('new-topic-disc-select');
-            const delSelect = document.getElementById('del-topic-disc-select');
-            [select, delSelect].forEach(s => {
-                for(let i=0; i<s.options.length; i++) {
-                    if(s.options[i].value === id) s.remove(i);
-                }
-            });
-
-            showToast('Disciplina removida.');
-        }
-
-        function addNewTopic() {
+        window.addNewTopic = () => {
             const discId = document.getElementById('new-topic-disc-select').value;
             const rawText = document.getElementById('new-topic-name').value;
-            
             if(!discId) return alert('Selecione uma disciplina.');
-            if(!rawText.trim()) return alert('Digite os tópicos ou cole a lista.');
-
+            if(!rawText.trim()) return alert('Digite os tópicos.');
             const topics = rawText.split('\n').map(t => t.trim()).filter(t => t.length > 0);
-
             if (topics.length === 0) return;
-
-            let addedCount = 0;
             topics.forEach((topicName, index) => {
-                const newItem = {
+                appState.items.push({
                     id: Date.now() + index,
                     disciplineId: discId,
                     topic: topicName,
@@ -791,90 +806,109 @@
                     completedDate: null,
                     reviews: [],
                     note: ''
-                };
-                appState.items.push(newItem);
-                addedCount++;
+                });
             });
-
-            saveData();
-            
+            saveDataInternal();
             document.getElementById('new-topic-name').value = '';
-            showToast(addedCount > 1 ? `${addedCount} tópicos adicionados!` : 'Tópico adicionado!');
+            showToast(`${topics.length} tópicos adicionados!`, 'success');
             renderAll();
-            renderBulkDeleteTopicList();
-        }
+            openManageModal(); 
+        };
 
-        function deleteTopic(itemId) {
+        window.deleteDiscipline = (id) => {
+            if(!confirm('Apagar disciplina e todas as aulas?')) return;
+            appState.items = appState.items.filter(i => i.disciplineId !== id);
+            appState.disciplines = appState.disciplines.filter(d => d.id !== id);
+            saveDataInternal();
+            renderAll();
+            openManageModal();
+            showToast('Disciplina removida.', 'info');
+        };
+
+        window.deleteTopic = (itemId) => {
             if(!confirm('Excluir este tópico?')) return;
             appState.items = appState.items.filter(i => i.id !== itemId);
-            saveData();
+            saveDataInternal();
             renderAll();
-            renderBulkDeleteTopicList();
-            showToast('Tópico excluído.');
-        }
+            openManageModal();
+            showToast('Tópico excluído.', 'info');
+        };
 
-        // --- CORE LOGIC ---
-
-        function updateStatus(id, newStatus) {
-            const item = appState.items.find(i => i.id === id);
-            if (!item) return;
-
-            item.status = newStatus;
-
-            if (newStatus === 'concluido') {
-                const today = new Date();
-                item.completedDate = today.toISOString();
-                
-                const r1 = new Date(today); r1.setDate(r1.getDate() + 1);
-                const r2 = new Date(today); r2.setDate(r2.getDate() + 7);
-                const r3 = new Date(today); r3.setDate(r3.getDate() + 30);
-                
-                item.reviews = [
-                    { date: r1.toISOString(), done: false, label: '24h' },
-                    { date: r2.toISOString(), done: false, label: '7d' },
-                    { date: r3.toISOString(), done: false, label: '30d' }
-                ];
-                showToast(`Próximas revisões agendadas!`, 'success');
-            } else {
-                item.completedDate = null;
-                item.reviews = [];
-            }
-
-            saveData();
+        window.deleteSelectedTopics = () => {
+            const checkboxes = document.querySelectorAll('.delete-topic-checkbox:checked');
+            if(checkboxes.length === 0) return alert('Selecione itens.');
+            if(!confirm(`Excluir ${checkboxes.length} tópicos?`)) return;
+            const idsToDelete = Array.from(checkboxes).map(cb => parseInt(cb.value));
+            appState.items = appState.items.filter(item => !idsToDelete.includes(item.id));
+            saveDataInternal();
             renderAll();
-        }
+            openManageModal();
+            showToast('Tópicos excluídos.', 'info');
+        };
 
-        function toggleReview(itemId, reviewIndex) {
-            const item = appState.items.find(i => i.id === itemId);
-            if (item && item.reviews[reviewIndex]) {
-                item.reviews[reviewIndex].done = !item.reviews[reviewIndex].done;
-                saveData();
-                renderSyllabus();
+        window.saveNote = () => {
+            if (currentEditingId !== null) {
+                const note = document.getElementById('modal-note-input').value;
+                const item = appState.items.find(i => i.id === currentEditingId);
+                if(item) {
+                    item.note = note;
+                    saveDataInternal();
+                    renderSyllabus(); 
+                    closeModal('note-modal');
+                    showToast('Anotação salva!', 'success');
+                }
             }
-        }
+        };
 
-        function addStudyHours(e) {
-            e.preventDefault();
-            const input = document.getElementById('study-input');
-            const val = parseFloat(input.value);
-            
-            if (!isNaN(val) && val > 0) {
-                appState.totalHours += val;
-                input.value = '';
-                saveData();
-                renderProductivity();
-                showToast(`+${val} horas registradas!`, 'success');
+        window.saveSettings = () => {
+            const title = document.getElementById('config-title').value;
+            const role = document.getElementById('config-role').value;
+            const date = document.getElementById('config-date').value;
+            if(!title || !role || !date) return alert('Preencha tudo.');
+            appState.config = { title, role, examDate: date };
+            saveDataInternal();
+            renderHeader();
+            initCountdown();
+            closeModal('settings-modal');
+            showToast('Dados salvos!', 'success');
+        };
+
+        window.loadFromSyncId = () => {
+            if(!useFirebase) return alert("Configure o Firebase primeiro para usar esta função.");
+            const newId = document.getElementById('input-sync-id').value.trim();
+            if(!newId) return;
+            if(confirm("Carregar dados deste ID substituirá os dados atuais. Continuar?")) {
+                localStorage.setItem('pcpi_sync_id', newId);
+                currentSyncId = newId;
+                setupRealtimeListener(newId);
+                updateSyncUI(true);
+                closeModal('sync-modal');
+                showToast("Conectando ao novo ID...", "info");
             }
-        }
-        document.getElementById('hours-form').addEventListener('submit', addStudyHours);
+        };
 
-        // --- RENDERING ---
+        // --- UI FUNCTIONS ---
+        let currentFilterDiscipline = 'all';
+        let currentFilterStatus = 'all';
+        let currentEditingId = null;
+        let chartInstances = {};
 
         function renderAll() {
             renderSyllabus();
             renderCharts();
             renderDisciplineCards();
             renderProductivity();
+        }
+
+        function renderHeader() {
+            if(appState.config) {
+                document.getElementById('header-title').innerText = appState.config.title;
+                document.getElementById('header-subtitle').innerText = appState.config.role;
+                const parts = appState.config.examDate.split('-');
+                const fmtDate = `${parts[2]}/${parts[1]}/${parts[0]}`;
+                document.getElementById('header-date').innerText = fmtDate;
+                document.getElementById('header-date-mobile').innerText = fmtDate;
+            }
         }
 
         function renderProductivity() {
@@ -884,20 +918,17 @@
         function renderDisciplineCards() {
             const container = document.getElementById('discipline-cards-container');
             container.innerHTML = '';
-
             appState.disciplines.forEach(disc => {
                 const items = appState.items.filter(i => i.disciplineId === disc.id);
                 const total = items.length;
                 const completed = items.filter(i => i.status === 'concluido').length;
                 const percent = total === 0 ? 0 : Math.round((completed / total) * 100);
-
                 const card = document.createElement('div');
                 card.className = "bg-white border rounded-lg p-4 shadow-sm transition cursor-pointer relative overflow-hidden group disc-card";
                 card.onclick = () => filterByDisciplineFromCard(disc.id);
-
                 card.innerHTML = `
                     <div class="flex justify-between items-end mb-2">
-                        <h4 class="font-bold text-slate-700 text-sm truncate pr-2 flex-1" title="${disc.name}">${disc.name}</h4>
+                        <h4 class="font-bold text-slate-700 text-sm truncate pr-2 flex-1">${disc.name}</h4>
                         <span class="text-xs font-bold ${percent === 100 ? 'text-green-600' : 'text-blue-600'}">${percent}%</span>
                     </div>
                     <div class="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
@@ -907,33 +938,26 @@
                         <span class="text-[10px] text-gray-400 font-medium uppercase tracking-wide">Progresso</span>
                         <span class="text-[10px] text-gray-500 font-bold">${completed}/${total}</span>
                     </div>
-                    <!-- Hover overlay -->
-                    <div class="absolute inset-0 bg-blue-50 opacity-0 group-hover:opacity-10 transition pointer-events-none"></div>
                 `;
                 container.appendChild(card);
             });
         }
 
-        function filterByDisciplineFromCard(id) {
+        window.filterByDisciplineFromCard = (id) => {
             currentFilterDiscipline = id;
-            const dropdown = document.getElementById('filter-discipline');
-            dropdown.value = id;
-            
+            document.getElementById('filter-discipline').value = id;
             renderSyllabus();
-            
-            // Smooth scroll to syllabus section
             document.getElementById('syllabus-section').scrollIntoView({ behavior: 'smooth' });
-            
-            // Highlight effect on syllabus title
-            const title = document.getElementById('list-title');
-            title.classList.add('text-blue-600');
-            setTimeout(() => title.classList.remove('text-blue-600'), 1000);
-        }
+        };
+
+        window.filterStatus = (status) => {
+            currentFilterStatus = status;
+            renderSyllabus();
+        };
 
         function renderSyllabus() {
             const container = document.getElementById('syllabus-container');
             container.innerHTML = '';
-
             const today = new Date().setHours(0,0,0,0);
 
             const filteredItems = appState.items.filter(item => {
@@ -951,7 +975,7 @@
             document.getElementById('filtered-count').innerText = `${filteredItems.length} itens`;
 
             if (filteredItems.length === 0) {
-                container.innerHTML = `<div class="p-8 text-center text-gray-400">Nenhum tópico encontrado com esses filtros.</div>`;
+                container.innerHTML = `<div class="p-8 text-center text-gray-400">Nenhum tópico encontrado.</div>`;
                 return;
             }
 
@@ -961,7 +985,6 @@
 
             discsToShow.forEach(disc => {
                 const itemsInDisc = filteredItems.filter(i => i.disciplineId === disc.id);
-                
                 if (itemsInDisc.length > 0) {
                     const header = document.createElement('div');
                     header.className = 'bg-gray-100 px-6 py-2 text-xs font-bold text-gray-500 uppercase tracking-wider sticky top-0 border-b border-gray-200 z-10';
@@ -983,7 +1006,6 @@
                                 const rDate = new Date(r.date);
                                 const isDue = rDate.setHours(0,0,0,0) <= today;
                                 const dateStr = new Date(r.date).toLocaleDateString('pt-BR', {day:'2-digit', month:'2-digit'});
-                                
                                 let colorClass = 'bg-gray-200 text-gray-400';
                                 if (r.done) colorClass = 'bg-green-100 text-green-700 border border-green-300';
                                 else if (isDue) colorClass = 'bg-yellow-100 text-yellow-700 border border-yellow-400 animate-pulse font-bold';
@@ -1015,7 +1037,7 @@
                                     </div>
                                 </div>
                                 <div class="mt-2">
-                                    <select onchange="updateStatus(${item.id}, this.value)" class="text-xs border rounded p-1 bg-white focus:ring-1 focus:ring-blue-500 ${getStatusColor(item.status)}">
+                                    <select onchange="updateStatus(${item.id}, this.value)" class="text-xs border rounded p-1 bg-white focus:ring-1 focus:ring-blue-500 ${item.status === 'estudando' ? 'text-blue-600 font-bold' : (item.status === 'concluido' ? 'text-green-600 font-bold' : 'text-gray-600')}">
                                         <option value="pendente" ${item.status === 'pendente' ? 'selected' : ''}>Pendente</option>
                                         <option value="estudando" ${item.status === 'estudando' ? 'selected' : ''}>Em Estudo</option>
                                         <option value="concluido" ${item.status === 'concluido' ? 'selected' : ''}>Concluído</option>
@@ -1030,37 +1052,7 @@
             });
         }
 
-        function getStatusColor(status) {
-            if(status === 'pendente') return 'text-gray-600';
-            if(status === 'estudando') return 'text-blue-600 font-bold';
-            if(status === 'concluido') return 'text-green-600 font-bold';
-            return '';
-        }
-
-        function populateFilterDropdown() {
-            const select = document.getElementById('filter-discipline');
-            select.innerHTML = '<option value="all">Todas as Disciplinas</option>';
-            appState.disciplines.forEach(d => {
-                const opt = document.createElement('option');
-                opt.value = d.id;
-                opt.innerText = d.name;
-                select.appendChild(opt);
-            });
-            
-            select.addEventListener('change', (e) => {
-                currentFilterDiscipline = e.target.value;
-                renderSyllabus();
-            });
-            if(currentFilterDiscipline) select.value = currentFilterDiscipline;
-        }
-
-        function filterStatus(status) {
-            currentFilterStatus = status;
-            renderSyllabus();
-        }
-
-        // --- CHARTS ---
-
+        // --- RENDER CHARTS ---
         function renderCharts() {
             const total = appState.items.length;
             const completed = appState.items.filter(i => i.status === 'concluido').length;
@@ -1083,66 +1075,23 @@
                         cutout: '75%'
                     }]
                 },
-                options: { 
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false }, tooltip: { enabled: false } } 
-                }
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { enabled: false } } }
             });
         }
 
-        // --- MODALS ---
-        function openNoteModal(id) {
-            currentEditingId = id;
-            const item = appState.items.find(i => i.id === id);
-            document.getElementById('modal-topic-title').innerText = item.topic;
-            document.getElementById('modal-note-input').value = item.note || '';
-            
-            const modal = document.getElementById('note-modal');
-            modal.classList.remove('opacity-0', 'pointer-events-none');
-            document.body.classList.add('modal-active');
-        }
-
-        function closeModal(modalId) {
-            const modal = document.getElementById(modalId);
-            modal.classList.add('opacity-0', 'pointer-events-none');
-            document.body.classList.remove('modal-active');
-            if(modalId === 'note-modal') currentEditingId = null;
-        }
-
-        function saveNote() {
-            if (currentEditingId !== null) {
-                const note = document.getElementById('modal-note-input').value;
-                const item = appState.items.find(i => i.id === currentEditingId);
-                item.note = note;
-                saveData();
-                renderSyllabus(); 
-                closeModal('note-modal');
-                showToast('Anotação salva!');
-            }
-        }
-
         // --- UTILS ---
-
         function initCountdown() {
-            // Use date from state
-            const examDateStr = appState.config.examDate + 'T00:00:00';
+            const examDateStr = (appState.config ? appState.config.examDate : '2026-01-25') + 'T00:00:00';
             const examDate = new Date(examDateStr);
-            
-            const elMobile = document.getElementById('countdown-mobile');
-            const elDesktop = document.getElementById('countdown-desktop'); 
             
             const update = () => {
                 const now = new Date();
                 const diff = examDate - now;
                 const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+                const text = days > 0 ? `${days} dias` : 'Hoje!';
                 
-                let text = 'Hoje!';
-                if (days > 0) text = `${days} dias`;
-                else if (days < 0) text = 'Realizada';
-                
-                if(elMobile) elMobile.innerText = text;
-                if(elDesktop) elDesktop.innerText = text; 
+                document.getElementById('countdown-mobile').innerText = text;
+                document.getElementById('countdown-desktop').innerText = text; 
             };
             update();
         }
@@ -1150,71 +1099,53 @@
         function showToast(message, type='info') {
             const container = document.getElementById('toast-container');
             const el = document.createElement('div');
-            const color = type === 'success' ? 'bg-green-600' : 'bg-slate-800';
+            const color = type === 'success' ? 'bg-green-600' : (type === 'error' ? 'bg-red-600' : 'bg-slate-800');
             el.className = `${color} text-white text-sm px-4 py-3 rounded shadow-lg transition transform translate-y-2 opacity-0 flex items-center gap-2`;
             el.innerHTML = `<i class="fa-solid fa-circle-info"></i> ${message}`;
-            
             container.appendChild(el);
-            
-            requestAnimationFrame(() => {
-                el.classList.remove('translate-y-2', 'opacity-0');
-            });
-
+            requestAnimationFrame(() => el.classList.remove('translate-y-2', 'opacity-0'));
             setTimeout(() => {
                 el.classList.add('opacity-0', 'translate-x-full');
                 setTimeout(() => el.remove(), 300);
             }, 3000);
         }
 
-        // --- DATA MANAGEMENT ---
-        function exportData() {
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appState));
-            const downloadAnchorNode = document.createElement('a');
-            downloadAnchorNode.setAttribute("href", dataStr);
-            downloadAnchorNode.setAttribute("download", "pcpi_planner_backup.json");
-            document.body.appendChild(downloadAnchorNode);
-            downloadAnchorNode.click();
-            downloadAnchorNode.remove();
+        // Expose helpers
+        window.openNoteModal = (id) => { currentEditingId = id; const item = appState.items.find(i => i.id === id); document.getElementById('modal-topic-title').innerText = item.topic; document.getElementById('modal-note-input').value = item.note || ''; document.getElementById('note-modal').classList.remove('opacity-0', 'pointer-events-none'); document.body.classList.add('modal-active'); };
+        window.closeModal = (id) => { document.getElementById(id).classList.add('opacity-0', 'pointer-events-none'); document.body.classList.remove('modal-active'); if(id==='note-modal') currentEditingId=null; };
+        window.toggleReview = (itemId, reviewIndex) => { const item = appState.items.find(i => i.id === itemId); if (item && item.reviews[reviewIndex]) { item.reviews[reviewIndex].done = !item.reviews[reviewIndex].done; saveDataInternal(); renderSyllabus(); } };
+        window.addStudyHoursInternal = (val) => { appState.totalHours += val; saveDataInternal(); renderProductivity(); showToast(`+${val} horas registradas!`, 'success'); };
+        window.openSyncModal = () => { document.getElementById('sync-modal').classList.remove('opacity-0', 'pointer-events-none'); document.body.classList.add('modal-active'); };
+        window.openManageModal = () => { populateFilterDropdown(); renderDeleteDiscList(); renderBulkDeleteTopicList(); document.getElementById('manage-modal').classList.remove('opacity-0', 'pointer-events-none'); document.body.classList.add('modal-active'); };
+        window.openSettingsModal = () => { document.getElementById('config-title').value = appState.config.title; document.getElementById('config-role').value = appState.config.role; document.getElementById('config-date').value = appState.config.examDate; document.getElementById('settings-modal').classList.remove('opacity-0', 'pointer-events-none'); document.body.classList.add('modal-active'); };
+        window.switchTab = (tabId) => { ['tab-add-topic', 'tab-add-disc', 'tab-del-disc', 'tab-del-topic'].forEach(id => { document.getElementById(id).classList.add('hidden'); document.getElementById('btn-'+id).classList.remove('tab-active'); document.getElementById('btn-'+id).classList.add('tab-inactive'); }); document.getElementById(tabId).classList.remove('hidden'); document.getElementById('btn-'+tabId).classList.add('tab-active'); document.getElementById('btn-'+tabId).classList.remove('tab-inactive'); };
+        window.renderDeleteDiscList = () => { const list = document.getElementById('delete-disc-list'); list.innerHTML = ''; appState.disciplines.forEach(d => { const div = document.createElement('div'); div.className = "flex justify-between items-center bg-gray-50 p-2 rounded border"; div.innerHTML = `<span class="text-sm text-gray-700">${d.name}</span><button onclick="deleteDiscipline('${d.id}')" class="text-red-500 hover:text-red-700 text-sm px-2"><i class="fa-solid fa-trash"></i></button>`; list.appendChild(div); }); };
+        window.renderBulkDeleteTopicList = () => { const list = document.getElementById('bulk-delete-list'); list.innerHTML = ''; const filterDisc = document.getElementById('del-topic-disc-select').value; const discs = filterDisc === 'all' ? appState.disciplines : appState.disciplines.filter(d => d.id === filterDisc); discs.forEach(d => { const items = appState.items.filter(i => i.disciplineId === d.id); if(items.length > 0) { const h = document.createElement('div'); h.className = 'text-[10px] font-bold text-gray-500 uppercase mt-2 mb-1 px-2 py-1 bg-gray-100 border-t border-b sticky top-0 z-10'; h.innerText = d.name; list.appendChild(h); items.forEach(i => { const row = document.createElement('div'); row.className = 'flex items-start gap-2 p-2 hover:bg-gray-50 border-b border-gray-100'; row.innerHTML = `<input type="checkbox" class="delete-topic-checkbox mt-1" value="${i.id}"><label class="text-sm text-gray-700 flex-1">${i.topic}</label>`; list.appendChild(row); }); } }); };
+        window.toggleSelectAllDelete = () => { const cbs = document.querySelectorAll('.delete-topic-checkbox'); const all = Array.from(cbs).every(c => c.checked); cbs.forEach(c => c.checked = !all); };
+        
+        // Manual form
+        document.getElementById('hours-form').addEventListener('submit', (e) => { e.preventDefault(); const val = parseFloat(document.getElementById('study-input').value); if(!isNaN(val)) { document.getElementById('study-input').value=''; addStudyHoursInternal(val); } });
+        
+        // Populate modal selects
+        function populateFilterDropdown() { 
+            const s1 = document.getElementById('new-topic-disc-select'); 
+            const s2 = document.getElementById('del-topic-disc-select');
+            s1.innerHTML = ''; s2.innerHTML = '<option value="all">Todas as Disciplinas</option>';
+            appState.disciplines.forEach(d => {
+                const o1 = document.createElement('option'); o1.value = d.id; o1.innerText = d.name; s1.appendChild(o1);
+                const o2 = document.createElement('option'); o2.value = d.id; o2.innerText = d.name; s2.appendChild(o2);
+            });
+            const filterMain = document.getElementById('filter-discipline');
+            filterMain.innerHTML = '<option value="all">Todas as Disciplinas</option>';
+            appState.disciplines.forEach(d => { const o = document.createElement('option'); o.value = d.id; o.innerText = d.name; filterMain.appendChild(o); });
+            filterMain.value = currentFilterDiscipline;
+            filterMain.onchange = (e) => { currentFilterDiscipline = e.target.value; renderSyllabus(); };
         }
 
-        function importData(input) {
-            const file = input.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const json = JSON.parse(e.target.result);
-                    if (json.items && typeof json.totalHours === 'number') {
-                        appState = json;
-                        // Migration safety check for restored data
-                        if (!appState.disciplines) {
-                            appState.disciplines = JSON.parse(JSON.stringify(defaultDisciplines));
-                        }
-                        if (!appState.config) {
-                            appState.config = {
-                                title: 'PC-PI 2026',
-                                role: 'Oficial Investigador',
-                                examDate: '2026-01-25'
-                            };
-                        }
-                        saveData();
-                        location.reload();
-                    } else {
-                        alert('Arquivo inválido.');
-                    }
-                } catch(err) {
-                    alert('Erro ao ler arquivo JSON.');
-                }
-            };
-            reader.readAsText(file);
-        }
-
-        function resetData() {
-            if(confirm('Tem certeza? Todo o progresso será perdido.')) {
-                localStorage.removeItem('pcpi_planner_v1');
-                location.reload();
-            }
-        }
+        window.copySyncId = () => { navigator.clipboard.writeText(currentSyncId).then(() => showToast("Copiado!", "success")); };
+        window.exportData = () => { const a = document.createElement('a'); a.href = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appState)); a.download = "backup_pcpi.json"; document.body.appendChild(a); a.click(); a.remove(); };
+        window.resetData = () => { if(confirm('Apagar tudo?')) { localStorage.removeItem('pcpi_planner_v1'); location.reload(); } };
+        window.importData = (input) => { const f = input.files[0]; if(!f) return; const r = new FileReader(); r.onload = (e) => { try { appState = JSON.parse(e.target.result); saveDataInternal(); location.reload(); } catch(err) { alert('Erro no arquivo.'); } }; r.readAsText(f); };
 
     </script>
 </body>
