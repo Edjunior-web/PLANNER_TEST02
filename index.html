@@ -1,0 +1,1221 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Planner de Estudos</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .status-pendente { border-left: 4px solid #9ca3af; }
+        .status-estudo { border-left: 4px solid #3b82f6; }
+        .status-concluido { border-left: 4px solid #10b981; }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        .modal {
+            transition: opacity 0.25s ease;
+        }
+        body.modal-active {
+            overflow-x: hidden;
+            overflow-y: visible !important;
+        }
+        
+        .tab-active {
+            border-bottom: 2px solid #2563eb;
+            color: #2563eb;
+            font-weight: 600;
+        }
+        .tab-inactive {
+            color: #6b7280;
+        }
+
+        .disc-card:hover {
+            transform: translateY(-2px);
+            border-color: #3b82f6;
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <!-- Navbar -->
+    <nav class="bg-slate-900 text-white shadow-lg sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <i class="fa-solid fa-shield-halved text-yellow-500 text-2xl"></i>
+                <div>
+                    <h1 id="header-title" class="font-bold text-lg leading-tight">PC-PI 2026</h1>
+                    <p id="header-subtitle" class="text-xs text-slate-400">Oficial Investigador</p>
+                </div>
+            </div>
+            <!-- Updated Desktop Header Info -->
+            <div class="hidden md:flex items-center gap-6 text-right">
+                <div>
+                    <p class="text-[10px] text-slate-400 uppercase tracking-wider">Data da Prova</p>
+                    <p id="header-date" class="font-bold text-white text-sm">25/01/2026</p>
+                </div>
+                <div>
+                    <p class="text-[10px] text-slate-400 uppercase tracking-wider">Contagem Regressiva</p>
+                    <p id="countdown-desktop" class="font-bold text-yellow-400 text-sm">Calculando...</p>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto px-4 py-6 space-y-6">
+
+        <!-- Countdown Mobile -->
+        <div class="md:hidden bg-slate-800 text-white p-3 rounded-lg text-center text-sm shadow flex justify-between items-center">
+            <span id="header-date-mobile" class="text-slate-400 text-xs">25/01/2026</span>
+            <span>Prova em: <span id="countdown-mobile" class="font-bold text-yellow-400">...</span></span>
+        </div>
+
+        <!-- Dashboard Section: Global Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            
+            <!-- Progress Card -->
+            <div class="glass-panel rounded-xl p-4 flex items-center justify-between">
+                <div>
+                    <h3 class="text-gray-500 text-xs font-bold uppercase tracking-wide mb-1">Progresso Geral</h3>
+                    <p id="topics-count" class="text-sm text-gray-400">0/0 Tópicos</p>
+                </div>
+                <div class="relative h-20 w-20">
+                    <canvas id="progressChart"></canvas>
+                    <div class="absolute inset-0 flex items-center justify-center flex-col">
+                        <span id="progress-text" class="text-sm font-bold text-slate-800">0%</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Productivity Card -->
+            <div class="glass-panel rounded-xl p-4 flex flex-col justify-center">
+                <h3 class="text-gray-500 text-xs font-bold uppercase tracking-wide mb-2 flex justify-between items-center">
+                    <span>Banco de Horas</span>
+                    <i class="fa-solid fa-clock text-blue-500"></i>
+                </h3>
+                <div class="flex items-center gap-4">
+                    <div>
+                        <span id="total-hours" class="text-3xl font-bold text-slate-800">0</span>
+                        <span class="text-xs text-gray-500">hrs líquidas</span>
+                    </div>
+                    
+                    <form id="hours-form" class="flex-1 flex gap-2">
+                        <input type="number" id="study-input" step="0.5" min="0" placeholder="Hrs hoje..." class="w-full border rounded p-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs transition font-bold">
+                            <i class="fa-solid fa-plus"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard Section: Discipline Cards -->
+        <div class="glass-panel rounded-xl p-6">
+            <h3 class="text-slate-700 text-sm font-bold mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-layer-group text-blue-500"></i> Suas Disciplinas
+                <span class="text-xs font-normal text-gray-400 ml-auto hidden sm:inline">Clique para filtrar o conteúdo</span>
+            </h3>
+            <div id="discipline-cards-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                <!-- Cards injected here via JS -->
+            </div>
+        </div>
+
+        <!-- Main Content: Syllabus & Reviews -->
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6" id="syllabus-section">
+            
+            <!-- Filters Sidebar -->
+            <div class="lg:col-span-1 space-y-4">
+                
+                <!-- Manage Content Button -->
+                <button onclick="openManageModal()" class="w-full glass-panel rounded-xl p-3 text-slate-700 font-bold hover:bg-white hover:text-blue-600 transition flex items-center justify-center gap-2 text-sm shadow-sm border border-transparent hover:border-blue-200">
+                    <i class="fa-solid fa-book-open"></i> Gerenciar Matérias
+                </button>
+
+                <!-- NEW: Manage Data Button -->
+                <button onclick="openSettingsModal()" class="w-full glass-panel rounded-xl p-3 text-slate-700 font-bold hover:bg-white hover:text-blue-600 transition flex items-center justify-center gap-2 text-sm shadow-sm border border-transparent hover:border-blue-200">
+                    <i class="fa-solid fa-pen-to-square"></i> Gerenciar Dados
+                </button>
+
+                <div class="glass-panel rounded-xl p-4 sticky top-20">
+                    <h4 class="font-bold text-slate-700 mb-3 text-sm"><i class="fa-solid fa-filter mr-2"></i>Filtros</h4>
+                    
+                    <div class="space-y-2">
+                        <label class="text-xs font-semibold text-gray-500">Disciplina Atual</label>
+                        <select id="filter-discipline" class="w-full border rounded p-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="all">Todas as Disciplinas</option>
+                            <!-- Populated via JS -->
+                        </select>
+                    </div>
+
+                    <div class="space-y-2 mt-4">
+                        <label class="text-xs font-semibold text-gray-500">Status</label>
+                        <div class="flex flex-col gap-2">
+                            <button onclick="filterStatus('all')" class="text-left px-3 py-2 rounded text-sm hover:bg-gray-100 transition border-l-4 border-transparent bg-white shadow-sm">Todos</button>
+                            <button onclick="filterStatus('pendente')" class="text-left px-3 py-2 rounded text-sm hover:bg-gray-100 transition border-l-4 border-gray-400 bg-white shadow-sm">Pendente</button>
+                            <button onclick="filterStatus('estudando')" class="text-left px-3 py-2 rounded text-sm hover:bg-gray-100 transition border-l-4 border-blue-500 bg-white shadow-sm">Em Estudo</button>
+                            <button onclick="filterStatus('concluido')" class="text-left px-3 py-2 rounded text-sm hover:bg-gray-100 transition border-l-4 border-green-500 bg-white shadow-sm">Concluído</button>
+                            <button onclick="filterStatus('revisar')" class="text-left px-3 py-2 rounded text-sm hover:bg-gray-100 transition border-l-4 border-yellow-500 bg-white shadow-sm font-bold text-yellow-700">
+                                <i class="fa-solid fa-bell mr-1"></i> Revisar Hoje
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="mt-8 pt-4 border-t flex flex-col gap-2">
+                        <button onclick="exportData()" class="text-xs text-blue-600 hover:underline text-left"><i class="fa-solid fa-download"></i> Backup (Baixar Dados)</button>
+                        <label class="text-xs text-blue-600 hover:underline cursor-pointer text-left">
+                            <i class="fa-solid fa-upload"></i> Restaurar Dados
+                            <input type="file" id="import-file" class="hidden" onchange="importData(this)">
+                        </label>
+                        <button onclick="resetData()" class="text-xs text-red-500 hover:underline mt-2 text-left"><i class="fa-solid fa-trash"></i> Resetar Tudo</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Syllabus List -->
+            <div class="lg:col-span-3">
+                <div class="glass-panel rounded-xl overflow-hidden min-h-[500px]">
+                    <div class="bg-gray-50 px-6 py-4 border-b flex justify-between items-center">
+                        <h2 class="font-bold text-lg text-slate-800" id="list-title">Conteúdo Programático</h2>
+                        <span id="filtered-count" class="text-xs bg-slate-200 text-slate-600 px-2 py-1 rounded-full">0 itens</span>
+                    </div>
+                    
+                    <div id="syllabus-container" class="divide-y divide-gray-100">
+                        <!-- Items rendered here -->
+                        <div class="p-8 text-center text-gray-400">
+                            <i class="fa-solid fa-spinner fa-spin text-2xl"></i>
+                            <p class="mt-2">Carregando edital...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Notes -->
+    <div id="note-modal" class="modal opacity-0 pointer-events-none fixed w-full h-full top-0 left-0 flex items-center justify-center z-50">
+        <div class="modal-overlay absolute w-full h-full bg-gray-900 opacity-50" onclick="closeModal('note-modal')"></div>
+        <div class="modal-container bg-white w-11/12 md:max-w-md mx-auto rounded shadow-lg z-50 overflow-y-auto animate-fade-in-down">
+            <div class="modal-content py-4 text-left px-6">
+                <div class="flex justify-between items-center pb-3">
+                    <p class="text-xl font-bold text-slate-800">Anotações</p>
+                    <div class="cursor-pointer z-50" onclick="closeModal('note-modal')">
+                        <i class="fa-solid fa-xmark"></i>
+                    </div>
+                </div>
+                <p id="modal-topic-title" class="text-sm text-gray-500 mb-4">Tópico...</p>
+                <textarea id="modal-note-input" class="w-full h-40 border rounded p-3 text-sm focus:outline-none focus:border-blue-500" placeholder="Escreva seus resumos, macetes ou links aqui..."></textarea>
+                <div class="flex justify-end pt-4">
+                    <button onclick="saveNote()" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm font-bold">Salvar Nota</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Management (Add/Remove) -->
+    <div id="manage-modal" class="modal opacity-0 pointer-events-none fixed w-full h-full top-0 left-0 flex items-center justify-center z-50">
+        <div class="modal-overlay absolute w-full h-full bg-gray-900 opacity-50" onclick="closeModal('manage-modal')"></div>
+        <div class="modal-container bg-white w-11/12 md:max-w-2xl mx-auto rounded shadow-lg z-50 overflow-y-auto animate-fade-in-down max-h-[90vh]">
+            <div class="modal-content py-4 text-left px-6">
+                <div class="flex justify-between items-center pb-3 border-b mb-4">
+                    <p class="text-lg font-bold text-slate-800">Gerenciar Matérias</p>
+                    <div class="cursor-pointer z-50" onclick="closeModal('manage-modal')">
+                        <i class="fa-solid fa-xmark"></i>
+                    </div>
+                </div>
+                
+                <!-- Tabs -->
+                <div class="flex gap-4 border-b mb-4 overflow-x-auto">
+                    <button onclick="switchTab('tab-add-topic')" id="btn-tab-add-topic" class="pb-2 text-sm tab-active whitespace-nowrap">Novos Tópicos</button>
+                    <button onclick="switchTab('tab-add-disc')" id="btn-tab-add-disc" class="pb-2 text-sm tab-inactive whitespace-nowrap">Novas Disciplinas</button>
+                    <button onclick="switchTab('tab-del-disc')" id="btn-tab-del-disc" class="pb-2 text-sm tab-inactive whitespace-nowrap">Excluir Disciplinas</button>
+                    <button onclick="switchTab('tab-del-topic')" id="btn-tab-del-topic" class="pb-2 text-sm tab-inactive whitespace-nowrap text-red-500">Excluir Tópicos</button>
+                </div>
+
+                <!-- Tab: Add Topic -->
+                <div id="tab-add-topic" class="block">
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 mb-1">Selecione a Disciplina</label>
+                            <select id="new-topic-disc-select" class="w-full border rounded p-2 text-sm bg-white"></select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 mb-1">Lista de Tópicos / Aulas</label>
+                            <p class="text-[10px] text-gray-400 mb-1">Cole a lista abaixo, um item por linha.</p>
+                            <textarea id="new-topic-name" class="w-full border rounded p-2 text-sm h-32" placeholder="Ex:&#10;Crase&#10;Regência Nominal&#10;Inquérito Policial&#10;..."></textarea>
+                        </div>
+                        <button onclick="addNewTopic()" class="w-full bg-green-600 text-white py-2 rounded text-sm font-bold hover:bg-green-700">Adicionar Tópicos</button>
+                    </div>
+                </div>
+
+                <!-- Tab: Add Discipline -->
+                <div id="tab-add-disc" class="hidden">
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 mb-1">Lista de Novas Disciplinas</label>
+                            <p class="text-[10px] text-gray-400 mb-1">Cole a lista abaixo, um nome por linha.</p>
+                            <textarea id="new-disc-name" class="w-full border rounded p-2 text-sm h-32" placeholder="Ex:&#10;Legislação Extravagante&#10;Redação&#10;Teste Físico..."></textarea>
+                        </div>
+                        <button onclick="addNewDiscipline()" class="w-full bg-blue-600 text-white py-2 rounded text-sm font-bold hover:bg-blue-700">Criar Disciplinas</button>
+                    </div>
+                </div>
+
+                <!-- Tab: Delete Discipline -->
+                <div id="tab-del-disc" class="hidden">
+                    <p class="text-xs text-red-500 mb-4 bg-red-50 p-2 rounded">
+                        <i class="fa-solid fa-triangle-exclamation"></i> Cuidado: Excluir uma disciplina apagará <strong>todos</strong> os tópicos associados a ela.
+                    </p>
+                    <div id="delete-disc-list" class="space-y-2 max-h-60 overflow-y-auto pr-1">
+                        <!-- List populated via JS -->
+                    </div>
+                </div>
+
+                <!-- Tab: Delete Topics -->
+                <div id="tab-del-topic" class="hidden">
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 mb-1">Filtrar por Disciplina</label>
+                            <select id="del-topic-disc-select" onchange="renderBulkDeleteTopicList()" class="w-full border rounded p-2 text-sm bg-white"></select>
+                        </div>
+
+                        <div>
+                            <div class="flex justify-between items-end mb-2">
+                                <label class="block text-xs font-bold text-gray-500">Selecione os tópicos para excluir</label>
+                                <button onclick="toggleSelectAllDelete()" id="btn-select-all-del" class="text-xs text-blue-600 hover:text-blue-800 font-bold bg-blue-50 px-2 py-1 rounded">
+                                    <i class="fa-regular fa-square-check mr-1"></i> Selecionar Todos
+                                </button>
+                            </div>
+                            <div id="bulk-delete-list" class="space-y-0 max-h-60 overflow-y-auto pr-2 border rounded bg-white">
+                                <!-- List populated via JS -->
+                            </div>
+                        </div>
+
+                        <button onclick="deleteSelectedTopics()" class="w-full bg-red-600 text-white py-2 rounded text-sm font-bold hover:bg-red-700 shadow-sm">
+                             <i class="fa-solid fa-trash mr-1"></i> Excluir Selecionados
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- NEW: Modal for General Settings (Gerenciar Dados) -->
+    <div id="settings-modal" class="modal opacity-0 pointer-events-none fixed w-full h-full top-0 left-0 flex items-center justify-center z-50">
+        <div class="modal-overlay absolute w-full h-full bg-gray-900 opacity-50" onclick="closeModal('settings-modal')"></div>
+        <div class="modal-container bg-white w-11/12 md:max-w-md mx-auto rounded shadow-lg z-50 overflow-y-auto animate-fade-in-down">
+            <div class="modal-content py-4 text-left px-6">
+                <div class="flex justify-between items-center pb-3 border-b mb-4">
+                    <p class="text-lg font-bold text-slate-800">Gerenciar Dados do Concurso</p>
+                    <div class="cursor-pointer z-50" onclick="closeModal('settings-modal')">
+                        <i class="fa-solid fa-xmark"></i>
+                    </div>
+                </div>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 mb-1">Nome do Concurso</label>
+                        <input type="text" id="config-title" class="w-full border rounded p-2 text-sm bg-gray-50 focus:bg-white" placeholder="Ex: PC-PI 2026">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 mb-1">Cargo / Foco</label>
+                        <input type="text" id="config-role" class="w-full border rounded p-2 text-sm bg-gray-50 focus:bg-white" placeholder="Ex: Oficial Investigador">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 mb-1">Data da Prova</label>
+                        <input type="date" id="config-date" class="w-full border rounded p-2 text-sm bg-gray-50 focus:bg-white">
+                    </div>
+                    
+                    <div class="pt-4 border-t">
+                        <button onclick="saveSettings()" class="w-full bg-blue-600 text-white py-2 rounded text-sm font-bold hover:bg-blue-700 shadow-md">
+                            Salvar Alterações
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Container -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2"></div>
+
+    <script>
+        // --- DATA STRUCTURE ---
+        const defaultDisciplines = [
+            { id: 'port', name: 'Língua Portuguesa' },
+            { id: 'rlm', name: 'Raciocínio Lógico-Matemático' },
+            { id: 'info', name: 'Informática' },
+            { id: 'regional', name: 'Conhecimentos Regionais (PI)' },
+            { id: 'penal', name: 'Direito Penal' },
+            { id: 'procpenal', name: 'Direito Processual Penal' },
+            { id: 'const', name: 'Direito Constitucional' },
+            { id: 'adm', name: 'Direito Administrativo' },
+            { id: 'leginst', name: 'Legislação Institucional' },
+            { id: 'dh', name: 'Direitos Humanos' },
+            { id: 'crim', name: 'Criminologia' },
+            { id: 'medlegal', name: 'Medicina Legal' }
+        ];
+
+        // Extracted topics (Annex I)
+        const initialSyllabus = [
+            // Língua Portuguesa
+            { d: 'port', t: 'Interpretação e Compreensão de texto / Tipologia Textual' },
+            { d: 'port', t: 'Coesão, coerência e intertextualidade' },
+            { d: 'port', t: 'Ortografia, Acentuação e Crase' },
+            { d: 'port', t: 'Morfologia: Classes de palavras (Substantivo, Verbo, etc.)' },
+            { d: 'port', t: 'Sintaxe: Termos da oração, Concordância e Regência' },
+            { d: 'port', t: 'Pontuação e Semântica (Sinônimos, Antônimos)' },
+            
+            // RLM
+            { d: 'rlm', t: 'Lógica Proposicional (Conectivos, Equivalências)' },
+            { d: 'rlm', t: 'Conjuntos e operações' },
+            { d: 'rlm', t: 'Porcentagem, Juros e Proporcionalidade' },
+            { d: 'rlm', t: 'Estatística Básica (Média, Mediana, Moda, Dispersão)' },
+            { d: 'rlm', t: 'Geometria Básica e Plano Cartesiano' },
+            { d: 'rlm', t: 'Contabilidade: Patrimônio, Balanço e DRE' },
+
+            // Informática
+            { d: 'info', t: 'Hardware e Sistemas Operacionais (Windows/Linux)' },
+            { d: 'info', t: 'Office e LibreOffice (Texto, Planilhas, Apresentações)' },
+            { d: 'info', t: 'Redes de Computadores e Internet (Protocolos, VPN)' },
+            { d: 'info', t: 'Segurança da Informação (Malware, Criptografia, Backup)' },
+            { d: 'info', t: 'Legislação Digital (Marco Civil, LGPD)' },
+            { d: 'info', t: 'IA Generativa e Aprendizado de Máquina' },
+
+            // Regionais
+            { d: 'regional', t: 'História do Piauí (Colônia, Império, República)' },
+            { d: 'regional', t: 'Geografia Física e Humana do Piauí' },
+            { d: 'regional', t: 'Cultura, Economia e Indicadores Sociais do PI' },
+
+            // Direito Penal
+            { d: 'penal', t: 'Princípios e Aplicação da Lei Penal' },
+            { d: 'penal', t: 'Teoria do Crime (Fato Típico, Ilicitude, Culpabilidade)' },
+            { d: 'penal', t: 'Concurso de Pessoas e Crimes' },
+            { d: 'penal', t: 'Crimes contra a Pessoa (Homicídio, Lesão, Honra)' },
+            { d: 'penal', t: 'Crimes contra o Patrimônio (Furto, Roubo, etc.)' },
+            { d: 'penal', t: 'Crimes contra a Administração Pública' },
+            { d: 'penal', t: 'Legislação Especial: Abuso, Drogas, Maria da Penha' },
+
+            // Processo Penal
+            { d: 'procpenal', t: 'Inquérito Policial' },
+            { d: 'procpenal', t: 'Provas (Cadeia de Custódia, Busca e Apreensão)' },
+            { d: 'procpenal', t: 'Prisões (Flagrante, Preventiva, Temporária)' },
+            { d: 'procpenal', t: 'Liberdade Provisória e Medidas Cautelares' },
+            { d: 'procpenal', t: 'Investigação Criminal Digital' },
+            { d: 'procpenal', t: 'Leis Especiais (Execução Penal, Interceptação)' },
+
+            // Constitucional
+            { d: 'const', t: 'Direitos e Garantias Fundamentais (Art. 5º)' },
+            { d: 'const', t: 'Direitos Sociais e Nacionalidade' },
+            { d: 'const', t: 'Organização do Estado (União, Estados, Municípios)' },
+            { d: 'const', t: 'Poderes (Executivo, Legislativo, Judiciário)' },
+            { d: 'const', t: 'Segurança Pública (Art. 144)' },
+
+            // Administrativo
+            { d: 'adm', t: 'Princípios da Administração Pública (LIMPE)' },
+            { d: 'adm', t: 'Atos Administrativos e Poderes' },
+            { d: 'adm', t: 'Agentes Públicos e Responsabilidade Civil' },
+            { d: 'adm', t: 'Licitações (Lei 14.133/21) e Improbidade' },
+
+            // Legislação Institucional
+            { d: 'leginst', t: 'Estatuto da PC-PI (LC 37/2004 e alterações)' },
+            { d: 'leginst', t: 'Lei Orgânica Nacional das Polícias Civis' },
+
+            // Direitos Humanos
+            { d: 'dh', t: 'Teoria Geral e Declaração Universal (DUDH)' },
+            { d: 'dh', t: 'Pacto de San José da Costa Rica' },
+            { d: 'dh', t: 'Grupos Vulneráveis e Atuação Policial' },
+
+            // Criminologia
+            { d: 'crim', t: 'Conceito, Objeto e Escolas Criminológicas' },
+            { d: 'crim', t: 'Prevenção e Vitimologia' },
+
+            // Medicina Legal
+            { d: 'medlegal', t: 'Traumatologia Forense (Lesões, Armas)' },
+            { d: 'medlegal', t: 'Tanatologia (Fenômenos Cadavéricos)' },
+            { d: 'medlegal', t: 'Sexologia Forense e Toxicologia' }
+        ];
+
+        // --- APP STATE ---
+        let appState = {
+            items: [],
+            disciplines: [],
+            totalHours: 0,
+            config: {
+                title: 'PC-PI 2026',
+                role: 'Oficial Investigador',
+                examDate: '2026-01-25'
+            }
+        };
+
+        let currentFilterDiscipline = 'all';
+        let currentFilterStatus = 'all';
+        let chartInstances = {};
+        let currentEditingId = null;
+
+        // --- INITIALIZATION ---
+        window.onload = function() {
+            loadData();
+            renderHeader(); // New function to render dynamic header
+            initCountdown();
+            populateFilterDropdown();
+            renderAll();
+        };
+
+        function loadData() {
+            const stored = localStorage.getItem('pcpi_planner_v1');
+            if (stored) {
+                const parsed = JSON.parse(stored);
+                // Safe merge for config
+                appState = {
+                    ...appState,
+                    ...parsed,
+                    config: { ...appState.config, ...(parsed.config || {}) }
+                };
+                
+                // MIGRATION: If disciplines are missing from state (old versions), add defaults
+                if (!appState.disciplines || appState.disciplines.length === 0) {
+                    appState.disciplines = JSON.parse(JSON.stringify(defaultDisciplines));
+                    saveData();
+                }
+            } else {
+                // Initialize
+                appState.disciplines = JSON.parse(JSON.stringify(defaultDisciplines));
+                appState.items = initialSyllabus.map((item, index) => ({
+                    id: Date.now() + index, // More robust ID generation
+                    disciplineId: item.d,
+                    topic: item.t,
+                    status: 'pendente', 
+                    completedDate: null,
+                    reviews: [],
+                    note: ''
+                }));
+                saveData();
+            }
+        }
+
+        function saveData() {
+            localStorage.setItem('pcpi_planner_v1', JSON.stringify(appState));
+        }
+
+        // --- HEADER & SETTINGS LOGIC ---
+
+        function renderHeader() {
+            document.getElementById('header-title').innerText = appState.config.title;
+            document.getElementById('header-subtitle').innerText = appState.config.role;
+            
+            // Format date for display (YYYY-MM-DD to DD/MM/YYYY)
+            const parts = appState.config.examDate.split('-');
+            if(parts.length === 3) {
+                const formattedDate = `${parts[2]}/${parts[1]}/${parts[0]}`;
+                document.getElementById('header-date').innerText = formattedDate;
+                document.getElementById('header-date-mobile').innerText = formattedDate;
+            }
+        }
+
+        function openSettingsModal() {
+            document.getElementById('config-title').value = appState.config.title;
+            document.getElementById('config-role').value = appState.config.role;
+            document.getElementById('config-date').value = appState.config.examDate;
+            
+            const modal = document.getElementById('settings-modal');
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+            document.body.classList.add('modal-active');
+        }
+
+        function saveSettings() {
+            const title = document.getElementById('config-title').value;
+            const role = document.getElementById('config-role').value;
+            const date = document.getElementById('config-date').value;
+
+            if(!title || !role || !date) return alert('Preencha todos os campos');
+
+            appState.config = { title, role, examDate: date };
+            saveData();
+            
+            renderHeader();
+            initCountdown(); // Refresh countdown with new date
+            closeModal('settings-modal');
+            showToast('Dados atualizados com sucesso!', 'success');
+        }
+
+        // --- MANAGEMENT LOGIC ---
+
+        function openManageModal() {
+            const select = document.getElementById('new-topic-disc-select');
+            select.innerHTML = '';
+            appState.disciplines.forEach(d => {
+                const opt = document.createElement('option');
+                opt.value = d.id;
+                opt.innerText = d.name;
+                select.appendChild(opt);
+            });
+
+            const delSelect = document.getElementById('del-topic-disc-select');
+            delSelect.innerHTML = '<option value="all">Todas as Disciplinas</option>';
+            appState.disciplines.forEach(d => {
+                const opt = document.createElement('option');
+                opt.value = d.id;
+                opt.innerText = d.name;
+                delSelect.appendChild(opt);
+            });
+
+            renderDeleteDiscList();
+            renderBulkDeleteTopicList();
+
+            const modal = document.getElementById('manage-modal');
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+            document.body.classList.add('modal-active');
+        }
+
+        function renderDeleteDiscList() {
+            const list = document.getElementById('delete-disc-list');
+            list.innerHTML = '';
+            appState.disciplines.forEach(d => {
+                const div = document.createElement('div');
+                div.className = "flex justify-between items-center bg-gray-50 p-2 rounded border";
+                div.innerHTML = `
+                    <span class="text-sm text-gray-700">${d.name}</span>
+                    <button onclick="deleteDiscipline('${d.id}')" class="text-red-500 hover:text-red-700 text-sm px-2">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                `;
+                list.appendChild(div);
+            });
+        }
+        
+        function renderBulkDeleteTopicList() {
+            const list = document.getElementById('bulk-delete-list');
+            list.innerHTML = '';
+            
+            const filterDisc = document.getElementById('del-topic-disc-select').value;
+
+            const discsToRender = filterDisc === 'all' 
+                ? appState.disciplines 
+                : appState.disciplines.filter(d => d.id === filterDisc);
+            
+            let hasItems = false;
+
+            discsToRender.forEach(disc => {
+                const items = appState.items.filter(i => i.disciplineId === disc.id);
+                if(items.length > 0) {
+                    hasItems = true;
+                    const header = document.createElement('div');
+                    header.className = 'text-[10px] font-bold text-gray-500 uppercase mt-2 mb-1 px-2 py-1 bg-gray-100 border-t border-b border-gray-200 sticky top-0 z-10';
+                    header.innerText = disc.name;
+                    list.appendChild(header);
+                    
+                    items.forEach(item => {
+                        const div = document.createElement('div');
+                        div.className = "flex items-start gap-2 p-2 hover:bg-gray-50 border-b border-gray-100 last:border-0";
+                        div.innerHTML = `
+                            <input type="checkbox" class="mt-1 delete-topic-checkbox w-4 h-4 text-blue-600 rounded focus:ring-blue-500" value="${item.id}" id="del_chk_${item.id}">
+                            <label for="del_chk_${item.id}" class="text-sm text-gray-700 cursor-pointer select-none leading-tight flex-1">${item.topic}</label>
+                        `;
+                        list.appendChild(div);
+                    });
+                }
+            });
+            
+            if(!hasItems) {
+                list.innerHTML = '<p class="text-xs text-gray-400 text-center py-4">Nenhum tópico encontrado.</p>';
+            }
+            
+            const btn = document.getElementById('btn-select-all-del');
+            if(btn) btn.innerHTML = '<i class="fa-regular fa-square-check mr-1"></i> Selecionar Todos';
+        }
+
+        function toggleSelectAllDelete() {
+            const checkboxes = document.querySelectorAll('.delete-topic-checkbox');
+            if(checkboxes.length === 0) return;
+
+            const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+            checkboxes.forEach(cb => cb.checked = !allChecked);
+            
+            const btn = document.getElementById('btn-select-all-del');
+            if(btn) {
+                if(!allChecked) {
+                    btn.innerHTML = '<i class="fa-solid fa-square-check mr-1"></i> Desmarcar Todos';
+                } else {
+                    btn.innerHTML = '<i class="fa-regular fa-square-check mr-1"></i> Selecionar Todos';
+                }
+            }
+        }
+
+        function deleteSelectedTopics() {
+            const checkboxes = document.querySelectorAll('.delete-topic-checkbox:checked');
+            if(checkboxes.length === 0) return alert('Selecione pelo menos um tópico para excluir.');
+            
+            if(!confirm(`Excluir ${checkboxes.length} tópicos selecionados?`)) return;
+            
+            const idsToDelete = Array.from(checkboxes).map(cb => parseInt(cb.value));
+            
+            appState.items = appState.items.filter(item => !idsToDelete.includes(item.id));
+            saveData();
+            
+            renderAll();
+            renderBulkDeleteTopicList(); 
+            showToast(`${idsToDelete.length} tópicos excluídos.`);
+        }
+
+        function switchTab(tabId) {
+            ['tab-add-topic', 'tab-add-disc', 'tab-del-disc', 'tab-del-topic'].forEach(id => {
+                const el = document.getElementById(id);
+                if(el) el.classList.add('hidden');
+                
+                const btn = document.getElementById('btn-' + id);
+                if(btn) {
+                    btn.classList.remove('tab-active');
+                    btn.classList.add('tab-inactive');
+                }
+            });
+            document.getElementById(tabId).classList.remove('hidden');
+            document.getElementById('btn-' + tabId).classList.add('tab-active');
+            document.getElementById('btn-' + tabId).classList.remove('tab-inactive');
+        }
+
+        function addNewDiscipline() {
+            const rawText = document.getElementById('new-disc-name').value;
+            
+            if(!rawText.trim()) return alert('Digite os nomes das disciplinas.');
+
+            const discNames = rawText.split('\n').map(t => t.trim()).filter(t => t.length > 0);
+
+            if (discNames.length === 0) return;
+
+            let addedCount = 0;
+            discNames.forEach((name, index) => {
+                const id = 'custom_' + (Date.now() + index); 
+                appState.disciplines.push({ id: id, name: name });
+                addedCount++;
+            });
+
+            saveData();
+            
+            document.getElementById('new-disc-name').value = '';
+            showToast(addedCount > 1 ? `${addedCount} disciplinas criadas!` : 'Disciplina criada!');
+            
+            populateFilterDropdown();
+            renderAll();
+            
+            const select = document.getElementById('new-topic-disc-select');
+            const delSelect = document.getElementById('del-topic-disc-select');
+            
+            [select, delSelect].forEach(sel => {
+                sel.innerHTML = '';
+                if(sel.id === 'del-topic-disc-select') {
+                     const allOpt = document.createElement('option');
+                     allOpt.value = 'all'; allOpt.innerText = 'Todas as Disciplinas';
+                     sel.appendChild(allOpt);
+                }
+                appState.disciplines.forEach(d => {
+                    const opt = document.createElement('option');
+                    opt.value = d.id;
+                    opt.innerText = d.name;
+                    sel.appendChild(opt);
+                });
+            });
+
+            renderDeleteDiscList();
+            renderBulkDeleteTopicList();
+            
+            switchTab('tab-add-topic');
+            if(appState.disciplines.length > 0) {
+                const lastAddedDisc = appState.disciplines[appState.disciplines.length - 1];
+                document.getElementById('new-topic-disc-select').value = lastAddedDisc.id;
+            }
+        }
+
+        function deleteDiscipline(id) {
+            if(!confirm('Tem certeza? Isso apagará a disciplina e TODAS as aulas associadas a ela.')) return;
+
+            appState.items = appState.items.filter(i => i.disciplineId !== id);
+            appState.disciplines = appState.disciplines.filter(d => d.id !== id);
+            
+            saveData();
+            renderDeleteDiscList();
+            renderBulkDeleteTopicList();
+            populateFilterDropdown();
+            renderAll();
+            
+            const select = document.getElementById('new-topic-disc-select');
+            const delSelect = document.getElementById('del-topic-disc-select');
+            [select, delSelect].forEach(s => {
+                for(let i=0; i<s.options.length; i++) {
+                    if(s.options[i].value === id) s.remove(i);
+                }
+            });
+
+            showToast('Disciplina removida.');
+        }
+
+        function addNewTopic() {
+            const discId = document.getElementById('new-topic-disc-select').value;
+            const rawText = document.getElementById('new-topic-name').value;
+            
+            if(!discId) return alert('Selecione uma disciplina.');
+            if(!rawText.trim()) return alert('Digite os tópicos ou cole a lista.');
+
+            const topics = rawText.split('\n').map(t => t.trim()).filter(t => t.length > 0);
+
+            if (topics.length === 0) return;
+
+            let addedCount = 0;
+            topics.forEach((topicName, index) => {
+                const newItem = {
+                    id: Date.now() + index,
+                    disciplineId: discId,
+                    topic: topicName,
+                    status: 'pendente',
+                    completedDate: null,
+                    reviews: [],
+                    note: ''
+                };
+                appState.items.push(newItem);
+                addedCount++;
+            });
+
+            saveData();
+            
+            document.getElementById('new-topic-name').value = '';
+            showToast(addedCount > 1 ? `${addedCount} tópicos adicionados!` : 'Tópico adicionado!');
+            renderAll();
+            renderBulkDeleteTopicList();
+        }
+
+        function deleteTopic(itemId) {
+            if(!confirm('Excluir este tópico?')) return;
+            appState.items = appState.items.filter(i => i.id !== itemId);
+            saveData();
+            renderAll();
+            renderBulkDeleteTopicList();
+            showToast('Tópico excluído.');
+        }
+
+        // --- CORE LOGIC ---
+
+        function updateStatus(id, newStatus) {
+            const item = appState.items.find(i => i.id === id);
+            if (!item) return;
+
+            item.status = newStatus;
+
+            if (newStatus === 'concluido') {
+                const today = new Date();
+                item.completedDate = today.toISOString();
+                
+                const r1 = new Date(today); r1.setDate(r1.getDate() + 1);
+                const r2 = new Date(today); r2.setDate(r2.getDate() + 7);
+                const r3 = new Date(today); r3.setDate(r3.getDate() + 30);
+                
+                item.reviews = [
+                    { date: r1.toISOString(), done: false, label: '24h' },
+                    { date: r2.toISOString(), done: false, label: '7d' },
+                    { date: r3.toISOString(), done: false, label: '30d' }
+                ];
+                showToast(`Próximas revisões agendadas!`, 'success');
+            } else {
+                item.completedDate = null;
+                item.reviews = [];
+            }
+
+            saveData();
+            renderAll();
+        }
+
+        function toggleReview(itemId, reviewIndex) {
+            const item = appState.items.find(i => i.id === itemId);
+            if (item && item.reviews[reviewIndex]) {
+                item.reviews[reviewIndex].done = !item.reviews[reviewIndex].done;
+                saveData();
+                renderSyllabus();
+            }
+        }
+
+        function addStudyHours(e) {
+            e.preventDefault();
+            const input = document.getElementById('study-input');
+            const val = parseFloat(input.value);
+            
+            if (!isNaN(val) && val > 0) {
+                appState.totalHours += val;
+                input.value = '';
+                saveData();
+                renderProductivity();
+                showToast(`+${val} horas registradas!`, 'success');
+            }
+        }
+        document.getElementById('hours-form').addEventListener('submit', addStudyHours);
+
+        // --- RENDERING ---
+
+        function renderAll() {
+            renderSyllabus();
+            renderCharts();
+            renderDisciplineCards();
+            renderProductivity();
+        }
+
+        function renderProductivity() {
+            document.getElementById('total-hours').innerText = appState.totalHours.toFixed(1);
+        }
+
+        function renderDisciplineCards() {
+            const container = document.getElementById('discipline-cards-container');
+            container.innerHTML = '';
+
+            appState.disciplines.forEach(disc => {
+                const items = appState.items.filter(i => i.disciplineId === disc.id);
+                const total = items.length;
+                const completed = items.filter(i => i.status === 'concluido').length;
+                const percent = total === 0 ? 0 : Math.round((completed / total) * 100);
+
+                const card = document.createElement('div');
+                card.className = "bg-white border rounded-lg p-4 shadow-sm transition cursor-pointer relative overflow-hidden group disc-card";
+                card.onclick = () => filterByDisciplineFromCard(disc.id);
+
+                card.innerHTML = `
+                    <div class="flex justify-between items-end mb-2">
+                        <h4 class="font-bold text-slate-700 text-sm truncate pr-2 flex-1" title="${disc.name}">${disc.name}</h4>
+                        <span class="text-xs font-bold ${percent === 100 ? 'text-green-600' : 'text-blue-600'}">${percent}%</span>
+                    </div>
+                    <div class="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
+                        <div class="bg-blue-500 h-2 rounded-full transition-all duration-700 ease-out" style="width: ${percent}%"></div>
+                    </div>
+                    <div class="flex justify-between items-center mt-3">
+                        <span class="text-[10px] text-gray-400 font-medium uppercase tracking-wide">Progresso</span>
+                        <span class="text-[10px] text-gray-500 font-bold">${completed}/${total}</span>
+                    </div>
+                    <!-- Hover overlay -->
+                    <div class="absolute inset-0 bg-blue-50 opacity-0 group-hover:opacity-10 transition pointer-events-none"></div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function filterByDisciplineFromCard(id) {
+            currentFilterDiscipline = id;
+            const dropdown = document.getElementById('filter-discipline');
+            dropdown.value = id;
+            
+            renderSyllabus();
+            
+            // Smooth scroll to syllabus section
+            document.getElementById('syllabus-section').scrollIntoView({ behavior: 'smooth' });
+            
+            // Highlight effect on syllabus title
+            const title = document.getElementById('list-title');
+            title.classList.add('text-blue-600');
+            setTimeout(() => title.classList.remove('text-blue-600'), 1000);
+        }
+
+        function renderSyllabus() {
+            const container = document.getElementById('syllabus-container');
+            container.innerHTML = '';
+
+            const today = new Date().setHours(0,0,0,0);
+
+            const filteredItems = appState.items.filter(item => {
+                if (currentFilterDiscipline !== 'all' && item.disciplineId !== currentFilterDiscipline) return false;
+                if (currentFilterStatus === 'all') return true;
+                if (currentFilterStatus === 'revisar') {
+                    return item.reviews.some(r => {
+                        const rDate = new Date(r.date).setHours(0,0,0,0);
+                        return rDate <= today && !r.done;
+                    });
+                }
+                return item.status === currentFilterStatus;
+            });
+
+            document.getElementById('filtered-count').innerText = `${filteredItems.length} itens`;
+
+            if (filteredItems.length === 0) {
+                container.innerHTML = `<div class="p-8 text-center text-gray-400">Nenhum tópico encontrado com esses filtros.</div>`;
+                return;
+            }
+
+            const discsToShow = currentFilterDiscipline === 'all' 
+                ? appState.disciplines 
+                : appState.disciplines.filter(d => d.id === currentFilterDiscipline);
+
+            discsToShow.forEach(disc => {
+                const itemsInDisc = filteredItems.filter(i => i.disciplineId === disc.id);
+                
+                if (itemsInDisc.length > 0) {
+                    const header = document.createElement('div');
+                    header.className = 'bg-gray-100 px-6 py-2 text-xs font-bold text-gray-500 uppercase tracking-wider sticky top-0 border-b border-gray-200 z-10';
+                    header.innerText = disc.name;
+                    container.appendChild(header);
+
+                    itemsInDisc.forEach(item => {
+                        const el = document.createElement('div');
+                        let statusClass = 'status-pendente';
+                        if (item.status === 'estudando') statusClass = 'status-estudo';
+                        if (item.status === 'concluido') statusClass = 'status-concluido';
+
+                        el.className = `p-4 hover:bg-gray-50 transition flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-50 ${statusClass}`;
+                        
+                        let reviewsHtml = '';
+                        if (item.status === 'concluido') {
+                            reviewsHtml = `<div class="flex gap-2 mt-2 sm:mt-0">`;
+                            item.reviews.forEach((r, idx) => {
+                                const rDate = new Date(r.date);
+                                const isDue = rDate.setHours(0,0,0,0) <= today;
+                                const dateStr = new Date(r.date).toLocaleDateString('pt-BR', {day:'2-digit', month:'2-digit'});
+                                
+                                let colorClass = 'bg-gray-200 text-gray-400';
+                                if (r.done) colorClass = 'bg-green-100 text-green-700 border border-green-300';
+                                else if (isDue) colorClass = 'bg-yellow-100 text-yellow-700 border border-yellow-400 animate-pulse font-bold';
+                                else colorClass = 'bg-blue-50 text-blue-600 border border-blue-200';
+
+                                reviewsHtml += `
+                                    <div class="flex flex-col items-center cursor-pointer" onclick="toggleReview(${item.id}, ${idx})" title="${dateStr}">
+                                        <span class="text-[10px] uppercase font-bold text-gray-500">${r.label}</span>
+                                        <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs ${colorClass}">
+                                            ${r.done ? '<i class="fa-solid fa-check"></i>' : dateStr}
+                                        </div>
+                                    </div>
+                                `;
+                            });
+                            reviewsHtml += `</div>`;
+                        }
+
+                        el.innerHTML = `
+                            <div class="flex-1">
+                                <div class="flex items-start justify-between">
+                                    <span class="text-sm font-medium text-slate-700">${item.topic}</span>
+                                    <div class="flex items-center gap-2 ml-2">
+                                        <button onclick="openNoteModal(${item.id})" class="text-gray-400 hover:text-blue-500" title="Anotações">
+                                            <i class="fa-regular fa-pen-to-square"></i> ${item.note ? '<i class="fa-solid fa-circle text-[8px] text-blue-500 align-top"></i>' : ''}
+                                        </button>
+                                        <button onclick="deleteTopic(${item.id})" class="text-gray-300 hover:text-red-500" title="Excluir Tópico">
+                                            <i class="fa-solid fa-trash text-xs"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="mt-2">
+                                    <select onchange="updateStatus(${item.id}, this.value)" class="text-xs border rounded p-1 bg-white focus:ring-1 focus:ring-blue-500 ${getStatusColor(item.status)}">
+                                        <option value="pendente" ${item.status === 'pendente' ? 'selected' : ''}>Pendente</option>
+                                        <option value="estudando" ${item.status === 'estudando' ? 'selected' : ''}>Em Estudo</option>
+                                        <option value="concluido" ${item.status === 'concluido' ? 'selected' : ''}>Concluído</option>
+                                    </select>
+                                </div>
+                            </div>
+                            ${reviewsHtml}
+                        `;
+                        container.appendChild(el);
+                    });
+                }
+            });
+        }
+
+        function getStatusColor(status) {
+            if(status === 'pendente') return 'text-gray-600';
+            if(status === 'estudando') return 'text-blue-600 font-bold';
+            if(status === 'concluido') return 'text-green-600 font-bold';
+            return '';
+        }
+
+        function populateFilterDropdown() {
+            const select = document.getElementById('filter-discipline');
+            select.innerHTML = '<option value="all">Todas as Disciplinas</option>';
+            appState.disciplines.forEach(d => {
+                const opt = document.createElement('option');
+                opt.value = d.id;
+                opt.innerText = d.name;
+                select.appendChild(opt);
+            });
+            
+            select.addEventListener('change', (e) => {
+                currentFilterDiscipline = e.target.value;
+                renderSyllabus();
+            });
+            if(currentFilterDiscipline) select.value = currentFilterDiscipline;
+        }
+
+        function filterStatus(status) {
+            currentFilterStatus = status;
+            renderSyllabus();
+        }
+
+        // --- CHARTS ---
+
+        function renderCharts() {
+            const total = appState.items.length;
+            const completed = appState.items.filter(i => i.status === 'concluido').length;
+            const percent = total === 0 ? 0 : Math.round((completed / total) * 100);
+            
+            document.getElementById('progress-text').innerText = `${percent}%`;
+            document.getElementById('topics-count').innerText = `${completed}/${total} Tópicos`;
+
+            const ctxProgress = document.getElementById('progressChart').getContext('2d');
+            if (chartInstances.progress) chartInstances.progress.destroy();
+
+            chartInstances.progress = new Chart(ctxProgress, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Concluído', 'Restante'],
+                    datasets: [{
+                        data: [completed, total - completed],
+                        backgroundColor: ['#10b981', '#e2e8f0'],
+                        borderWidth: 0,
+                        cutout: '75%'
+                    }]
+                },
+                options: { 
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false }, tooltip: { enabled: false } } 
+                }
+            });
+        }
+
+        // --- MODALS ---
+        function openNoteModal(id) {
+            currentEditingId = id;
+            const item = appState.items.find(i => i.id === id);
+            document.getElementById('modal-topic-title').innerText = item.topic;
+            document.getElementById('modal-note-input').value = item.note || '';
+            
+            const modal = document.getElementById('note-modal');
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+            document.body.classList.add('modal-active');
+        }
+
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.classList.add('opacity-0', 'pointer-events-none');
+            document.body.classList.remove('modal-active');
+            if(modalId === 'note-modal') currentEditingId = null;
+        }
+
+        function saveNote() {
+            if (currentEditingId !== null) {
+                const note = document.getElementById('modal-note-input').value;
+                const item = appState.items.find(i => i.id === currentEditingId);
+                item.note = note;
+                saveData();
+                renderSyllabus(); 
+                closeModal('note-modal');
+                showToast('Anotação salva!');
+            }
+        }
+
+        // --- UTILS ---
+
+        function initCountdown() {
+            // Use date from state
+            const examDateStr = appState.config.examDate + 'T00:00:00';
+            const examDate = new Date(examDateStr);
+            
+            const elMobile = document.getElementById('countdown-mobile');
+            const elDesktop = document.getElementById('countdown-desktop'); 
+            
+            const update = () => {
+                const now = new Date();
+                const diff = examDate - now;
+                const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+                
+                let text = 'Hoje!';
+                if (days > 0) text = `${days} dias`;
+                else if (days < 0) text = 'Realizada';
+                
+                if(elMobile) elMobile.innerText = text;
+                if(elDesktop) elDesktop.innerText = text; 
+            };
+            update();
+        }
+
+        function showToast(message, type='info') {
+            const container = document.getElementById('toast-container');
+            const el = document.createElement('div');
+            const color = type === 'success' ? 'bg-green-600' : 'bg-slate-800';
+            el.className = `${color} text-white text-sm px-4 py-3 rounded shadow-lg transition transform translate-y-2 opacity-0 flex items-center gap-2`;
+            el.innerHTML = `<i class="fa-solid fa-circle-info"></i> ${message}`;
+            
+            container.appendChild(el);
+            
+            requestAnimationFrame(() => {
+                el.classList.remove('translate-y-2', 'opacity-0');
+            });
+
+            setTimeout(() => {
+                el.classList.add('opacity-0', 'translate-x-full');
+                setTimeout(() => el.remove(), 300);
+            }, 3000);
+        }
+
+        // --- DATA MANAGEMENT ---
+        function exportData() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appState));
+            const downloadAnchorNode = document.createElement('a');
+            downloadAnchorNode.setAttribute("href", dataStr);
+            downloadAnchorNode.setAttribute("download", "pcpi_planner_backup.json");
+            document.body.appendChild(downloadAnchorNode);
+            downloadAnchorNode.click();
+            downloadAnchorNode.remove();
+        }
+
+        function importData(input) {
+            const file = input.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const json = JSON.parse(e.target.result);
+                    if (json.items && typeof json.totalHours === 'number') {
+                        appState = json;
+                        // Migration safety check for restored data
+                        if (!appState.disciplines) {
+                            appState.disciplines = JSON.parse(JSON.stringify(defaultDisciplines));
+                        }
+                        if (!appState.config) {
+                            appState.config = {
+                                title: 'PC-PI 2026',
+                                role: 'Oficial Investigador',
+                                examDate: '2026-01-25'
+                            };
+                        }
+                        saveData();
+                        location.reload();
+                    } else {
+                        alert('Arquivo inválido.');
+                    }
+                } catch(err) {
+                    alert('Erro ao ler arquivo JSON.');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function resetData() {
+            if(confirm('Tem certeza? Todo o progresso será perdido.')) {
+                localStorage.removeItem('pcpi_planner_v1');
+                location.reload();
+            }
+        }
+
+    </script>
+</body>
+</html>
