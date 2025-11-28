@@ -7,6 +7,18 @@
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class', // Habilita modo escuro manual via classe 'dark'
+            theme: {
+                extend: {
+                    colors: {
+                        slate: { 750: '#293548', 850: '#172033', 950: '#0b1121' }
+                    }
+                }
+            }
+        }
+    </script>
     
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -18,21 +30,33 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
 
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
+        body { font-family: 'Inter', sans-serif; transition: background-color 0.3s ease, color 0.3s ease; }
+        
+        /* Glassmorphism Panel - Light Mode */
         .glass-panel {
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.2);
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transition: background-color 0.3s ease, border-color 0.3s ease;
         }
+
+        /* Glassmorphism Panel - Dark Mode */
+        .dark .glass-panel {
+            background: rgba(30, 41, 59, 0.95); /* slate-800 */
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+        }
+
         .status-pendente { border-left: 4px solid #9ca3af; }
         .status-estudo { border-left: 4px solid #3b82f6; }
         .status-concluido { border-left: 4px solid #10b981; }
         
         /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .dark ::-webkit-scrollbar-thumb { background: #475569; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
         .modal {
@@ -48,8 +72,16 @@
             color: #2563eb;
             font-weight: 600;
         }
+        .dark .tab-active {
+            color: #60a5fa; /* lighter blue for dark mode */
+            border-bottom-color: #60a5fa;
+        }
+        
         .tab-inactive {
             color: #6b7280;
+        }
+        .dark .tab-inactive {
+            color: #94a3b8;
         }
 
         .disc-card:hover {
@@ -64,22 +96,44 @@
             display: flex; justify-content: center; align-items: center;
             transition: opacity 0.5s ease;
         }
+        .dark #loading-overlay {
+            background: rgba(15, 23, 42, 0.95); /* slate-900 */
+        }
+        
         .hidden-force {
             display: none !important;
         }
+
+        /* Accordion Animations */
+        .accordion-content {
+            transition: max-height 0.3s ease-in-out, opacity 0.3s ease-in-out;
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+        }
+        .accordion-content.open {
+            max-height: 2000px;
+            opacity: 1;
+        }
+        .accordion-icon {
+            transition: transform 0.3s ease;
+        }
+        .accordion-icon.rotate {
+            transform: rotate(180deg);
+        }
     </style>
 </head>
-<body class="text-gray-800">
+<body class="text-gray-800 bg-[#f3f4f6] dark:bg-slate-900 dark:text-gray-200">
 
     <!-- Loading Overlay -->
     <div id="loading-overlay" class="flex flex-col items-center justify-center">
-        <i class="fa-solid fa-cloud-arrow-down fa-bounce text-4xl text-blue-600 mb-4"></i>
-        <p class="text-sm text-gray-600 font-semibold" id="loading-text">Iniciando Planner...</p>
-        <p class="text-xs text-gray-400 mt-2">Se demorar, verificaremos o modo offline.</p>
+        <i class="fa-solid fa-cloud-arrow-down fa-bounce text-4xl text-blue-600 dark:text-blue-400 mb-4"></i>
+        <p class="text-sm text-gray-600 dark:text-gray-300 font-semibold" id="loading-text">Iniciando Planner...</p>
+        <p class="text-xs text-gray-400 dark:text-gray-500 mt-2">Se demorar, verificaremos o modo offline.</p>
     </div>
 
     <!-- Navbar -->
-    <nav class="bg-slate-900 text-white shadow-lg sticky top-0 z-50">
+    <nav class="bg-slate-900 dark:bg-slate-950 text-white shadow-lg sticky top-0 z-50 border-b border-transparent dark:border-slate-800 transition-colors duration-300">
         <div class="container mx-auto px-4 py-3 flex justify-between items-center">
             <div class="flex items-center gap-3">
                 <i class="fa-solid fa-shield-halved text-yellow-500 text-2xl"></i>
@@ -88,22 +142,30 @@
                     <p id="header-subtitle" class="text-xs text-slate-400">Oficial Investigador</p>
                 </div>
             </div>
-            <!-- Updated Desktop Header Info -->
-            <div class="hidden md:flex items-center gap-6 text-right">
-                <div class="cursor-pointer hover:bg-slate-800 p-1 rounded transition" onclick="openSyncModal()" title="Status da Conexão">
-                    <p class="text-[10px] text-slate-400 uppercase tracking-wider flex items-center justify-end gap-1">
-                        <i id="status-icon-desktop" class="fa-solid fa-wifi text-gray-400"></i> Status
-                    </p>
-                    <p id="header-sync-status" class="font-mono font-bold text-white text-sm tracking-wider">Verificando...</p>
+            
+            <div class="flex items-center gap-6">
+                <!-- Desktop Header Info -->
+                <div class="hidden md:flex items-center gap-6 text-right">
+                    <div class="cursor-pointer hover:bg-slate-800 dark:hover:bg-slate-900 p-1 rounded transition" onclick="openSyncModal()" title="Status da Conexão">
+                        <p class="text-[10px] text-slate-400 uppercase tracking-wider flex items-center justify-end gap-1">
+                            <i id="status-icon-desktop" class="fa-solid fa-wifi text-gray-400"></i> Status
+                        </p>
+                        <p id="header-sync-status" class="font-mono font-bold text-white text-sm tracking-wider">Verificando...</p>
+                    </div>
+                    <div>
+                        <p class="text-[10px] text-slate-400 uppercase tracking-wider">Data da Prova</p>
+                        <p id="header-date" class="font-bold text-white text-sm">25/01/2026</p>
+                    </div>
+                    <div>
+                        <p class="text-[10px] text-slate-400 uppercase tracking-wider">Contagem</p>
+                        <p id="countdown-desktop" class="font-bold text-yellow-400 text-sm">Calculando...</p>
+                    </div>
                 </div>
-                <div>
-                    <p class="text-[10px] text-slate-400 uppercase tracking-wider">Data da Prova</p>
-                    <p id="header-date" class="font-bold text-white text-sm">25/01/2026</p>
-                </div>
-                <div>
-                    <p class="text-[10px] text-slate-400 uppercase tracking-wider">Contagem Regressiva</p>
-                    <p id="countdown-desktop" class="font-bold text-yellow-400 text-sm">Calculando...</p>
-                </div>
+
+                <!-- Theme Toggle Button -->
+                <button onclick="toggleTheme()" class="w-10 h-10 rounded-full bg-slate-800 dark:bg-slate-900 hover:bg-slate-700 dark:hover:bg-slate-800 text-yellow-400 dark:text-blue-300 transition flex items-center justify-center border border-slate-700 dark:border-slate-800 shadow-sm" title="Alternar Tema">
+                    <i id="theme-icon" class="fa-solid fa-sun"></i>
+                </button>
             </div>
         </div>
     </nav>
@@ -111,7 +173,7 @@
     <div class="container mx-auto px-4 py-6 space-y-6">
 
         <!-- Countdown Mobile -->
-        <div class="md:hidden bg-slate-800 text-white p-3 rounded-lg text-sm shadow flex flex-col gap-2">
+        <div class="md:hidden bg-slate-800 dark:bg-slate-950 text-white p-3 rounded-lg text-sm shadow flex flex-col gap-2">
             <div class="flex justify-between items-center">
                 <span id="header-date-mobile" class="text-slate-400 text-xs">25/01/2026</span>
                 <span>Prova em: <span id="countdown-mobile" class="font-bold text-yellow-400">...</span></span>
@@ -128,20 +190,20 @@
             <!-- Progress Card -->
             <div class="glass-panel rounded-xl p-4 flex items-center justify-between">
                 <div>
-                    <h3 class="text-gray-500 text-xs font-bold uppercase tracking-wide mb-1">Progresso Geral</h3>
-                    <p id="topics-count" class="text-sm text-gray-400">0/0 Tópicos</p>
+                    <h3 class="text-gray-500 dark:text-gray-400 text-xs font-bold uppercase tracking-wide mb-1">Progresso Geral</h3>
+                    <p id="topics-count" class="text-sm text-gray-400 dark:text-gray-500">0/0 Tópicos</p>
                 </div>
                 <div class="relative h-20 w-20">
                     <canvas id="progressChart"></canvas>
                     <div class="absolute inset-0 flex items-center justify-center flex-col">
-                        <span id="progress-text" class="text-sm font-bold text-slate-800">0%</span>
+                        <span id="progress-text" class="text-sm font-bold text-slate-800 dark:text-white">0%</span>
                     </div>
                 </div>
             </div>
 
             <!-- Productivity Card -->
             <div class="glass-panel rounded-xl p-4 flex flex-col justify-center">
-                <h3 class="text-gray-500 text-xs font-bold uppercase tracking-wide mb-2 flex justify-between items-center">
+                <h3 class="text-gray-500 dark:text-gray-400 text-xs font-bold uppercase tracking-wide mb-2 flex justify-between items-center">
                     <span>Banco de Horas</span>
                     <button onclick="resetHours()" class="text-gray-400 hover:text-red-500 transition" title="Zerar Horas">
                         <i class="fa-solid fa-trash-can"></i>
@@ -149,13 +211,13 @@
                 </h3>
                 <div class="flex items-center gap-4">
                     <div>
-                        <span id="total-hours" class="text-3xl font-bold text-slate-800">0</span>
-                        <span class="text-xs text-gray-500">hrs líquidas</span>
+                        <span id="total-hours" class="text-3xl font-bold text-slate-800 dark:text-white">0</span>
+                        <span class="text-xs text-gray-500 dark:text-gray-400">hrs líquidas</span>
                     </div>
                     
                     <form id="hours-form" class="flex-1 flex gap-2">
-                        <input type="number" id="study-input" step="0.5" min="0" placeholder="Hrs hoje..." class="w-full border rounded p-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs transition font-bold">
+                        <input type="number" id="study-input" step="0.5" min="0" placeholder="Hrs hoje..." class="w-full border dark:border-slate-600 rounded p-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-slate-700 dark:text-white dark:placeholder-gray-400">
+                        <button type="submit" class="bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500 text-white px-3 py-1 rounded text-xs transition font-bold">
                             <i class="fa-solid fa-plus"></i>
                         </button>
                     </form>
@@ -165,9 +227,9 @@
 
         <!-- Dashboard Section: Discipline Cards -->
         <div class="glass-panel rounded-xl p-6">
-            <h3 class="text-slate-700 text-sm font-bold mb-4 flex items-center gap-2">
+            <h3 class="text-slate-700 dark:text-slate-200 text-sm font-bold mb-4 flex items-center gap-2">
                 <i class="fa-solid fa-layer-group text-blue-500"></i> Suas Disciplinas
-                <span class="text-xs font-normal text-gray-400 ml-auto hidden sm:inline">Clique para filtrar o conteúdo</span>
+                <span class="text-xs font-normal text-gray-400 dark:text-gray-500 ml-auto hidden sm:inline">Clique para filtrar o conteúdo</span>
             </h3>
             <div id="discipline-cards-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 <!-- Cards injected here via JS -->
@@ -181,51 +243,51 @@
             <div class="lg:col-span-1 space-y-4">
                 
                 <!-- Manage Content Button -->
-                <button onclick="openManageModal()" class="w-full glass-panel rounded-xl p-3 text-slate-700 font-bold hover:bg-white hover:text-blue-600 transition flex items-center justify-center gap-2 text-sm shadow-sm border border-transparent hover:border-blue-200">
+                <button onclick="openManageModal()" class="w-full glass-panel rounded-xl p-3 text-slate-700 dark:text-slate-200 font-bold hover:bg-white dark:hover:bg-slate-700 hover:text-blue-600 dark:hover:text-blue-400 transition flex items-center justify-center gap-2 text-sm shadow-sm border border-transparent hover:border-blue-200 dark:hover:border-slate-600">
                     <i class="fa-solid fa-book-open"></i> Gerenciar Matérias
                 </button>
 
                 <!-- Manage Data Button -->
-                <button onclick="openSettingsModal()" class="w-full glass-panel rounded-xl p-3 text-slate-700 font-bold hover:bg-white hover:text-blue-600 transition flex items-center justify-center gap-2 text-sm shadow-sm border border-transparent hover:border-blue-200">
+                <button onclick="openSettingsModal()" class="w-full glass-panel rounded-xl p-3 text-slate-700 dark:text-slate-200 font-bold hover:bg-white dark:hover:bg-slate-700 hover:text-blue-600 dark:hover:text-blue-400 transition flex items-center justify-center gap-2 text-sm shadow-sm border border-transparent hover:border-blue-200 dark:hover:border-slate-600">
                     <i class="fa-solid fa-pen-to-square"></i> Gerenciar Dados
                 </button>
 
                 <!-- Sync Button -->
-                <button onclick="openSyncModal()" class="w-full glass-panel rounded-xl p-3 text-slate-700 font-bold hover:bg-white hover:text-green-600 transition flex items-center justify-center gap-2 text-sm shadow-sm border border-transparent hover:border-green-200">
+                <button onclick="openSyncModal()" class="w-full glass-panel rounded-xl p-3 text-slate-700 dark:text-slate-200 font-bold hover:bg-white dark:hover:bg-slate-700 hover:text-green-600 dark:hover:text-green-400 transition flex items-center justify-center gap-2 text-sm shadow-sm border border-transparent hover:border-green-200 dark:hover:border-green-800">
                     <i class="fa-solid fa-rotate"></i> Configurar Nuvem
                 </button>
 
                 <div class="glass-panel rounded-xl p-4 sticky top-20">
-                    <h4 class="font-bold text-slate-700 mb-3 text-sm"><i class="fa-solid fa-filter mr-2"></i>Filtros</h4>
+                    <h4 class="font-bold text-slate-700 dark:text-slate-200 mb-3 text-sm"><i class="fa-solid fa-filter mr-2"></i>Filtros</h4>
                     
                     <div class="space-y-2">
-                        <label class="text-xs font-semibold text-gray-500">Disciplina Atual</label>
-                        <select id="filter-discipline" class="w-full border rounded p-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <label class="text-xs font-semibold text-gray-500 dark:text-gray-400">Disciplina Atual</label>
+                        <select id="filter-discipline" class="w-full border dark:border-slate-600 rounded p-2 text-sm bg-white dark:bg-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
                             <option value="all">Todas as Disciplinas</option>
                             <!-- Populated via JS -->
                         </select>
                     </div>
 
                     <div class="space-y-2 mt-4">
-                        <label class="text-xs font-semibold text-gray-500">Status</label>
+                        <label class="text-xs font-semibold text-gray-500 dark:text-gray-400">Status</label>
                         <div class="flex flex-col gap-2">
-                            <button onclick="filterStatus('all')" class="text-left px-3 py-2 rounded text-sm hover:bg-gray-100 transition border-l-4 border-transparent bg-white shadow-sm">Todos</button>
-                            <button onclick="filterStatus('pendente')" class="text-left px-3 py-2 rounded text-sm hover:bg-gray-100 transition border-l-4 border-gray-400 bg-white shadow-sm">Pendente</button>
-                            <button onclick="filterStatus('estudando')" class="text-left px-3 py-2 rounded text-sm hover:bg-gray-100 transition border-l-4 border-blue-500 bg-white shadow-sm">Em Estudo</button>
-                            <button onclick="filterStatus('concluido')" class="text-left px-3 py-2 rounded text-sm hover:bg-gray-100 transition border-l-4 border-green-500 bg-white shadow-sm">Concluído</button>
-                            <button onclick="filterStatus('revisar')" class="text-left px-3 py-2 rounded text-sm hover:bg-gray-100 transition border-l-4 border-yellow-500 bg-white shadow-sm font-bold text-yellow-700">
+                            <button onclick="filterStatus('all')" class="text-left px-3 py-2 rounded text-sm hover:bg-gray-100 dark:hover:bg-slate-700 transition border-l-4 border-transparent bg-white dark:bg-slate-800 dark:text-gray-200 shadow-sm">Todos</button>
+                            <button onclick="filterStatus('pendente')" class="text-left px-3 py-2 rounded text-sm hover:bg-gray-100 dark:hover:bg-slate-700 transition border-l-4 border-gray-400 bg-white dark:bg-slate-800 dark:text-gray-200 shadow-sm">Pendente</button>
+                            <button onclick="filterStatus('estudando')" class="text-left px-3 py-2 rounded text-sm hover:bg-gray-100 dark:hover:bg-slate-700 transition border-l-4 border-blue-500 bg-white dark:bg-slate-800 dark:text-gray-200 shadow-sm">Em Estudo</button>
+                            <button onclick="filterStatus('concluido')" class="text-left px-3 py-2 rounded text-sm hover:bg-gray-100 dark:hover:bg-slate-700 transition border-l-4 border-green-500 bg-white dark:bg-slate-800 dark:text-gray-200 shadow-sm">Concluído</button>
+                            <button onclick="filterStatus('revisar')" class="text-left px-3 py-2 rounded text-sm hover:bg-gray-100 dark:hover:bg-slate-700 transition border-l-4 border-yellow-500 bg-white dark:bg-slate-800 dark:text-gray-200 shadow-sm font-bold text-yellow-700 dark:text-yellow-500">
                                 <i class="fa-solid fa-bell mr-1"></i> Revisar Hoje
                             </button>
                         </div>
                     </div>
 
-                    <div class="mt-8 pt-4 border-t flex flex-col gap-2">
-                        <button onclick="exportData()" class="text-xs text-blue-600 hover:underline text-left"><i class="fa-solid fa-download"></i> Backup (Arquivo JSON)</button>
-                        <label class="text-xs text-blue-600 hover:underline cursor-pointer text-left">
+                    <div class="mt-8 pt-4 border-t dark:border-slate-700 flex flex-col gap-2">
+                        <button onclick="exportData()" class="text-xs text-blue-600 dark:text-blue-400 hover:underline text-left"><i class="fa-solid fa-download"></i> Backup (Arquivo JSON)</button>
+                        <label class="text-xs text-blue-600 dark:text-blue-400 hover:underline cursor-pointer text-left">
                             <i class="fa-solid fa-upload"></i> Restaurar Backup
                             <input type="file" id="import-file" class="hidden" onchange="importData(this)">
                         </label>
-                        <button onclick="resetData()" class="text-xs text-red-500 hover:underline mt-2 text-left"><i class="fa-solid fa-trash"></i> Resetar Tudo (Progresso)</button>
+                        <button onclick="resetData()" class="text-xs text-red-500 dark:text-red-400 hover:underline mt-2 text-left"><i class="fa-solid fa-trash"></i> Resetar Tudo (Progresso)</button>
                     </div>
                 </div>
             </div>
@@ -233,12 +295,12 @@
             <!-- Syllabus List -->
             <div class="lg:col-span-3">
                 <div class="glass-panel rounded-xl overflow-hidden min-h-[500px]">
-                    <div class="bg-gray-50 px-6 py-4 border-b flex justify-between items-center">
-                        <h2 class="font-bold text-lg text-slate-800" id="list-title">Conteúdo Programático</h2>
-                        <span id="filtered-count" class="text-xs bg-slate-200 text-slate-600 px-2 py-1 rounded-full">0 itens</span>
+                    <div class="bg-gray-50 dark:bg-slate-800 px-6 py-4 border-b dark:border-slate-700 flex justify-between items-center transition-colors">
+                        <h2 class="font-bold text-lg text-slate-800 dark:text-white" id="list-title">Conteúdo Programático</h2>
+                        <span id="filtered-count" class="text-xs bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-2 py-1 rounded-full">0 itens</span>
                     </div>
                     
-                    <div id="syllabus-container" class="divide-y divide-gray-100">
+                    <div id="syllabus-container" class="divide-y divide-gray-100 dark:divide-slate-700">
                         <!-- Items rendered here -->
                         <div class="p-8 text-center text-gray-400">
                             <i class="fa-solid fa-spinner fa-spin text-2xl"></i>
@@ -252,19 +314,19 @@
 
     <!-- Modal for Notes -->
     <div id="note-modal" class="modal opacity-0 pointer-events-none fixed w-full h-full top-0 left-0 flex items-center justify-center z-50">
-        <div class="modal-overlay absolute w-full h-full bg-gray-900 opacity-50" onclick="closeModal('note-modal')"></div>
-        <div class="modal-container bg-white w-11/12 md:max-w-md mx-auto rounded shadow-lg z-50 overflow-y-auto animate-fade-in-down">
+        <div class="modal-overlay absolute w-full h-full bg-gray-900 opacity-50 dark:opacity-80" onclick="closeModal('note-modal')"></div>
+        <div class="modal-container bg-white dark:bg-slate-800 w-11/12 md:max-w-md mx-auto rounded shadow-lg z-50 overflow-y-auto animate-fade-in-down transition-colors">
             <div class="modal-content py-4 text-left px-6">
                 <div class="flex justify-between items-center pb-3">
-                    <p class="text-xl font-bold text-slate-800">Anotações</p>
-                    <div class="cursor-pointer z-50" onclick="closeModal('note-modal')">
+                    <p class="text-xl font-bold text-slate-800 dark:text-white">Anotações</p>
+                    <div class="cursor-pointer z-50 text-gray-500 dark:text-gray-400" onclick="closeModal('note-modal')">
                         <i class="fa-solid fa-xmark"></i>
                     </div>
                 </div>
-                <p id="modal-topic-title" class="text-sm text-gray-500 mb-4">Tópico...</p>
-                <textarea id="modal-note-input" class="w-full h-40 border rounded p-3 text-sm focus:outline-none focus:border-blue-500" placeholder="Escreva seus resumos, macetes ou links aqui..."></textarea>
+                <p id="modal-topic-title" class="text-sm text-gray-500 dark:text-gray-400 mb-4">Tópico...</p>
+                <textarea id="modal-note-input" class="w-full h-40 border dark:border-slate-600 rounded p-3 text-sm focus:outline-none focus:border-blue-500 bg-white dark:bg-slate-700 dark:text-white dark:placeholder-gray-400" placeholder="Escreva seus resumos, macetes ou links aqui..."></textarea>
                 <div class="flex justify-end pt-4">
-                    <button onclick="saveNote()" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm font-bold">Salvar Nota</button>
+                    <button onclick="saveNote()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm font-bold">Salvar Nota</button>
                 </div>
             </div>
         </div>
@@ -272,18 +334,18 @@
 
     <!-- Modal for Management (Add/Remove) -->
     <div id="manage-modal" class="modal opacity-0 pointer-events-none fixed w-full h-full top-0 left-0 flex items-center justify-center z-50">
-        <div class="modal-overlay absolute w-full h-full bg-gray-900 opacity-50" onclick="closeModal('manage-modal')"></div>
-        <div class="modal-container bg-white w-11/12 md:max-w-2xl mx-auto rounded shadow-lg z-50 overflow-y-auto animate-fade-in-down max-h-[90vh]">
+        <div class="modal-overlay absolute w-full h-full bg-gray-900 opacity-50 dark:opacity-80" onclick="closeModal('manage-modal')"></div>
+        <div class="modal-container bg-white dark:bg-slate-800 w-11/12 md:max-w-2xl mx-auto rounded shadow-lg z-50 overflow-y-auto animate-fade-in-down max-h-[90vh] transition-colors">
             <div class="modal-content py-4 text-left px-6">
-                <div class="flex justify-between items-center pb-3 border-b mb-4">
-                    <p class="text-lg font-bold text-slate-800">Gerenciar Matérias</p>
-                    <div class="cursor-pointer z-50" onclick="closeModal('manage-modal')">
+                <div class="flex justify-between items-center pb-3 border-b dark:border-slate-700 mb-4">
+                    <p class="text-lg font-bold text-slate-800 dark:text-white">Gerenciar Matérias</p>
+                    <div class="cursor-pointer z-50 text-gray-500 dark:text-gray-400" onclick="closeModal('manage-modal')">
                         <i class="fa-solid fa-xmark"></i>
                     </div>
                 </div>
                 
                 <!-- Tabs -->
-                <div class="flex gap-4 border-b mb-4 overflow-x-auto">
+                <div class="flex gap-4 border-b dark:border-slate-700 mb-4 overflow-x-auto">
                     <button onclick="switchTab('tab-add-topic')" id="btn-tab-add-topic" class="pb-2 text-sm tab-active whitespace-nowrap">Novos Tópicos</button>
                     <button onclick="switchTab('tab-add-disc')" id="btn-tab-add-disc" class="pb-2 text-sm tab-inactive whitespace-nowrap">Novas Disciplinas</button>
                     <button onclick="switchTab('tab-del-disc')" id="btn-tab-del-disc" class="pb-2 text-sm tab-inactive whitespace-nowrap">Excluir Disciplinas</button>
@@ -294,13 +356,13 @@
                 <div id="tab-add-topic" class="block">
                     <div class="space-y-4">
                         <div>
-                            <label class="block text-xs font-bold text-gray-500 mb-1">Selecione a Disciplina</label>
-                            <select id="new-topic-disc-select" class="w-full border rounded p-2 text-sm bg-white"></select>
+                            <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">Selecione a Disciplina</label>
+                            <select id="new-topic-disc-select" class="w-full border dark:border-slate-600 rounded p-2 text-sm bg-white dark:bg-slate-700 dark:text-white"></select>
                         </div>
                         <div>
-                            <label class="block text-xs font-bold text-gray-500 mb-1">Lista de Tópicos / Aulas</label>
-                            <p class="text-[10px] text-gray-400 mb-1">Cole a lista abaixo, um item por linha.</p>
-                            <textarea id="new-topic-name" class="w-full border rounded p-2 text-sm h-32" placeholder="Ex:&#10;Crase&#10;Regência Nominal&#10;Inquérito Policial&#10;..."></textarea>
+                            <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">Lista de Tópicos / Aulas</label>
+                            <p class="text-[10px] text-gray-400 dark:text-gray-500 mb-1">Cole a lista abaixo, um item por linha.</p>
+                            <textarea id="new-topic-name" class="w-full border dark:border-slate-600 rounded p-2 text-sm h-32 bg-white dark:bg-slate-700 dark:text-white" placeholder="Ex:&#10;Crase&#10;Regência Nominal&#10;Inquérito Policial&#10;..."></textarea>
                         </div>
                         <button onclick="addNewTopic()" class="w-full bg-green-600 text-white py-2 rounded text-sm font-bold hover:bg-green-700">Adicionar Tópicos</button>
                     </div>
@@ -310,9 +372,9 @@
                 <div id="tab-add-disc" class="hidden">
                     <div class="space-y-4">
                         <div>
-                            <label class="block text-xs font-bold text-gray-500 mb-1">Lista de Novas Disciplinas</label>
-                            <p class="text-[10px] text-gray-400 mb-1">Cole a lista abaixo, um nome por linha.</p>
-                            <textarea id="new-disc-name" class="w-full border rounded p-2 text-sm h-32" placeholder="Ex:&#10;Legislação Extravagante&#10;Redação&#10;Teste Físico..."></textarea>
+                            <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">Lista de Novas Disciplinas</label>
+                            <p class="text-[10px] text-gray-400 dark:text-gray-500 mb-1">Cole a lista abaixo, um nome por linha.</p>
+                            <textarea id="new-disc-name" class="w-full border dark:border-slate-600 rounded p-2 text-sm h-32 bg-white dark:bg-slate-700 dark:text-white" placeholder="Ex:&#10;Legislação Extravagante&#10;Redação&#10;Teste Físico..."></textarea>
                         </div>
                         <button onclick="addNewDiscipline()" class="w-full bg-blue-600 text-white py-2 rounded text-sm font-bold hover:bg-blue-700">Criar Disciplinas</button>
                     </div>
@@ -320,7 +382,7 @@
 
                 <!-- Tab: Delete Discipline -->
                 <div id="tab-del-disc" class="hidden">
-                    <p class="text-xs text-red-500 mb-4 bg-red-50 p-2 rounded">
+                    <p class="text-xs text-red-500 dark:text-red-400 mb-4 bg-red-50 dark:bg-red-900/30 p-2 rounded">
                         <i class="fa-solid fa-triangle-exclamation"></i> Cuidado: Excluir uma disciplina apagará <strong>todos</strong> os tópicos associados a ela.
                     </p>
                     <div id="delete-disc-list" class="space-y-2 max-h-60 overflow-y-auto pr-1">
@@ -332,18 +394,18 @@
                 <div id="tab-del-topic" class="hidden">
                     <div class="space-y-4">
                         <div>
-                            <label class="block text-xs font-bold text-gray-500 mb-1">Filtrar por Disciplina</label>
-                            <select id="del-topic-disc-select" onchange="renderBulkDeleteTopicList()" class="w-full border rounded p-2 text-sm bg-white"></select>
+                            <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">Filtrar por Disciplina</label>
+                            <select id="del-topic-disc-select" onchange="renderBulkDeleteTopicList()" class="w-full border dark:border-slate-600 rounded p-2 text-sm bg-white dark:bg-slate-700 dark:text-white"></select>
                         </div>
 
                         <div>
                             <div class="flex justify-between items-end mb-2">
-                                <label class="block text-xs font-bold text-gray-500">Selecione os tópicos para excluir</label>
-                                <button onclick="toggleSelectAllDelete()" id="btn-select-all-del" class="text-xs text-blue-600 hover:text-blue-800 font-bold bg-blue-50 px-2 py-1 rounded">
+                                <label class="block text-xs font-bold text-gray-500 dark:text-gray-400">Selecione os tópicos para excluir</label>
+                                <button onclick="toggleSelectAllDelete()" id="btn-select-all-del" class="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 font-bold bg-blue-50 dark:bg-blue-900/30 px-2 py-1 rounded">
                                     <i class="fa-regular fa-square-check mr-1"></i> Selecionar Todos
                                 </button>
                             </div>
-                            <div id="bulk-delete-list" class="space-y-0 max-h-60 overflow-y-auto pr-2 border rounded bg-white">
+                            <div id="bulk-delete-list" class="space-y-0 max-h-60 overflow-y-auto pr-2 border dark:border-slate-600 rounded bg-white dark:bg-slate-700 dark:text-gray-200">
                                 <!-- List populated via JS -->
                             </div>
                         </div>
@@ -360,31 +422,31 @@
 
     <!-- Modal for General Settings (Gerenciar Dados) -->
     <div id="settings-modal" class="modal opacity-0 pointer-events-none fixed w-full h-full top-0 left-0 flex items-center justify-center z-50">
-        <div class="modal-overlay absolute w-full h-full bg-gray-900 opacity-50" onclick="closeModal('settings-modal')"></div>
-        <div class="modal-container bg-white w-11/12 md:max-w-md mx-auto rounded shadow-lg z-50 overflow-y-auto animate-fade-in-down">
+        <div class="modal-overlay absolute w-full h-full bg-gray-900 opacity-50 dark:opacity-80" onclick="closeModal('settings-modal')"></div>
+        <div class="modal-container bg-white dark:bg-slate-800 w-11/12 md:max-w-md mx-auto rounded shadow-lg z-50 overflow-y-auto animate-fade-in-down transition-colors">
             <div class="modal-content py-4 text-left px-6">
-                <div class="flex justify-between items-center pb-3 border-b mb-4">
-                    <p class="text-lg font-bold text-slate-800">Gerenciar Dados do Concurso</p>
-                    <div class="cursor-pointer z-50" onclick="closeModal('settings-modal')">
+                <div class="flex justify-between items-center pb-3 border-b dark:border-slate-700 mb-4">
+                    <p class="text-lg font-bold text-slate-800 dark:text-white">Gerenciar Dados do Concurso</p>
+                    <div class="cursor-pointer z-50 text-gray-500 dark:text-gray-400" onclick="closeModal('settings-modal')">
                         <i class="fa-solid fa-xmark"></i>
                     </div>
                 </div>
                 
                 <div class="space-y-4">
                     <div>
-                        <label class="block text-xs font-bold text-gray-500 mb-1">Nome do Concurso</label>
-                        <input type="text" id="config-title" class="w-full border rounded p-2 text-sm bg-gray-50 focus:bg-white" placeholder="Ex: PC-PI 2026">
+                        <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">Nome do Concurso</label>
+                        <input type="text" id="config-title" class="w-full border dark:border-slate-600 rounded p-2 text-sm bg-gray-50 dark:bg-slate-700 focus:bg-white dark:focus:bg-slate-600 dark:text-white" placeholder="Ex: PC-PI 2026">
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-gray-500 mb-1">Cargo / Foco</label>
-                        <input type="text" id="config-role" class="w-full border rounded p-2 text-sm bg-gray-50 focus:bg-white" placeholder="Ex: Oficial Investigador">
+                        <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">Cargo / Foco</label>
+                        <input type="text" id="config-role" class="w-full border dark:border-slate-600 rounded p-2 text-sm bg-gray-50 dark:bg-slate-700 focus:bg-white dark:focus:bg-slate-600 dark:text-white" placeholder="Ex: Oficial Investigador">
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-gray-500 mb-1">Data da Prova</label>
-                        <input type="date" id="config-date" class="w-full border rounded p-2 text-sm bg-gray-50 focus:bg-white">
+                        <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">Data da Prova</label>
+                        <input type="date" id="config-date" class="w-full border dark:border-slate-600 rounded p-2 text-sm bg-gray-50 dark:bg-slate-700 focus:bg-white dark:focus:bg-slate-600 dark:text-white">
                     </div>
                     
-                    <div class="pt-4 border-t">
+                    <div class="pt-4 border-t dark:border-slate-700">
                         <button onclick="saveSettings()" class="w-full bg-blue-600 text-white py-2 rounded text-sm font-bold hover:bg-blue-700 shadow-md">
                             Salvar Alterações
                         </button>
@@ -394,37 +456,37 @@
         </div>
     </div>
 
-    <!-- NEW: Modal for Cloud Sync -->
+    <!-- Modal for Cloud Sync -->
     <div id="sync-modal" class="modal opacity-0 pointer-events-none fixed w-full h-full top-0 left-0 flex items-center justify-center z-50">
-        <div class="modal-overlay absolute w-full h-full bg-gray-900 opacity-50" onclick="closeModal('sync-modal')"></div>
-        <div class="modal-container bg-white w-11/12 md:max-w-md mx-auto rounded shadow-lg z-50 overflow-y-auto animate-fade-in-down">
+        <div class="modal-overlay absolute w-full h-full bg-gray-900 opacity-50 dark:opacity-80" onclick="closeModal('sync-modal')"></div>
+        <div class="modal-container bg-white dark:bg-slate-800 w-11/12 md:max-w-md mx-auto rounded shadow-lg z-50 overflow-y-auto animate-fade-in-down transition-colors">
             <div class="modal-content py-6 text-left px-6">
-                <div class="flex justify-between items-center pb-3 border-b mb-4">
-                    <p class="text-lg font-bold text-slate-800 flex items-center gap-2"><i class="fa-solid fa-cloud text-blue-500"></i> Configuração de Nuvem</p>
-                    <div class="cursor-pointer z-50" onclick="closeModal('sync-modal')">
+                <div class="flex justify-between items-center pb-3 border-b dark:border-slate-700 mb-4">
+                    <p class="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2"><i class="fa-solid fa-cloud text-blue-500"></i> Configuração de Nuvem</p>
+                    <div class="cursor-pointer z-50 text-gray-500 dark:text-gray-400" onclick="closeModal('sync-modal')">
                         <i class="fa-solid fa-xmark"></i>
                     </div>
                 </div>
                 
                 <div class="space-y-4">
-                    <div class="p-3 bg-yellow-50 border border-yellow-200 rounded text-xs text-yellow-800">
+                    <div class="p-3 bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-700 rounded text-xs text-yellow-800 dark:text-yellow-400">
                         <p class="font-bold mb-1"><i class="fa-solid fa-triangle-exclamation"></i> Atenção GitHub Pages:</p>
                         <p>Para sincronizar entre dispositivos, você precisa criar um projeto gratuito no Firebase e colar a configuração abaixo. Se não configurar, o planner funcionará apenas no modo <strong>Offline (neste dispositivo)</strong>.</p>
                     </div>
 
                     <div id="sync-active-ui" class="hidden">
-                        <div class="bg-green-50 border border-green-200 rounded p-4 mb-4">
-                            <p class="text-green-800 font-bold text-sm mb-2"><i class="fa-solid fa-check-circle"></i> Sincronização Ativa!</p>
-                            <p class="text-xs text-green-700">Seu ID de Sincronização:</p>
+                        <div class="bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 rounded p-4 mb-4">
+                            <p class="text-green-800 dark:text-green-400 font-bold text-sm mb-2"><i class="fa-solid fa-check-circle"></i> Sincronização Ativa!</p>
+                            <p class="text-xs text-green-700 dark:text-green-500">Seu ID de Sincronização:</p>
                             <div class="flex gap-2 mt-1">
-                                <input type="text" id="current-sync-id-display" readonly class="w-full bg-white border border-green-300 rounded p-2 text-lg font-mono font-bold text-center tracking-widest text-slate-700 select-all">
+                                <input type="text" id="current-sync-id-display" readonly class="w-full bg-white dark:bg-slate-700 border border-green-300 dark:border-green-700 rounded p-2 text-lg font-mono font-bold text-center tracking-widest text-slate-700 dark:text-white select-all">
                                 <button onclick="copySyncId()" class="bg-green-600 text-white px-3 rounded hover:bg-green-700 transition" title="Copiar"><i class="fa-regular fa-copy"></i></button>
                             </div>
                         </div>
-                        <div class="border-t pt-4">
-                            <p class="text-sm font-bold text-gray-700 mb-2">Carregar dados de outro aparelho:</p>
+                        <div class="border-t dark:border-slate-700 pt-4">
+                            <p class="text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Carregar dados de outro aparelho:</p>
                             <div class="flex gap-2">
-                                <input type="text" id="input-sync-id" class="w-full border rounded p-2 text-sm font-mono uppercase" placeholder="Cole o ID aqui...">
+                                <input type="text" id="input-sync-id" class="w-full border dark:border-slate-600 rounded p-2 text-sm font-mono uppercase bg-white dark:bg-slate-700 dark:text-white" placeholder="Cole o ID aqui...">
                                 <button onclick="loadFromSyncId()" class="bg-blue-600 text-white px-4 py-2 rounded text-sm font-bold hover:bg-blue-700 whitespace-nowrap">
                                     Carregar
                                 </button>
@@ -433,8 +495,8 @@
                     </div>
 
                     <div id="sync-setup-ui">
-                        <label class="block text-xs font-bold text-gray-500 mb-1">Cole sua Configuração do Firebase (JSON ou Objeto JS):</label>
-                        <textarea id="firebase-config-input" class="w-full h-32 border rounded p-2 text-xs font-mono bg-slate-50" placeholder='{ "apiKey": "...", "authDomain": "...", "projectId": "..." }'></textarea>
+                        <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">Cole sua Configuração do Firebase (JSON ou Objeto JS):</label>
+                        <textarea id="firebase-config-input" class="w-full h-32 border dark:border-slate-600 rounded p-2 text-xs font-mono bg-slate-50 dark:bg-slate-700 dark:text-white" placeholder='{ "apiKey": "...", "authDomain": "...", "projectId": "..." }'></textarea>
                         <button onclick="saveFirebaseConfig()" class="w-full bg-blue-600 text-white py-2 rounded text-sm font-bold hover:bg-blue-700 mt-2">Ativar Sincronização</button>
                     </div>
                 </div>
@@ -457,12 +519,42 @@
         let useFirebase = false;
         let currentSyncId = localStorage.getItem('pcpi_sync_id') || generateId();
         let unsubscribeSnapshot = null;
+        let expandedDisciplines = new Set(); 
 
-        // --- CONSTANTES DO USUÁRIO (Preenchido via Modal ou LocalStorage) ---
+        // --- THEME LOGIC ---
+        window.toggleTheme = () => {
+            const isDark = document.documentElement.classList.toggle('dark');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            updateThemeIcon();
+        };
+
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+            updateThemeIcon();
+        }
+
+        function updateThemeIcon() {
+            const icon = document.getElementById('theme-icon');
+            if(document.documentElement.classList.contains('dark')) {
+                icon.classList.remove('fa-sun');
+                icon.classList.add('fa-moon');
+            } else {
+                icon.classList.remove('fa-moon');
+                icon.classList.add('fa-sun');
+            }
+        }
+
+        // --- CONSTANTES DO USUÁRIO ---
         let userFirebaseConfig = localStorage.getItem('pcpi_firebase_config');
 
         // --- INITIALIZATION ---
         window.addEventListener('load', () => {
+            initTheme();
             initApp();
         });
 
@@ -473,12 +565,11 @@
                 if(loader && !loader.classList.contains('hidden-force')) {
                     console.log("Tempo limite de carregamento. Forçando modo Offline.");
                     loader.classList.add('hidden-force');
-                    if(appState.items.length === 0) loadDataOffline(); // Ensure data loads
+                    if(appState.items.length === 0) loadDataOffline(); 
                     updateStatusIndicator(false);
                 }
             }, 4000);
 
-            // Try to init Firebase if config exists
             if (userFirebaseConfig) {
                 try {
                     const config = JSON.parse(userFirebaseConfig);
@@ -497,8 +588,6 @@
                     updateSyncUI(false);
                 }
             } else {
-                // Offline Mode
-                console.log("Nenhuma configuração de nuvem. Iniciando Offline.");
                 useFirebase = false;
                 loadDataOffline();
                 document.getElementById('loading-overlay').classList.add('hidden-force');
@@ -556,7 +645,7 @@
             { id: 'medlegal', name: 'Medicina Legal' }
         ];
 
-        // Compact Syllabus for brevity
+        // Compact Syllabus
         const initialSyllabus = [
             { d: 'port', t: 'Interpretação e Compreensão de texto / Tipologia Textual' },
             { d: 'port', t: 'Coesão, coerência e intertextualidade' },
@@ -652,7 +741,7 @@
                 reviews: [],
                 note: ''
             }));
-            saveDataInternal(); // Save offline initially
+            saveDataInternal(); 
         }
 
         function setupRealtimeListener(id) {
@@ -672,7 +761,6 @@
                     renderHeader();
                     initCountdown();
                 } else {
-                    // Sync init: if we have local data, upload it. If not, defaults.
                     if (appState.items.length === 0) initDefaultState();
                     saveDataInternal();
                 }
@@ -686,7 +774,6 @@
         }
 
         async function saveDataInternal() {
-            // Always save to localStorage as backup
             localStorage.setItem('pcpi_planner_v1', JSON.stringify(appState));
 
             if (useFirebase && db && auth.currentUser) {
@@ -698,7 +785,6 @@
                     });
                 } catch (e) {
                     console.error("Save error:", e);
-                    // Don't show toast on every save error to avoid spam, just status
                     updateStatusIndicator(false);
                 }
             }
@@ -713,29 +799,19 @@
             let input = document.getElementById('firebase-config-input').value.trim();
             if (!input) return alert("Cole a configuração.");
             
-            // Remove 'const firebaseConfig =' if user pasted it
             if(input.indexOf('=') > -1) {
                 input = input.substring(input.indexOf('=') + 1).trim();
             }
-            // Remove trailing semicolon
             if(input.endsWith(';')) {
                 input = input.slice(0, -1).trim();
             }
 
             try {
-                // Try strict JSON parse first
                 JSON.parse(input);
             } catch (e) {
                 try {
-                    // Try to fix unquoted keys (common in JS objects)
-                    // Regex matches keys that start after {, comma or start of line
-                    const fixed = input.replace(/(^|{|,)\s*([a-zA-Z0-9_]+)\s*:/g, '$1"$2":')
-                                       .replace(/'/g, '"'); // Ensure double quotes for values
-                    
-                    // Validate if it parsed correctly
+                    const fixed = input.replace(/(^|{|,)\s*([a-zA-Z0-9_]+)\s*:/g, '$1"$2":').replace(/'/g, '"');
                     const obj = JSON.parse(fixed);
-                    
-                    // If we got here, it's valid JSON now. Save the stringified version.
                     input = JSON.stringify(obj);
                 } catch (e2) {
                     console.error(e2);
@@ -788,7 +864,7 @@
             document.getElementById('new-disc-name').value = '';
             showToast(`${addedCount} disciplinas criadas!`, 'success');
             renderAll();
-            openManageModal(); // Refresh modal
+            openManageModal(); 
             switchTab('tab-add-topic');
         };
 
@@ -889,7 +965,6 @@
             }
         };
 
-        // --- NEW RESET FUNCTIONS ---
         window.resetHours = () => {
             if(confirm('Zerar o banco de horas?')) {
                 appState.totalHours = 0;
@@ -911,6 +986,15 @@
                 renderAll();
                 showToast('Progresso resetado com sucesso.', 'success');
             }
+        };
+
+        window.toggleDiscipline = (id) => {
+            if(expandedDisciplines.has(id)) {
+                expandedDisciplines.delete(id);
+            } else {
+                expandedDisciplines.add(id);
+            }
+            renderSyllabus();
         };
 
         // --- UI FUNCTIONS ---
@@ -950,19 +1034,19 @@
                 const completed = items.filter(i => i.status === 'concluido').length;
                 const percent = total === 0 ? 0 : Math.round((completed / total) * 100);
                 const card = document.createElement('div');
-                card.className = "bg-white border rounded-lg p-4 shadow-sm transition cursor-pointer relative overflow-hidden group disc-card";
+                card.className = "bg-white dark:bg-slate-800 border dark:border-slate-700 rounded-lg p-4 shadow-sm transition cursor-pointer relative overflow-hidden group disc-card";
                 card.onclick = () => filterByDisciplineFromCard(disc.id);
                 card.innerHTML = `
                     <div class="flex justify-between items-end mb-2">
-                        <h4 class="font-bold text-slate-700 text-sm truncate pr-2 flex-1">${disc.name}</h4>
-                        <span class="text-xs font-bold ${percent === 100 ? 'text-green-600' : 'text-blue-600'}">${percent}%</span>
+                        <h4 class="font-bold text-slate-700 dark:text-gray-200 text-sm truncate pr-2 flex-1">${disc.name}</h4>
+                        <span class="text-xs font-bold ${percent === 100 ? 'text-green-600 dark:text-green-400' : 'text-blue-600 dark:text-blue-400'}">${percent}%</span>
                     </div>
-                    <div class="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
-                        <div class="bg-blue-500 h-2 rounded-full transition-all duration-700 ease-out" style="width: ${percent}%"></div>
+                    <div class="w-full bg-gray-100 dark:bg-slate-700 rounded-full h-2 overflow-hidden">
+                        <div class="bg-blue-500 dark:bg-blue-600 h-2 rounded-full transition-all duration-700 ease-out" style="width: ${percent}%"></div>
                     </div>
                     <div class="flex justify-between items-center mt-3">
-                        <span class="text-[10px] text-gray-400 font-medium uppercase tracking-wide">Progresso</span>
-                        <span class="text-[10px] text-gray-500 font-bold">${completed}/${total}</span>
+                        <span class="text-[10px] text-gray-400 dark:text-gray-500 font-medium uppercase tracking-wide">Progresso</span>
+                        <span class="text-[10px] text-gray-500 dark:text-gray-400 font-bold">${completed}/${total}</span>
                     </div>
                 `;
                 container.appendChild(card);
@@ -970,6 +1054,7 @@
         }
 
         window.filterByDisciplineFromCard = (id) => {
+            expandedDisciplines.add(id);
             currentFilterDiscipline = id;
             document.getElementById('filter-discipline').value = id;
             renderSyllabus();
@@ -1001,7 +1086,7 @@
             document.getElementById('filtered-count').innerText = `${filteredItems.length} itens`;
 
             if (filteredItems.length === 0) {
-                container.innerHTML = `<div class="p-8 text-center text-gray-400">Nenhum tópico encontrado.</div>`;
+                container.innerHTML = `<div class="p-8 text-center text-gray-400 dark:text-gray-500">Nenhum tópico encontrado.</div>`;
                 return;
             }
 
@@ -1011,19 +1096,32 @@
 
             discsToShow.forEach(disc => {
                 const itemsInDisc = filteredItems.filter(i => i.disciplineId === disc.id);
+                
                 if (itemsInDisc.length > 0) {
-                    const header = document.createElement('div');
-                    header.className = 'bg-gray-100 px-6 py-2 text-xs font-bold text-gray-500 uppercase tracking-wider sticky top-0 border-b border-gray-200 z-10';
-                    header.innerText = disc.name;
-                    container.appendChild(header);
+                    const isExpanded = expandedDisciplines.has(disc.id) || currentFilterDiscipline === disc.id; 
+                    
+                    const discContainer = document.createElement('div');
+                    discContainer.className = 'border-b border-gray-200 dark:border-slate-700 last:border-0';
 
+                    const headerBtn = document.createElement('button');
+                    headerBtn.onclick = () => window.toggleDiscipline(disc.id);
+                    headerBtn.className = 'w-full bg-gray-50 dark:bg-slate-800 hover:bg-gray-100 dark:hover:bg-slate-700 px-6 py-3 flex justify-between items-center text-left focus:outline-none transition';
+                    headerBtn.innerHTML = `
+                        <span class="text-xs font-bold text-gray-600 dark:text-gray-300 uppercase tracking-wider">${disc.name} <span class="text-gray-400 dark:text-gray-500 ml-2 font-normal normal-case">(${itemsInDisc.length})</span></span>
+                        <i class="fa-solid fa-chevron-down text-gray-400 dark:text-gray-500 text-xs accordion-icon ${isExpanded ? 'rotate' : ''}"></i>
+                    `;
+                    discContainer.appendChild(headerBtn);
+
+                    const contentDiv = document.createElement('div');
+                    contentDiv.className = `accordion-content ${isExpanded ? 'open' : ''}`;
+                    
                     itemsInDisc.forEach(item => {
                         const el = document.createElement('div');
                         let statusClass = 'status-pendente';
                         if (item.status === 'estudando') statusClass = 'status-estudo';
                         if (item.status === 'concluido') statusClass = 'status-concluido';
 
-                        el.className = `p-4 hover:bg-gray-50 transition flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-50 ${statusClass}`;
+                        el.className = `p-4 hover:bg-gray-50 dark:hover:bg-slate-700/50 transition flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-t border-gray-100 dark:border-slate-700/50 ${statusClass}`;
                         
                         let reviewsHtml = '';
                         if (item.status === 'concluido') {
@@ -1032,14 +1130,14 @@
                                 const rDate = new Date(r.date);
                                 const isDue = rDate.setHours(0,0,0,0) <= today;
                                 const dateStr = new Date(r.date).toLocaleDateString('pt-BR', {day:'2-digit', month:'2-digit'});
-                                let colorClass = 'bg-gray-200 text-gray-400';
-                                if (r.done) colorClass = 'bg-green-100 text-green-700 border border-green-300';
-                                else if (isDue) colorClass = 'bg-yellow-100 text-yellow-700 border border-yellow-400 animate-pulse font-bold';
-                                else colorClass = 'bg-blue-50 text-blue-600 border border-blue-200';
+                                let colorClass = 'bg-gray-200 dark:bg-slate-700 text-gray-400 dark:text-gray-500';
+                                if (r.done) colorClass = 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border border-green-300 dark:border-green-800';
+                                else if (isDue) colorClass = 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 border border-yellow-400 dark:border-yellow-700 animate-pulse font-bold';
+                                else colorClass = 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800';
 
                                 reviewsHtml += `
                                     <div class="flex flex-col items-center cursor-pointer" onclick="toggleReview(${item.id}, ${idx})" title="${dateStr}">
-                                        <span class="text-[10px] uppercase font-bold text-gray-500">${r.label}</span>
+                                        <span class="text-[10px] uppercase font-bold text-gray-500 dark:text-gray-400">${r.label}</span>
                                         <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs ${colorClass}">
                                             ${r.done ? '<i class="fa-solid fa-check"></i>' : dateStr}
                                         </div>
@@ -1050,20 +1148,20 @@
                         }
 
                         el.innerHTML = `
-                            <div class="flex-1">
+                            <div class="flex-1 pl-2">
                                 <div class="flex items-start justify-between">
-                                    <span class="text-sm font-medium text-slate-700">${item.topic}</span>
+                                    <span class="text-sm font-medium text-slate-700 dark:text-gray-200">${item.topic}</span>
                                     <div class="flex items-center gap-2 ml-2">
-                                        <button onclick="openNoteModal(${item.id})" class="text-gray-400 hover:text-blue-500" title="Anotações">
-                                            <i class="fa-regular fa-pen-to-square"></i> ${item.note ? '<i class="fa-solid fa-circle text-[8px] text-blue-500 align-top"></i>' : ''}
+                                        <button onclick="openNoteModal(${item.id})" class="text-gray-400 dark:text-gray-500 hover:text-blue-500 dark:hover:text-blue-400" title="Anotações">
+                                            <i class="fa-regular fa-pen-to-square"></i> ${item.note ? '<i class="fa-solid fa-circle text-[8px] text-blue-500 dark:text-blue-400 align-top"></i>' : ''}
                                         </button>
-                                        <button onclick="deleteTopic(${item.id})" class="text-gray-300 hover:text-red-500" title="Excluir Tópico">
+                                        <button onclick="deleteTopic(${item.id})" class="text-gray-300 dark:text-gray-600 hover:text-red-500 dark:hover:text-red-400" title="Excluir Tópico">
                                             <i class="fa-solid fa-trash text-xs"></i>
                                         </button>
                                     </div>
                                 </div>
                                 <div class="mt-2">
-                                    <select onchange="updateStatus(${item.id}, this.value)" class="text-xs border rounded p-1 bg-white focus:ring-1 focus:ring-blue-500 ${item.status === 'estudando' ? 'text-blue-600 font-bold' : (item.status === 'concluido' ? 'text-green-600 font-bold' : 'text-gray-600')}">
+                                    <select onchange="updateStatus(${item.id}, this.value)" class="text-xs border dark:border-slate-600 rounded p-1 bg-white dark:bg-slate-700 focus:ring-1 focus:ring-blue-500 ${item.status === 'estudando' ? 'text-blue-600 dark:text-blue-400 font-bold' : (item.status === 'concluido' ? 'text-green-600 dark:text-green-400 font-bold' : 'text-gray-600 dark:text-gray-400')}">
                                         <option value="pendente" ${item.status === 'pendente' ? 'selected' : ''}>Pendente</option>
                                         <option value="estudando" ${item.status === 'estudando' ? 'selected' : ''}>Em Estudo</option>
                                         <option value="concluido" ${item.status === 'concluido' ? 'selected' : ''}>Concluído</option>
@@ -1072,8 +1170,11 @@
                             </div>
                             ${reviewsHtml}
                         `;
-                        container.appendChild(el);
+                        contentDiv.appendChild(el);
                     });
+
+                    discContainer.appendChild(contentDiv);
+                    container.appendChild(discContainer);
                 }
             });
         }
@@ -1096,7 +1197,7 @@
                     labels: ['Concluído', 'Restante'],
                     datasets: [{
                         data: [completed, total - completed],
-                        backgroundColor: ['#10b981', '#e2e8f0'],
+                        backgroundColor: ['#10b981', '#e2e8f0'], // Dark mode colors handled via CSS classes usually, but chart.js needs manual config or CSS var reading. Keeping simple green/gray.
                         borderWidth: 0,
                         cutout: '75%'
                     }]
@@ -1125,7 +1226,7 @@
         function showToast(message, type='info') {
             const container = document.getElementById('toast-container');
             const el = document.createElement('div');
-            const color = type === 'success' ? 'bg-green-600' : (type === 'error' ? 'bg-red-600' : 'bg-slate-800');
+            const color = type === 'success' ? 'bg-green-600' : (type === 'error' ? 'bg-red-600' : 'bg-slate-800 dark:bg-slate-700');
             el.className = `${color} text-white text-sm px-4 py-3 rounded shadow-lg transition transform translate-y-2 opacity-0 flex items-center gap-2`;
             el.innerHTML = `<i class="fa-solid fa-circle-info"></i> ${message}`;
             container.appendChild(el);
@@ -1137,18 +1238,111 @@
         }
 
         // Expose helpers
-        window.openNoteModal = (id) => { currentEditingId = id; const item = appState.items.find(i => i.id === id); document.getElementById('modal-topic-title').innerText = item.topic; document.getElementById('modal-note-input').value = item.note || ''; document.getElementById('note-modal').classList.remove('opacity-0', 'pointer-events-none'); document.body.classList.add('modal-active'); };
-        window.closeModal = (id) => { document.getElementById(id).classList.add('opacity-0', 'pointer-events-none'); document.body.classList.remove('modal-active'); if(id==='note-modal') currentEditingId=null; };
-        window.toggleReview = (itemId, reviewIndex) => { const item = appState.items.find(i => i.id === itemId); if (item && item.reviews[reviewIndex]) { item.reviews[reviewIndex].done = !item.reviews[reviewIndex].done; saveDataInternal(); renderSyllabus(); } };
-        window.addStudyHoursInternal = (val) => { appState.totalHours += val; saveDataInternal(); renderProductivity(); showToast(`+${val} horas registradas!`, 'success'); };
-        window.openSyncModal = () => { document.getElementById('sync-modal').classList.remove('opacity-0', 'pointer-events-none'); document.body.classList.add('modal-active'); };
-        window.openManageModal = () => { populateFilterDropdown(); renderDeleteDiscList(); renderBulkDeleteTopicList(); document.getElementById('manage-modal').classList.remove('opacity-0', 'pointer-events-none'); document.body.classList.add('modal-active'); };
-        window.openSettingsModal = () => { document.getElementById('config-title').value = appState.config.title; document.getElementById('config-role').value = appState.config.role; document.getElementById('config-date').value = appState.config.examDate; document.getElementById('settings-modal').classList.remove('opacity-0', 'pointer-events-none'); document.body.classList.add('modal-active'); };
-        window.switchTab = (tabId) => { ['tab-add-topic', 'tab-add-disc', 'tab-del-disc', 'tab-del-topic'].forEach(id => { document.getElementById(id).classList.add('hidden'); document.getElementById('btn-'+id).classList.remove('tab-active'); document.getElementById('btn-'+id).classList.add('tab-inactive'); }); document.getElementById(tabId).classList.remove('hidden'); document.getElementById('btn-'+tabId).classList.add('tab-active'); document.getElementById('btn-'+tabId).classList.remove('tab-inactive'); };
-        window.renderDeleteDiscList = () => { const list = document.getElementById('delete-disc-list'); list.innerHTML = ''; appState.disciplines.forEach(d => { const div = document.createElement('div'); div.className = "flex justify-between items-center bg-gray-50 p-2 rounded border"; div.innerHTML = `<span class="text-sm text-gray-700">${d.name}</span><button onclick="deleteDiscipline('${d.id}')" class="text-red-500 hover:text-red-700 text-sm px-2"><i class="fa-solid fa-trash"></i></button>`; list.appendChild(div); }); };
-        window.renderBulkDeleteTopicList = () => { const list = document.getElementById('bulk-delete-list'); list.innerHTML = ''; const filterDisc = document.getElementById('del-topic-disc-select').value; const discs = filterDisc === 'all' ? appState.disciplines : appState.disciplines.filter(d => d.id === filterDisc); discs.forEach(d => { const items = appState.items.filter(i => i.disciplineId === d.id); if(items.length > 0) { const h = document.createElement('div'); h.className = 'text-[10px] font-bold text-gray-500 uppercase mt-2 mb-1 px-2 py-1 bg-gray-100 border-t border-b sticky top-0 z-10'; h.innerText = d.name; list.appendChild(h); items.forEach(i => { const row = document.createElement('div'); row.className = 'flex items-start gap-2 p-2 hover:bg-gray-50 border-b border-gray-100'; row.innerHTML = `<input type="checkbox" class="delete-topic-checkbox mt-1" value="${i.id}"><label class="text-sm text-gray-700 flex-1">${i.topic}</label>`; list.appendChild(row); }); } }); };
-        window.toggleSelectAllDelete = () => { const cbs = document.querySelectorAll('.delete-topic-checkbox'); const all = Array.from(cbs).every(c => c.checked); cbs.forEach(c => c.checked = !all); };
-        
+        window.openNoteModal = openNoteModal;
+        window.closeModal = closeModal;
+        window.openManageModal = openManageModal;
+        window.openSettingsModal = openSettingsModal;
+        window.switchTab = switchTab;
+        window.renderDeleteDiscList = renderDeleteDiscList;
+        window.renderBulkDeleteTopicList = renderBulkDeleteTopicList;
+        window.toggleSelectAllDelete = toggleSelectAllDelete;
+
+        function openNoteModal(id) {
+            currentEditingId = id;
+            const item = appState.items.find(i => i.id === id);
+            document.getElementById('modal-topic-title').innerText = item.topic;
+            document.getElementById('modal-note-input').value = item.note || '';
+            const modal = document.getElementById('note-modal');
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+            document.body.classList.add('modal-active');
+        }
+
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.classList.add('opacity-0', 'pointer-events-none');
+            document.body.classList.remove('modal-active');
+            if(modalId === 'note-modal') currentEditingId = null;
+        }
+
+        function openManageModal() {
+            populateFilterDropdown(); // Refresh selects
+            renderDeleteDiscList();
+            renderBulkDeleteTopicList();
+            const modal = document.getElementById('manage-modal');
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+            document.body.classList.add('modal-active');
+        }
+
+        function openSettingsModal() {
+            document.getElementById('config-title').value = appState.config.title;
+            document.getElementById('config-role').value = appState.config.role;
+            document.getElementById('config-date').value = appState.config.examDate;
+            const modal = document.getElementById('settings-modal');
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+            document.body.classList.add('modal-active');
+        }
+
+        function switchTab(tabId) {
+            ['tab-add-topic', 'tab-add-disc', 'tab-del-disc', 'tab-del-topic'].forEach(id => {
+                document.getElementById(id).classList.add('hidden');
+                document.getElementById('btn-'+id).classList.remove('tab-active');
+                document.getElementById('btn-'+id).classList.add('tab-inactive');
+            });
+            document.getElementById(tabId).classList.remove('hidden');
+            document.getElementById('btn-'+tabId).classList.add('tab-active');
+            document.getElementById('btn-'+tabId).classList.remove('tab-inactive');
+        }
+
+        function renderDeleteDiscList() {
+            const list = document.getElementById('delete-disc-list');
+            list.innerHTML = '';
+            appState.disciplines.forEach(d => {
+                const div = document.createElement('div');
+                div.className = "flex justify-between items-center bg-gray-50 dark:bg-slate-700/50 p-2 rounded border dark:border-slate-600";
+                div.innerHTML = `<span class="text-sm text-gray-700 dark:text-gray-200">${d.name}</span><button onclick="deleteDiscipline('${d.id}')" class="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 text-sm px-2"><i class="fa-solid fa-trash"></i></button>`;
+                list.appendChild(div);
+            });
+        }
+
+        function renderBulkDeleteTopicList() {
+            const list = document.getElementById('bulk-delete-list');
+            list.innerHTML = '';
+            const filterDisc = document.getElementById('del-topic-disc-select').value;
+            const discsToRender = filterDisc === 'all' ? appState.disciplines : appState.disciplines.filter(d => d.id === filterDisc);
+            let hasItems = false;
+            discsToRender.forEach(disc => {
+                const items = appState.items.filter(i => i.disciplineId === disc.id);
+                if(items.length > 0) {
+                    hasItems = true;
+                    const header = document.createElement('div');
+                    header.className = 'text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase mt-2 mb-1 px-2 py-1 bg-gray-100 dark:bg-slate-800 border-t border-b dark:border-slate-700 sticky top-0 z-10';
+                    header.innerText = disc.name;
+                    list.appendChild(header);
+                    items.forEach(i => {
+                        const row = document.createElement('div');
+                        row.className = 'flex items-start gap-2 p-2 hover:bg-gray-50 dark:hover:bg-slate-700/50 border-b border-gray-100 dark:border-slate-700/50';
+                        row.innerHTML = `<input type="checkbox" class="delete-topic-checkbox mt-1" value="${i.id}"><label class="text-sm text-gray-700 dark:text-gray-300 flex-1">${i.topic}</label>`;
+                        list.appendChild(row);
+                    });
+                }
+            });
+            if(!hasItems) list.innerHTML = '<p class="text-xs text-gray-400 text-center py-4">Nenhum tópico encontrado.</p>';
+            const btn = document.getElementById('btn-select-all-del');
+            if(btn) btn.innerHTML = '<i class="fa-regular fa-square-check mr-1"></i> Selecionar Todos';
+        }
+
+        function toggleSelectAllDelete() {
+            const cbs = document.querySelectorAll('.delete-topic-checkbox');
+            if(cbs.length === 0) return;
+            const allChecked = Array.from(cbs).every(c => c.checked);
+            cbs.forEach(c => c.checked = !allChecked);
+            const btn = document.getElementById('btn-select-all-del');
+            if(btn) {
+                if(!allChecked) btn.innerHTML = '<i class="fa-solid fa-square-check mr-1"></i> Desmarcar Todos';
+                else btn.innerHTML = '<i class="fa-regular fa-square-check mr-1"></i> Selecionar Todos';
+            }
+        }
+
         // Manual form
         document.getElementById('hours-form').addEventListener('submit', (e) => { e.preventDefault(); const val = parseFloat(document.getElementById('study-input').value); if(!isNaN(val)) { document.getElementById('study-input').value=''; addStudyHoursInternal(val); } });
         
