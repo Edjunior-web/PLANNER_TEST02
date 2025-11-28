@@ -1112,10 +1112,15 @@
 
                     const headerBtn = document.createElement('button');
                     headerBtn.onclick = () => window.toggleDiscipline(disc.id);
-                    headerBtn.className = 'w-full bg-gray-50 dark:bg-slate-800 hover:bg-gray-100 dark:hover:bg-slate-700 px-6 py-3 flex justify-between items-center text-left focus:outline-none transition';
+                    // NEW STYLING FOR DISTINCT HEADER
+                    headerBtn.className = 'w-full bg-blue-50 dark:bg-slate-700 hover:bg-blue-100 dark:hover:bg-slate-600 px-6 py-4 flex justify-between items-center text-left focus:outline-none transition border-l-4 border-blue-500 dark:border-blue-400 shadow-sm';
                     headerBtn.innerHTML = `
-                        <span class="text-xs font-bold text-gray-600 dark:text-gray-300 uppercase tracking-wider">${disc.name} <span class="text-gray-400 dark:text-gray-500 ml-2 font-normal normal-case">(${itemsInDisc.length})</span></span>
-                        <i class="fa-solid fa-chevron-down text-gray-400 dark:text-gray-500 text-xs accordion-icon ${isExpanded ? 'rotate' : ''}"></i>
+                        <span class="text-sm font-bold text-slate-800 dark:text-white uppercase tracking-wide flex items-center gap-2">
+                            <i class="fa-solid fa-book text-blue-500/50"></i>
+                            ${disc.name} 
+                            <span class="text-xs bg-blue-200 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-0.5 rounded-full ml-2 font-bold normal-case">${itemsInDisc.length}</span>
+                        </span>
+                        <i class="fa-solid fa-chevron-down text-slate-400 dark:text-slate-300 text-xs accordion-icon ${isExpanded ? 'rotate' : ''}"></i>
                     `;
                     discContainer.appendChild(headerBtn);
 
@@ -1128,7 +1133,8 @@
                         if (item.status === 'estudando') statusClass = 'status-estudo';
                         if (item.status === 'concluido') statusClass = 'status-concluido';
 
-                        el.className = `p-4 hover:bg-gray-50 dark:hover:bg-slate-700/50 transition flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-t border-gray-100 dark:border-slate-700/50 ${statusClass}`;
+                        // NEW STYLING FOR DISTINCT CONTENT
+                        el.className = `p-4 pl-8 hover:bg-gray-50 dark:hover:bg-slate-700/30 transition flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-t border-gray-100 dark:border-slate-700/50 bg-white dark:bg-slate-800 ${statusClass}`;
                         
                         let reviewsHtml = '';
                         if (item.status === 'concluido') {
