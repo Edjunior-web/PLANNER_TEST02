@@ -9,7 +9,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
-            darkMode: 'class', // Habilita modo escuro manual via classe 'dark'
+            darkMode: 'class',
             theme: {
                 extend: {
                     colors: {
@@ -32,7 +32,6 @@
     <style>
         body { font-family: 'Inter', sans-serif; transition: background-color 0.3s ease, color 0.3s ease; }
         
-        /* Glassmorphism Panel - Light Mode */
         .glass-panel {
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
@@ -41,9 +40,8 @@
             transition: background-color 0.3s ease, border-color 0.3s ease;
         }
 
-        /* Glassmorphism Panel - Dark Mode */
         .dark .glass-panel {
-            background: rgba(30, 41, 59, 0.95); /* slate-800 */
+            background: rgba(30, 41, 59, 0.95);
             border: 1px solid rgba(255, 255, 255, 0.05);
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
         }
@@ -52,75 +50,39 @@
         .status-estudo { border-left: 4px solid #3b82f6; }
         .status-concluido { border-left: 4px solid #10b981; }
         
-        /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         .dark ::-webkit-scrollbar-thumb { background: #475569; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
-        .modal {
-            transition: opacity 0.25s ease;
-        }
-        body.modal-active {
-            overflow-x: hidden;
-            overflow-y: visible !important;
-        }
+        .modal { transition: opacity 0.25s ease; }
+        body.modal-active { overflow-x: hidden; overflow-y: visible !important; }
         
-        .tab-active {
-            border-bottom: 2px solid #2563eb;
-            color: #2563eb;
-            font-weight: 600;
-        }
-        .dark .tab-active {
-            color: #60a5fa; /* lighter blue for dark mode */
-            border-bottom-color: #60a5fa;
-        }
-        
-        .tab-inactive {
-            color: #6b7280;
-        }
-        .dark .tab-inactive {
-            color: #94a3b8;
-        }
+        .tab-active { border-bottom: 2px solid #2563eb; color: #2563eb; font-weight: 600; }
+        .dark .tab-active { color: #60a5fa; border-bottom-color: #60a5fa; }
+        .tab-inactive { color: #6b7280; }
+        .dark .tab-inactive { color: #94a3b8; }
 
-        .disc-card:hover {
-            transform: translateY(-2px);
-            border-color: #3b82f6;
-        }
+        .disc-card:hover { transform: translateY(-2px); border-color: #3b82f6; }
         
-        /* Loading Overlay */
         #loading-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(255,255,255,0.95); z-index: 9999;
             display: flex; justify-content: center; align-items: center;
             transition: opacity 0.5s ease;
         }
-        .dark #loading-overlay {
-            background: rgba(15, 23, 42, 0.95); /* slate-900 */
-        }
-        
-        .hidden-force {
-            display: none !important;
-        }
+        .dark #loading-overlay { background: rgba(15, 23, 42, 0.95); }
+        .hidden-force { display: none !important; }
 
         /* Accordion Animations */
         .accordion-content {
             transition: max-height 0.3s ease-in-out, opacity 0.3s ease-in-out;
-            max-height: 0;
-            opacity: 0;
-            overflow: hidden;
+            max-height: 0; opacity: 0; overflow: hidden;
         }
-        .accordion-content.open {
-            max-height: 2000px;
-            opacity: 1;
-        }
-        .accordion-icon {
-            transition: transform 0.3s ease;
-        }
-        .accordion-icon.rotate {
-            transform: rotate(180deg);
-        }
+        .accordion-content.open { max-height: 5000px; opacity: 1; }
+        .accordion-icon { transition: transform 0.3s ease; }
+        .accordion-icon.rotate { transform: rotate(180deg); }
     </style>
 </head>
 <body class="text-gray-800 bg-[#f3f4f6] dark:bg-slate-900 dark:text-gray-200">
@@ -129,7 +91,6 @@
     <div id="loading-overlay" class="flex flex-col items-center justify-center">
         <i class="fa-solid fa-cloud-arrow-down fa-bounce text-4xl text-blue-600 dark:text-blue-400 mb-4"></i>
         <p class="text-sm text-gray-600 dark:text-gray-300 font-semibold" id="loading-text">Iniciando Planner...</p>
-        <p class="text-xs text-gray-400 dark:text-gray-500 mt-2">Se demorar, verificaremos o modo offline.</p>
     </div>
 
     <!-- Navbar -->
@@ -144,7 +105,6 @@
             </div>
             
             <div class="flex items-center gap-6">
-                <!-- Desktop Header Info -->
                 <div class="hidden md:flex items-center gap-6 text-right">
                     <div class="cursor-pointer hover:bg-slate-800 dark:hover:bg-slate-900 p-1 rounded transition" onclick="openSyncModal()" title="Status da Conexão">
                         <p class="text-[10px] text-slate-400 uppercase tracking-wider flex items-center justify-end gap-1">
@@ -162,7 +122,6 @@
                     </div>
                 </div>
 
-                <!-- Theme Toggle Button -->
                 <button onclick="toggleTheme()" class="w-10 h-10 rounded-full bg-slate-800 dark:bg-slate-900 hover:bg-slate-700 dark:hover:bg-slate-800 text-yellow-400 dark:text-blue-300 transition flex items-center justify-center border border-slate-700 dark:border-slate-800 shadow-sm" title="Alternar Tema">
                     <i id="theme-icon" class="fa-solid fa-sun"></i>
                 </button>
@@ -171,7 +130,6 @@
     </nav>
 
     <div class="container mx-auto px-4 py-6 space-y-6">
-
         <!-- Countdown Mobile -->
         <div class="md:hidden bg-slate-800 dark:bg-slate-950 text-white p-3 rounded-lg text-sm shadow flex flex-col gap-2">
             <div class="flex justify-between items-center">
@@ -184,9 +142,8 @@
             </div>
         </div>
 
-        <!-- Dashboard Section: Global Stats -->
+        <!-- Dashboard Section -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            
             <!-- Progress Card -->
             <div class="glass-panel rounded-xl p-4 flex items-center justify-between">
                 <div>
@@ -214,7 +171,6 @@
                         <span id="total-hours" class="text-3xl font-bold text-slate-800 dark:text-white">0</span>
                         <span class="text-xs text-gray-500 dark:text-gray-400">hrs líquidas</span>
                     </div>
-                    
                     <form id="hours-form" class="flex-1 flex gap-2">
                         <input type="number" id="study-input" step="0.5" min="0" placeholder="Hrs hoje..." class="w-full border dark:border-slate-600 rounded p-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-slate-700 dark:text-white dark:placeholder-gray-400">
                         <button type="submit" class="bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500 text-white px-3 py-1 rounded text-xs transition font-bold">
@@ -225,7 +181,7 @@
             </div>
         </div>
 
-        <!-- Dashboard Section: Discipline Cards -->
+        <!-- Discipline Cards -->
         <div class="glass-panel rounded-xl p-6">
             <h3 class="text-slate-700 dark:text-slate-200 text-sm font-bold mb-4 flex items-center gap-2">
                 <i class="fa-solid fa-layer-group text-blue-500"></i> Suas Disciplinas
@@ -241,33 +197,24 @@
             
             <!-- Filters Sidebar -->
             <div class="lg:col-span-1 space-y-4">
-                
-                <!-- Manage Content Button -->
                 <button onclick="openManageModal()" class="w-full glass-panel rounded-xl p-3 text-slate-700 dark:text-slate-200 font-bold hover:bg-white dark:hover:bg-slate-700 hover:text-blue-600 dark:hover:text-blue-400 transition flex items-center justify-center gap-2 text-sm shadow-sm border border-transparent hover:border-blue-200 dark:hover:border-slate-600">
                     <i class="fa-solid fa-book-open"></i> Gerenciar Matérias
                 </button>
-
-                <!-- Manage Data Button -->
                 <button onclick="openSettingsModal()" class="w-full glass-panel rounded-xl p-3 text-slate-700 dark:text-slate-200 font-bold hover:bg-white dark:hover:bg-slate-700 hover:text-blue-600 dark:hover:text-blue-400 transition flex items-center justify-center gap-2 text-sm shadow-sm border border-transparent hover:border-blue-200 dark:hover:border-slate-600">
                     <i class="fa-solid fa-pen-to-square"></i> Gerenciar Dados
                 </button>
-
-                <!-- Sync Button -->
                 <button onclick="openSyncModal()" class="w-full glass-panel rounded-xl p-3 text-slate-700 dark:text-slate-200 font-bold hover:bg-white dark:hover:bg-slate-700 hover:text-green-600 dark:hover:text-green-400 transition flex items-center justify-center gap-2 text-sm shadow-sm border border-transparent hover:border-green-200 dark:hover:border-green-800">
                     <i class="fa-solid fa-rotate"></i> Configurar Nuvem
                 </button>
 
                 <div class="glass-panel rounded-xl p-4 sticky top-20">
                     <h4 class="font-bold text-slate-700 dark:text-slate-200 mb-3 text-sm"><i class="fa-solid fa-filter mr-2"></i>Filtros</h4>
-                    
                     <div class="space-y-2">
                         <label class="text-xs font-semibold text-gray-500 dark:text-gray-400">Disciplina Atual</label>
                         <select id="filter-discipline" class="w-full border dark:border-slate-600 rounded p-2 text-sm bg-white dark:bg-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
                             <option value="all">Todas as Disciplinas</option>
-                            <!-- Populated via JS -->
                         </select>
                     </div>
-
                     <div class="space-y-2 mt-4">
                         <label class="text-xs font-semibold text-gray-500 dark:text-gray-400">Status</label>
                         <div class="flex flex-col gap-2">
@@ -280,7 +227,6 @@
                             </button>
                         </div>
                     </div>
-
                     <div class="mt-8 pt-4 border-t dark:border-slate-700 flex flex-col gap-2">
                         <button onclick="exportData()" class="text-xs text-blue-600 dark:text-blue-400 hover:underline text-left"><i class="fa-solid fa-download"></i> Backup (Arquivo JSON)</button>
                         <label class="text-xs text-blue-600 dark:text-blue-400 hover:underline cursor-pointer text-left">
@@ -292,7 +238,7 @@
                 </div>
             </div>
 
-            <!-- Syllabus List -->
+            <!-- Syllabus List (Hierarchical) -->
             <div class="lg:col-span-3">
                 <div class="glass-panel rounded-xl overflow-hidden min-h-[500px]">
                     <div class="bg-gray-50 dark:bg-slate-800 px-6 py-4 border-b dark:border-slate-700 flex justify-between items-center transition-colors">
@@ -332,7 +278,7 @@
         </div>
     </div>
 
-    <!-- Modal for Management (Add/Remove) -->
+    <!-- Modal for Management -->
     <div id="manage-modal" class="modal opacity-0 pointer-events-none fixed w-full h-full top-0 left-0 flex items-center justify-center z-50">
         <div class="modal-overlay absolute w-full h-full bg-gray-900 opacity-50 dark:opacity-80" onclick="closeModal('manage-modal')"></div>
         <div class="modal-container bg-white dark:bg-slate-800 w-11/12 md:max-w-2xl mx-auto rounded shadow-lg z-50 overflow-y-auto animate-fade-in-down max-h-[90vh] transition-colors">
@@ -344,27 +290,49 @@
                     </div>
                 </div>
                 
-                <!-- Tabs -->
                 <div class="flex gap-4 border-b dark:border-slate-700 mb-4 overflow-x-auto">
                     <button onclick="switchTab('tab-add-topic')" id="btn-tab-add-topic" class="pb-2 text-sm tab-active whitespace-nowrap">Novos Tópicos</button>
-                    <button onclick="switchTab('tab-add-disc')" id="btn-tab-add-disc" class="pb-2 text-sm tab-inactive whitespace-nowrap">Novas Disciplinas</button>
+                    <button onclick="switchTab('tab-add-lesson')" id="btn-tab-add-lesson" class="pb-2 text-sm tab-inactive whitespace-nowrap">Nova Aula</button>
+                    <button onclick="switchTab('tab-add-disc')" id="btn-tab-add-disc" class="pb-2 text-sm tab-inactive whitespace-nowrap">Nova Disciplina</button>
                     <button onclick="switchTab('tab-del-disc')" id="btn-tab-del-disc" class="pb-2 text-sm tab-inactive whitespace-nowrap">Excluir Disciplinas</button>
+                    <button onclick="switchTab('tab-del-lesson')" id="btn-tab-del-lesson" class="pb-2 text-sm tab-inactive whitespace-nowrap text-orange-500">Excluir Aulas</button>
                     <button onclick="switchTab('tab-del-topic')" id="btn-tab-del-topic" class="pb-2 text-sm tab-inactive whitespace-nowrap text-red-500">Excluir Tópicos</button>
                 </div>
 
                 <!-- Tab: Add Topic -->
                 <div id="tab-add-topic" class="block">
                     <div class="space-y-4">
-                        <div>
-                            <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">Selecione a Disciplina</label>
-                            <select id="new-topic-disc-select" class="w-full border dark:border-slate-600 rounded p-2 text-sm bg-white dark:bg-slate-700 dark:text-white"></select>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">Disciplina</label>
+                                <select id="new-topic-disc-select" onchange="populateLessonSelect(this.value, 'new-topic-lesson-select')" class="w-full border dark:border-slate-600 rounded p-2 text-sm bg-white dark:bg-slate-700 dark:text-white"></select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">Aula</label>
+                                <select id="new-topic-lesson-select" class="w-full border dark:border-slate-600 rounded p-2 text-sm bg-white dark:bg-slate-700 dark:text-white"></select>
+                            </div>
                         </div>
                         <div>
-                            <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">Lista de Tópicos / Aulas</label>
+                            <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">Lista de Tópicos</label>
                             <p class="text-[10px] text-gray-400 dark:text-gray-500 mb-1">Cole a lista abaixo, um item por linha.</p>
-                            <textarea id="new-topic-name" class="w-full border dark:border-slate-600 rounded p-2 text-sm h-32 bg-white dark:bg-slate-700 dark:text-white" placeholder="Ex:&#10;Crase&#10;Regência Nominal&#10;Inquérito Policial&#10;..."></textarea>
+                            <textarea id="new-topic-name" class="w-full border dark:border-slate-600 rounded p-2 text-sm h-24 bg-white dark:bg-slate-700 dark:text-white" placeholder="Ex:&#10;Crase&#10;Regência Nominal..."></textarea>
                         </div>
                         <button onclick="addNewTopic()" class="w-full bg-green-600 text-white py-2 rounded text-sm font-bold hover:bg-green-700">Adicionar Tópicos</button>
+                    </div>
+                </div>
+
+                <!-- Tab: Add Lesson -->
+                <div id="tab-add-lesson" class="hidden">
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">Selecione a Disciplina</label>
+                            <select id="new-lesson-disc-select" class="w-full border dark:border-slate-600 rounded p-2 text-sm bg-white dark:bg-slate-700 dark:text-white"></select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">Nome da Aula</label>
+                            <input type="text" id="new-lesson-name" class="w-full border dark:border-slate-600 rounded p-2 text-sm bg-white dark:bg-slate-700 dark:text-white" placeholder="Ex: Aula 02 - Fonologia">
+                        </div>
+                        <button onclick="addNewLesson()" class="w-full bg-blue-500 text-white py-2 rounded text-sm font-bold hover:bg-blue-600">Adicionar Aula</button>
                     </div>
                 </div>
 
@@ -373,8 +341,7 @@
                     <div class="space-y-4">
                         <div>
                             <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">Lista de Novas Disciplinas</label>
-                            <p class="text-[10px] text-gray-400 dark:text-gray-500 mb-1">Cole a lista abaixo, um nome por linha.</p>
-                            <textarea id="new-disc-name" class="w-full border dark:border-slate-600 rounded p-2 text-sm h-32 bg-white dark:bg-slate-700 dark:text-white" placeholder="Ex:&#10;Legislação Extravagante&#10;Redação&#10;Teste Físico..."></textarea>
+                            <textarea id="new-disc-name" class="w-full border dark:border-slate-600 rounded p-2 text-sm h-32 bg-white dark:bg-slate-700 dark:text-white" placeholder="Ex:&#10;Legislação Extravagante&#10;Redação..."></textarea>
                         </div>
                         <button onclick="addNewDiscipline()" class="w-full bg-blue-600 text-white py-2 rounded text-sm font-bold hover:bg-blue-700">Criar Disciplinas</button>
                     </div>
@@ -382,11 +349,18 @@
 
                 <!-- Tab: Delete Discipline -->
                 <div id="tab-del-disc" class="hidden">
-                    <p class="text-xs text-red-500 dark:text-red-400 mb-4 bg-red-50 dark:bg-red-900/30 p-2 rounded">
-                        <i class="fa-solid fa-triangle-exclamation"></i> Cuidado: Excluir uma disciplina apagará <strong>todos</strong> os tópicos associados a ela.
-                    </p>
-                    <div id="delete-disc-list" class="space-y-2 max-h-60 overflow-y-auto pr-1">
-                        <!-- List populated via JS -->
+                    <p class="text-xs text-red-500 dark:text-red-400 mb-4 bg-red-50 dark:bg-red-900/30 p-2 rounded"><i class="fa-solid fa-triangle-exclamation"></i> Apaga a disciplina e TODAS as suas aulas/tópicos.</p>
+                    <div id="delete-disc-list" class="space-y-2 max-h-60 overflow-y-auto pr-1"></div>
+                </div>
+
+                <!-- Tab: Delete Lesson -->
+                <div id="tab-del-lesson" class="hidden">
+                     <div class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">Filtrar por Disciplina</label>
+                            <select id="del-lesson-disc-select" onchange="renderDeleteLessonList()" class="w-full border dark:border-slate-600 rounded p-2 text-sm bg-white dark:bg-slate-700 dark:text-white"></select>
+                        </div>
+                        <div id="delete-lesson-list" class="space-y-2 max-h-60 overflow-y-auto pr-1 border dark:border-slate-600 rounded p-2"></div>
                     </div>
                 </div>
 
@@ -397,22 +371,14 @@
                             <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">Filtrar por Disciplina</label>
                             <select id="del-topic-disc-select" onchange="renderBulkDeleteTopicList()" class="w-full border dark:border-slate-600 rounded p-2 text-sm bg-white dark:bg-slate-700 dark:text-white"></select>
                         </div>
-
                         <div>
                             <div class="flex justify-between items-end mb-2">
-                                <label class="block text-xs font-bold text-gray-500 dark:text-gray-400">Selecione os tópicos para excluir</label>
-                                <button onclick="toggleSelectAllDelete()" id="btn-select-all-del" class="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 font-bold bg-blue-50 dark:bg-blue-900/30 px-2 py-1 rounded">
-                                    <i class="fa-regular fa-square-check mr-1"></i> Selecionar Todos
-                                </button>
+                                <label class="block text-xs font-bold text-gray-500 dark:text-gray-400">Selecione os tópicos</label>
+                                <button onclick="toggleSelectAllDelete()" id="btn-select-all-del" class="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 font-bold bg-blue-50 dark:bg-blue-900/30 px-2 py-1 rounded"><i class="fa-regular fa-square-check mr-1"></i> Selecionar Todos</button>
                             </div>
-                            <div id="bulk-delete-list" class="space-y-0 max-h-60 overflow-y-auto pr-2 border dark:border-slate-600 rounded bg-white dark:bg-slate-700 dark:text-gray-200">
-                                <!-- List populated via JS -->
-                            </div>
+                            <div id="bulk-delete-list" class="space-y-0 max-h-60 overflow-y-auto pr-2 border dark:border-slate-600 rounded bg-white dark:bg-slate-700 dark:text-gray-200"></div>
                         </div>
-
-                        <button onclick="deleteSelectedTopics()" class="w-full bg-red-600 text-white py-2 rounded text-sm font-bold hover:bg-red-700 shadow-sm">
-                             <i class="fa-solid fa-trash mr-1"></i> Excluir Selecionados
-                        </button>
+                        <button onclick="deleteSelectedTopics()" class="w-full bg-red-600 text-white py-2 rounded text-sm font-bold hover:bg-red-700 shadow-sm"><i class="fa-solid fa-trash mr-1"></i> Excluir Selecionados</button>
                     </div>
                 </div>
 
@@ -420,91 +386,48 @@
         </div>
     </div>
 
-    <!-- Modal for General Settings (Gerenciar Dados) -->
+    <!-- Settings & Sync Modals (Same as before) -->
     <div id="settings-modal" class="modal opacity-0 pointer-events-none fixed w-full h-full top-0 left-0 flex items-center justify-center z-50">
         <div class="modal-overlay absolute w-full h-full bg-gray-900 opacity-50 dark:opacity-80" onclick="closeModal('settings-modal')"></div>
         <div class="modal-container bg-white dark:bg-slate-800 w-11/12 md:max-w-md mx-auto rounded shadow-lg z-50 overflow-y-auto animate-fade-in-down transition-colors">
             <div class="modal-content py-4 text-left px-6">
                 <div class="flex justify-between items-center pb-3 border-b dark:border-slate-700 mb-4">
-                    <p class="text-lg font-bold text-slate-800 dark:text-white">Gerenciar Dados do Concurso</p>
-                    <div class="cursor-pointer z-50 text-gray-500 dark:text-gray-400" onclick="closeModal('settings-modal')">
-                        <i class="fa-solid fa-xmark"></i>
-                    </div>
+                    <p class="text-lg font-bold text-slate-800 dark:text-white">Gerenciar Dados</p>
+                    <div class="cursor-pointer z-50 text-gray-500 dark:text-gray-400" onclick="closeModal('settings-modal')"><i class="fa-solid fa-xmark"></i></div>
                 </div>
-                
                 <div class="space-y-4">
-                    <div>
-                        <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">Nome do Concurso</label>
-                        <input type="text" id="config-title" class="w-full border dark:border-slate-600 rounded p-2 text-sm bg-gray-50 dark:bg-slate-700 focus:bg-white dark:focus:bg-slate-600 dark:text-white" placeholder="Ex: PC-PI 2026">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">Cargo / Foco</label>
-                        <input type="text" id="config-role" class="w-full border dark:border-slate-600 rounded p-2 text-sm bg-gray-50 dark:bg-slate-700 focus:bg-white dark:focus:bg-slate-600 dark:text-white" placeholder="Ex: Oficial Investigador">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">Data da Prova</label>
-                        <input type="date" id="config-date" class="w-full border dark:border-slate-600 rounded p-2 text-sm bg-gray-50 dark:bg-slate-700 focus:bg-white dark:focus:bg-slate-600 dark:text-white">
-                    </div>
-                    
-                    <div class="pt-4 border-t dark:border-slate-700">
-                        <button onclick="saveSettings()" class="w-full bg-blue-600 text-white py-2 rounded text-sm font-bold hover:bg-blue-700 shadow-md">
-                            Salvar Alterações
-                        </button>
-                    </div>
+                    <div><label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">Nome do Concurso</label><input type="text" id="config-title" class="w-full border dark:border-slate-600 rounded p-2 text-sm bg-gray-50 dark:bg-slate-700 dark:text-white"></div>
+                    <div><label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">Cargo</label><input type="text" id="config-role" class="w-full border dark:border-slate-600 rounded p-2 text-sm bg-gray-50 dark:bg-slate-700 dark:text-white"></div>
+                    <div><label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">Data da Prova</label><input type="date" id="config-date" class="w-full border dark:border-slate-600 rounded p-2 text-sm bg-gray-50 dark:bg-slate-700 dark:text-white"></div>
+                    <div class="pt-4 border-t dark:border-slate-700"><button onclick="saveSettings()" class="w-full bg-blue-600 text-white py-2 rounded text-sm font-bold">Salvar</button></div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Modal for Cloud Sync -->
     <div id="sync-modal" class="modal opacity-0 pointer-events-none fixed w-full h-full top-0 left-0 flex items-center justify-center z-50">
         <div class="modal-overlay absolute w-full h-full bg-gray-900 opacity-50 dark:opacity-80" onclick="closeModal('sync-modal')"></div>
         <div class="modal-container bg-white dark:bg-slate-800 w-11/12 md:max-w-md mx-auto rounded shadow-lg z-50 overflow-y-auto animate-fade-in-down transition-colors">
             <div class="modal-content py-6 text-left px-6">
                 <div class="flex justify-between items-center pb-3 border-b dark:border-slate-700 mb-4">
-                    <p class="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2"><i class="fa-solid fa-cloud text-blue-500"></i> Configuração de Nuvem</p>
-                    <div class="cursor-pointer z-50 text-gray-500 dark:text-gray-400" onclick="closeModal('sync-modal')">
-                        <i class="fa-solid fa-xmark"></i>
-                    </div>
+                    <p class="text-lg font-bold text-slate-800 dark:text-white gap-2 flex items-center"><i class="fa-solid fa-cloud text-blue-500"></i> Nuvem</p>
+                    <div class="cursor-pointer z-50 text-gray-500 dark:text-gray-400" onclick="closeModal('sync-modal')"><i class="fa-solid fa-xmark"></i></div>
                 </div>
-                
                 <div class="space-y-4">
-                    <div class="p-3 bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-700 rounded text-xs text-yellow-800 dark:text-yellow-400">
-                        <p class="font-bold mb-1"><i class="fa-solid fa-triangle-exclamation"></i> Atenção GitHub Pages:</p>
-                        <p>Para sincronizar entre dispositivos, você precisa criar um projeto gratuito no Firebase e colar a configuração abaixo. Se não configurar, o planner funcionará apenas no modo <strong>Offline (neste dispositivo)</strong>.</p>
-                    </div>
-
                     <div id="sync-active-ui" class="hidden">
                         <div class="bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 rounded p-4 mb-4">
-                            <p class="text-green-800 dark:text-green-400 font-bold text-sm mb-2"><i class="fa-solid fa-check-circle"></i> Sincronização Ativa!</p>
-                            <p class="text-xs text-green-700 dark:text-green-500">Seu ID de Sincronização:</p>
-                            <div class="flex gap-2 mt-1">
-                                <input type="text" id="current-sync-id-display" readonly class="w-full bg-white dark:bg-slate-700 border border-green-300 dark:border-green-700 rounded p-2 text-lg font-mono font-bold text-center tracking-widest text-slate-700 dark:text-white select-all">
-                                <button onclick="copySyncId()" class="bg-green-600 text-white px-3 rounded hover:bg-green-700 transition" title="Copiar"><i class="fa-regular fa-copy"></i></button>
-                            </div>
+                            <p class="text-green-800 dark:text-green-400 font-bold text-sm mb-2">Sincronização Ativa!</p>
+                            <p class="text-xs text-green-700 dark:text-green-500">ID:</p>
+                            <div class="flex gap-2 mt-1"><input type="text" id="current-sync-id-display" readonly class="w-full bg-white dark:bg-slate-700 border border-green-300 dark:border-green-700 rounded p-2 text-lg font-mono font-bold text-center dark:text-white"><button onclick="copySyncId()" class="bg-green-600 text-white px-3 rounded"><i class="fa-regular fa-copy"></i></button></div>
                         </div>
-                        <div class="border-t dark:border-slate-700 pt-4">
-                            <p class="text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Carregar dados de outro aparelho:</p>
-                            <div class="flex gap-2">
-                                <input type="text" id="input-sync-id" class="w-full border dark:border-slate-600 rounded p-2 text-sm font-mono uppercase bg-white dark:bg-slate-700 dark:text-white" placeholder="Cole o ID aqui...">
-                                <button onclick="loadFromSyncId()" class="bg-blue-600 text-white px-4 py-2 rounded text-sm font-bold hover:bg-blue-700 whitespace-nowrap">
-                                    Carregar
-                                </button>
-                            </div>
-                        </div>
+                        <div class="border-t dark:border-slate-700 pt-4"><p class="text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Carregar outro:</p><div class="flex gap-2"><input type="text" id="input-sync-id" class="w-full border dark:border-slate-600 rounded p-2 text-sm font-mono uppercase bg-white dark:bg-slate-700 dark:text-white" placeholder="ID..."><button onclick="loadFromSyncId()" class="bg-blue-600 text-white px-4 py-2 rounded text-sm font-bold">Carregar</button></div></div>
                     </div>
-
-                    <div id="sync-setup-ui">
-                        <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">Cole sua Configuração do Firebase (JSON ou Objeto JS):</label>
-                        <textarea id="firebase-config-input" class="w-full h-32 border dark:border-slate-600 rounded p-2 text-xs font-mono bg-slate-50 dark:bg-slate-700 dark:text-white" placeholder='{ "apiKey": "...", "authDomain": "...", "projectId": "..." }'></textarea>
-                        <button onclick="saveFirebaseConfig()" class="w-full bg-blue-600 text-white py-2 rounded text-sm font-bold hover:bg-blue-700 mt-2">Ativar Sincronização</button>
-                    </div>
+                    <div id="sync-setup-ui"><label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">Configuração Firebase JSON:</label><textarea id="firebase-config-input" class="w-full h-32 border dark:border-slate-600 rounded p-2 text-xs font-mono bg-slate-50 dark:bg-slate-700 dark:text-white"></textarea><button onclick="saveFirebaseConfig()" class="w-full bg-blue-600 text-white py-2 rounded text-sm font-bold mt-2">Ativar</button></div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Notification Container -->
     <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2"></div>
 
     <script type="module">
@@ -512,62 +435,78 @@
         import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, onSnapshot, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // --- GLOBAL VARIABLES ---
+        // --- GLOBAL VARIABLES MOVED TO TOP ---
         let app = null;
         let db = null;
         let auth = null;
         let useFirebase = false;
         let currentSyncId = localStorage.getItem('pcpi_sync_id') || generateId();
         let unsubscribeSnapshot = null;
-        let expandedDisciplines = new Set(); 
+        let expandedDisciplines = new Set(); // Set of strings
+        let expandedSections = new Set();    // Set of strings (lesson IDs)
+        let currentFilterDiscipline = 'all';
+        let currentFilterStatus = 'all';
+        let currentEditingId = null;
+        let chartInstances = {};
 
-        // --- THEME LOGIC ---
-        window.toggleTheme = () => {
-            const isDark = document.documentElement.classList.toggle('dark');
-            localStorage.setItem('theme', isDark ? 'dark' : 'light');
-            updateThemeIcon();
-        };
-
-        function initTheme() {
-            const savedTheme = localStorage.getItem('theme');
-            if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-                document.documentElement.classList.add('dark');
-            } else {
-                document.documentElement.classList.remove('dark');
-            }
-            updateThemeIcon();
-        }
-
-        function updateThemeIcon() {
-            const icon = document.getElementById('theme-icon');
-            if(document.documentElement.classList.contains('dark')) {
-                icon.classList.remove('fa-sun');
-                icon.classList.add('fa-moon');
-            } else {
-                icon.classList.remove('fa-moon');
-                icon.classList.add('fa-sun');
-            }
-        }
-
-        // --- CONSTANTES DO USUÁRIO ---
+        // --- USER CONSTANTS ---
         let userFirebaseConfig = localStorage.getItem('pcpi_firebase_config');
 
-        // --- INITIALIZATION ---
+        // --- THEME ---
+        window.toggleTheme = () => { const isDark = document.documentElement.classList.toggle('dark'); localStorage.setItem('theme', isDark ? 'dark' : 'light'); updateThemeIcon(); };
+        function initTheme() { const saved = localStorage.getItem('theme'); if(saved==='dark'||(!saved&&window.matchMedia('(prefers-color-scheme: dark)').matches)) document.documentElement.classList.add('dark'); updateThemeIcon(); }
+        function updateThemeIcon() { const i=document.getElementById('theme-icon'); if(document.documentElement.classList.contains('dark')){i.classList.remove('fa-sun');i.classList.add('fa-moon');}else{i.classList.remove('fa-moon');i.classList.add('fa-sun');} }
+
+        // --- APP STATE ---
+        const defaultDisciplines = [
+            { id: 'port', name: 'Língua Portuguesa' },
+            { id: 'rlm', name: 'Raciocínio Lógico-Matemático' },
+            { id: 'info', name: 'Informática' },
+            { id: 'regional', name: 'Conhecimentos Regionais (PI)' },
+            { id: 'penal', name: 'Direito Penal' },
+            { id: 'procpenal', name: 'Direito Processual Penal' },
+            { id: 'const', name: 'Direito Constitucional' },
+            { id: 'adm', name: 'Direito Administrativo' },
+            { id: 'leginst', name: 'Legislação Institucional' },
+            { id: 'dh', name: 'Direitos Humanos' },
+            { id: 'crim', name: 'Criminologia' },
+            { id: 'medlegal', name: 'Medicina Legal' }
+        ];
+
+        // Initial raw syllabus (will be migrated to lessons)
+        const rawTopics = [
+            { d: 'port', t: 'Interpretação de texto' }, { d: 'port', t: 'Gramática' },
+            { d: 'rlm', t: 'Lógica Proposicional' }, { d: 'rlm', t: 'Conjuntos' },
+            { d: 'info', t: 'Hardware' }, { d: 'info', t: 'Software' },
+            { d: 'regional', t: 'História do Piauí' }, { d: 'regional', t: 'Geografia do Piauí' },
+            { d: 'penal', t: 'Aplicação da Lei Penal' }, { d: 'penal', t: 'Crimes' },
+            { d: 'procpenal', t: 'Inquérito' }, { d: 'procpenal', t: 'Prisões' },
+            { d: 'const', t: 'Direitos Fundamentais' }, { d: 'const', t: 'Organização do Estado' },
+            { d: 'adm', t: 'Atos Administrativos' }, { d: 'adm', t: 'Poderes' },
+            { d: 'leginst', t: 'Estatuto PC-PI' },
+            { d: 'dh', t: 'Declaração Universal' },
+            { d: 'crim', t: 'Escolas Criminológicas' },
+            { d: 'medlegal', t: 'Traumatologia' }
+        ];
+
+        let appState = {
+            items: [],
+            disciplines: [],
+            lessons: [], // NEW: Array of { id, disciplineId, name }
+            totalHours: 0,
+            config: { title: 'PC-PI 2026', role: 'Oficial Investigador', examDate: '2026-01-25' }
+        };
+
+        // --- INIT ---
         window.addEventListener('load', () => {
             initTheme();
             initApp();
         });
 
         async function initApp() {
-            // Safety: Force hide loader after 4s (Offline Fallback)
             setTimeout(() => {
-                const loader = document.getElementById('loading-overlay');
-                if(loader && !loader.classList.contains('hidden-force')) {
-                    console.log("Tempo limite de carregamento. Forçando modo Offline.");
-                    loader.classList.add('hidden-force');
-                    if(appState.items.length === 0) loadDataOffline(); 
-                    updateStatusIndicator(false);
-                }
+                const l = document.getElementById('loading-overlay');
+                if(l && !l.classList.contains('hidden-force')) { l.classList.add('hidden-force'); if(appState.items.length===0) loadDataOffline(); updateStatusIndicator(false); }
             }, 4000);
 
             if (userFirebaseConfig) {
@@ -594,791 +533,425 @@
                 updateStatusIndicator(false);
                 updateSyncUI(false);
             }
-
-            if (!localStorage.getItem('pcpi_sync_id')) {
-                localStorage.setItem('pcpi_sync_id', currentSyncId);
-            }
             
+            if(!localStorage.getItem('pcpi_sync_id')) localStorage.setItem('pcpi_sync_id', currentSyncId);
             initCountdown();
         }
 
-        function updateStatusIndicator(online) {
-            const text = online ? "Online" : "Offline";
-            const color = online ? "text-green-400" : "text-gray-400";
-            
-            document.getElementById('header-sync-status').innerText = text;
-            document.getElementById('header-sync-status-mobile').innerText = text;
-            
-            document.getElementById('status-icon-desktop').className = `fa-solid fa-wifi ${color}`;
-            document.getElementById('status-icon-mobile').className = `fa-solid fa-wifi ${color} mr-1`;
-        }
-
-        function updateSyncUI(isActive) {
-            const activeUI = document.getElementById('sync-active-ui');
-            const setupUI = document.getElementById('sync-setup-ui');
-            
-            if (isActive) {
-                activeUI.classList.remove('hidden');
-                setupUI.classList.add('hidden');
-                document.getElementById('current-sync-id-display').value = currentSyncId;
-            } else {
-                activeUI.classList.add('hidden');
-                setupUI.classList.remove('hidden');
-                if(userFirebaseConfig) document.getElementById('firebase-config-input').value = userFirebaseConfig;
-            }
-        }
-
-        // --- DATA LOGIC ---
-
-        const defaultDisciplines = [
-            { id: 'port', name: 'Língua Portuguesa' },
-            { id: 'rlm', name: 'Raciocínio Lógico-Matemático' },
-            { id: 'info', name: 'Informática' },
-            { id: 'regional', name: 'Conhecimentos Regionais (PI)' },
-            { id: 'penal', name: 'Direito Penal' },
-            { id: 'procpenal', name: 'Direito Processual Penal' },
-            { id: 'const', name: 'Direito Constitucional' },
-            { id: 'adm', name: 'Direito Administrativo' },
-            { id: 'leginst', name: 'Legislação Institucional' },
-            { id: 'dh', name: 'Direitos Humanos' },
-            { id: 'crim', name: 'Criminologia' },
-            { id: 'medlegal', name: 'Medicina Legal' }
-        ];
-
-        // Compact Syllabus
-        const initialSyllabus = [
-            { d: 'port', t: 'Interpretação e Compreensão de texto / Tipologia Textual' },
-            { d: 'port', t: 'Coesão, coerência e intertextualidade' },
-            { d: 'port', t: 'Ortografia, Acentuação e Crase' },
-            { d: 'port', t: 'Morfologia: Classes de palavras' },
-            { d: 'port', t: 'Sintaxe: Termos da oração, Concordância e Regência' },
-            { d: 'port', t: 'Pontuação e Semântica' },
-            { d: 'rlm', t: 'Lógica Proposicional' },
-            { d: 'rlm', t: 'Conjuntos e operações' },
-            { d: 'rlm', t: 'Porcentagem, Juros e Proporcionalidade' },
-            { d: 'rlm', t: 'Estatística Básica' },
-            { d: 'rlm', t: 'Geometria Básica e Plano Cartesiano' },
-            { d: 'rlm', t: 'Contabilidade: Patrimônio, Balanço e DRE' },
-            { d: 'info', t: 'Hardware e Sistemas Operacionais' },
-            { d: 'info', t: 'Office e LibreOffice' },
-            { d: 'info', t: 'Redes de Computadores e Internet' },
-            { d: 'info', t: 'Segurança da Informação' },
-            { d: 'info', t: 'Legislação Digital (Marco Civil, LGPD)' },
-            { d: 'info', t: 'IA Generativa e Aprendizado de Máquina' },
-            { d: 'regional', t: 'História do Piauí' },
-            { d: 'regional', t: 'Geografia Física e Humana do Piauí' },
-            { d: 'regional', t: 'Cultura, Economia e Indicadores Sociais do PI' },
-            { d: 'penal', t: 'Princípios e Aplicação da Lei Penal' },
-            { d: 'penal', t: 'Teoria do Crime' },
-            { d: 'penal', t: 'Concurso de Pessoas e Crimes' },
-            { d: 'penal', t: 'Crimes contra a Pessoa' },
-            { d: 'penal', t: 'Crimes contra o Patrimônio' },
-            { d: 'penal', t: 'Crimes contra a Administração Pública' },
-            { d: 'penal', t: 'Legislação Especial Penal' },
-            { d: 'procpenal', t: 'Inquérito Policial' },
-            { d: 'procpenal', t: 'Provas' },
-            { d: 'procpenal', t: 'Prisões' },
-            { d: 'procpenal', t: 'Liberdade Provisória e Medidas Cautelares' },
-            { d: 'procpenal', t: 'Investigação Criminal Digital' },
-            { d: 'procpenal', t: 'Leis Especiais Processuais' },
-            { d: 'const', t: 'Direitos e Garantias Fundamentais' },
-            { d: 'const', t: 'Direitos Sociais e Nacionalidade' },
-            { d: 'const', t: 'Organização do Estado' },
-            { d: 'const', t: 'Poderes' },
-            { d: 'const', t: 'Segurança Pública (Art. 144)' },
-            { d: 'adm', t: 'Princípios da Administração Pública' },
-            { d: 'adm', t: 'Atos Administrativos e Poderes' },
-            { d: 'adm', t: 'Agentes Públicos e Responsabilidade Civil' },
-            { d: 'adm', t: 'Licitações e Improbidade' },
-            { d: 'leginst', t: 'Estatuto da PC-PI' },
-            { d: 'leginst', t: 'Lei Orgânica Nacional das Polícias Civis' },
-            { d: 'dh', t: 'Teoria Geral e DUDH' },
-            { d: 'dh', t: 'Pacto de San José da Costa Rica' },
-            { d: 'dh', t: 'Grupos Vulneráveis e Atuação Policial' },
-            { d: 'crim', t: 'Conceito, Objeto e Escolas Criminológicas' },
-            { d: 'crim', t: 'Prevenção e Vitimologia' },
-            { d: 'medlegal', t: 'Traumatologia Forense' },
-            { d: 'medlegal', t: 'Tanatologia' },
-            { d: 'medlegal', t: 'Sexologia Forense e Toxicologia' }
-        ];
-
-        let appState = {
-            items: [],
-            disciplines: [],
-            totalHours: 0,
-            config: {
-                title: 'PC-PI 2026',
-                role: 'Oficial Investigador',
-                examDate: '2026-01-25'
-            }
-        };
-
         function loadDataOffline() {
             const stored = localStorage.getItem('pcpi_planner_v1');
-            if (stored) {
+            if(stored) {
                 try {
                     const parsed = JSON.parse(stored);
                     appState = { ...appState, ...parsed };
-                    if (!appState.disciplines || appState.disciplines.length === 0) {
-                        appState.disciplines = JSON.parse(JSON.stringify(defaultDisciplines));
-                    }
-                } catch(e) { console.error("Erro ao ler LocalStorage", e); }
-            } else {
-                initDefaultState();
-            }
-            renderAll();
-            renderHeader();
+                    migrateStructure();
+                } catch(e) { console.error(e); }
+            } else { initDefaultState(); }
+            renderAll(); renderHeader();
         }
 
         function initDefaultState() {
             appState.disciplines = JSON.parse(JSON.stringify(defaultDisciplines));
-            appState.items = initialSyllabus.map((item, index) => ({
+            appState.lessons = [];
+            // Create default lesson 01 for each disc
+            appState.disciplines.forEach(d => {
+                appState.lessons.push({ id: `l_${d.id}_01`, disciplineId: d.id, name: 'Aula 01' });
+            });
+            
+            appState.items = rawTopics.map((item, index) => ({
                 id: Date.now() + index,
                 disciplineId: item.d,
+                lessonId: `l_${item.d}_01`, // Assign to default lesson
                 topic: item.t,
-                status: 'pendente', 
-                completedDate: null,
-                reviews: [],
-                note: ''
+                status: 'pendente', completedDate: null, reviews: [], note: ''
             }));
-            saveDataInternal(); 
+            saveDataInternal();
+        }
+
+        function migrateStructure() {
+            // If lessons array doesn't exist, create it
+            if (!appState.lessons) {
+                appState.lessons = [];
+                // Ensure every discipline has at least one lesson
+                if (appState.disciplines) {
+                    appState.disciplines.forEach(d => {
+                        appState.lessons.push({ id: `l_${d.id}_default`, disciplineId: d.id, name: 'Aula 01' });
+                    });
+                }
+            }
+            // If items don't have lessonId, assign them
+            if (appState.items) {
+                appState.items.forEach(item => {
+                    if (!item.lessonId) {
+                        // Find or create lesson for this disc
+                        let lesson = appState.lessons.find(l => l.disciplineId === item.disciplineId);
+                        if (!lesson) {
+                            lesson = { id: `l_${item.disciplineId}_migrated`, disciplineId: item.disciplineId, name: 'Aula 01' };
+                            appState.lessons.push(lesson);
+                        }
+                        item.lessonId = lesson.id;
+                    }
+                });
+            }
+            if(!appState.config) appState.config = { title: 'PC-PI 2026', role: 'Oficial Investigador', examDate: '2026-01-25' };
         }
 
         function setupRealtimeListener(id) {
-            if (!db) return;
-            if (unsubscribeSnapshot) unsubscribeSnapshot();
-
-            const docRef = doc(db, 'planners', id);
-            
-            unsubscribeSnapshot = onSnapshot(docRef, (docSnap) => {
+            if(!db) return;
+            if(unsubscribeSnapshot) unsubscribeSnapshot();
+            unsubscribeSnapshot = onSnapshot(doc(db, 'planners', id), (snap) => {
                 document.getElementById('loading-overlay').classList.add('hidden-force');
                 updateStatusIndicator(true);
-                
-                if (docSnap.exists()) {
-                    const data = JSON.parse(docSnap.data().json);
-                    appState = data;
-                    renderAll();
-                    renderHeader();
-                    initCountdown();
+                if(snap.exists()) {
+                    appState = JSON.parse(snap.data().json);
+                    migrateStructure(); // Ensure compatibility
+                    renderAll(); renderHeader(); initCountdown();
                 } else {
-                    if (appState.items.length === 0) initDefaultState();
+                    if(appState.items.length===0) initDefaultState();
                     saveDataInternal();
                 }
-            }, (error) => {
-                console.error("Sync error:", error);
-                document.getElementById('loading-overlay').classList.add('hidden-force');
-                showToast("Conexão perdida. Mudando para Offline.", "error");
-                useFirebase = false;
-                updateStatusIndicator(false);
-            });
+            }, () => { useFirebase=false; updateStatusIndicator(false); });
         }
 
         async function saveDataInternal() {
             localStorage.setItem('pcpi_planner_v1', JSON.stringify(appState));
-
-            if (useFirebase && db && auth.currentUser) {
-                try {
-                    const docRef = doc(db, 'planners', currentSyncId);
-                    await setDoc(docRef, {
-                        json: JSON.stringify(appState),
-                        lastUpdated: new Date().toISOString()
-                    });
-                } catch (e) {
-                    console.error("Save error:", e);
-                    updateStatusIndicator(false);
-                }
+            if(useFirebase && db && auth.currentUser) {
+                try { await setDoc(doc(db, 'planners', currentSyncId), { json: JSON.stringify(appState), lastUpdated: new Date().toISOString() }); } catch(e){}
             }
         }
 
-        function generateId() {
-            return Array.from(crypto.getRandomValues(new Uint8Array(4))).map(b => b.toString(16).padStart(2, '0')).join('');
-        }
+        function generateId() { return Array.from(crypto.getRandomValues(new Uint8Array(4))).map(b=>b.toString(16).padStart(2,'0')).join(''); }
 
-        // --- GLOBAL EXPORTS ---
+        // --- GLOBAL FUNCTIONS ---
         window.saveFirebaseConfig = () => {
-            let input = document.getElementById('firebase-config-input').value.trim();
-            if (!input) return alert("Cole a configuração.");
+            let v = document.getElementById('firebase-config-input').value.trim();
+            if(!v) return alert('Cole o código');
+            if(v.includes('=')) v = v.split('=')[1].trim();
+            if(v.endsWith(';')) v = v.slice(0,-1);
+            try { JSON.parse(v); localStorage.setItem('pcpi_firebase_config', v); location.reload(); }
+            catch(e) {
+                try { const f=v.replace(/(^|{|,)\s*([a-zA-Z0-9_]+)\s*:/g, '$1"$2":').replace(/'/g,'"'); JSON.parse(f); localStorage.setItem('pcpi_firebase_config', f); location.reload(); }
+                catch(e2){ alert('JSON Inválido'); }
+            }
+        };
+
+        window.toggleSection = (id) => {
+            if (expandedSections.has(id)) expandedSections.delete(id);
+            else expandedSections.add(id);
+            renderSyllabus();
+        };
+
+        // --- MANAGEMENT ---
+        window.addNewLesson = () => {
+            const discId = document.getElementById('new-lesson-disc-select').value;
+            const name = document.getElementById('new-lesson-name').value.trim();
+            if(!discId || !name) return alert('Preencha tudo');
             
-            if(input.indexOf('=') > -1) {
-                input = input.substring(input.indexOf('=') + 1).trim();
-            }
-            if(input.endsWith(';')) {
-                input = input.slice(0, -1).trim();
-            }
-
-            try {
-                JSON.parse(input);
-            } catch (e) {
-                try {
-                    const fixed = input.replace(/(^|{|,)\s*([a-zA-Z0-9_]+)\s*:/g, '$1"$2":').replace(/'/g, '"');
-                    const obj = JSON.parse(fixed);
-                    input = JSON.stringify(obj);
-                } catch (e2) {
-                    console.error(e2);
-                    alert("Formato inválido. Certifique-se de que está copiando o objeto corretamente (entre chaves { }).");
-                    return;
-                }
-            }
-
-            localStorage.setItem('pcpi_firebase_config', input);
-            userFirebaseConfig = input;
-            location.reload(); 
-        };
-
-        window.updateStatus = (id, newStatus) => {
-            const item = appState.items.find(i => i.id === id);
-            if (!item) return;
-            item.status = newStatus;
-            if (newStatus === 'concluido') {
-                const today = new Date();
-                item.completedDate = today.toISOString();
-                const r1 = new Date(today); r1.setDate(r1.getDate() + 1);
-                const r2 = new Date(today); r2.setDate(r2.getDate() + 7);
-                const r3 = new Date(today); r3.setDate(r3.getDate() + 30);
-                item.reviews = [
-                    { date: r1.toISOString(), done: false, label: '24h' },
-                    { date: r2.toISOString(), done: false, label: '7d' },
-                    { date: r3.toISOString(), done: false, label: '30d' }
-                ];
-                showToast(`Status atualizado!`, 'success');
-            } else {
-                item.completedDate = null;
-                item.reviews = [];
-            }
-            saveDataInternal();
-            renderAll();
-        };
-
-        window.addNewDiscipline = () => {
-            const rawText = document.getElementById('new-disc-name').value;
-            if(!rawText.trim()) return alert('Digite os nomes das disciplinas.');
-            const discNames = rawText.split('\n').map(t => t.trim()).filter(t => t.length > 0);
-            if (discNames.length === 0) return;
-            let addedCount = 0;
-            discNames.forEach((name, index) => {
-                const id = 'custom_' + (Date.now() + index); 
-                appState.disciplines.push({ id: id, name: name });
-                addedCount++;
+            appState.lessons.push({
+                id: `l_${Date.now()}`,
+                disciplineId: discId,
+                name: name
             });
             saveDataInternal();
-            document.getElementById('new-disc-name').value = '';
-            showToast(`${addedCount} disciplinas criadas!`, 'success');
+            document.getElementById('new-lesson-name').value = '';
+            showToast('Aula criada!', 'success');
+            populateModalSelects(); // Refresh selects
+            renderSyllabus();
+        };
+
+        window.deleteLesson = (lessonId) => {
+            if(!confirm('Excluir esta aula e todos os seus tópicos?')) return;
+            appState.items = appState.items.filter(i => i.lessonId !== lessonId);
+            appState.lessons = appState.lessons.filter(l => l.id !== lessonId);
+            saveDataInternal();
             renderAll();
-            openManageModal(); 
-            switchTab('tab-add-topic');
+            renderDeleteLessonList();
+            showToast('Aula excluída.', 'info');
         };
 
         window.addNewTopic = () => {
             const discId = document.getElementById('new-topic-disc-select').value;
-            const rawText = document.getElementById('new-topic-name').value;
-            if(!discId) return alert('Selecione uma disciplina.');
-            if(!rawText.trim()) return alert('Digite os tópicos.');
-            const topics = rawText.split('\n').map(t => t.trim()).filter(t => t.length > 0);
-            if (topics.length === 0) return;
-            topics.forEach((topicName, index) => {
+            const lessonId = document.getElementById('new-topic-lesson-select').value;
+            const txt = document.getElementById('new-topic-name').value;
+            
+            if(!discId || !lessonId) return alert('Selecione disciplina e aula.');
+            if(!txt.trim()) return alert('Digite os tópicos.');
+
+            const lines = txt.split('\n').map(t=>t.trim()).filter(t=>t.length>0);
+            lines.forEach((t,i) => {
                 appState.items.push({
-                    id: Date.now() + index,
+                    id: Date.now()+i,
                     disciplineId: discId,
-                    topic: topicName,
-                    status: 'pendente',
-                    completedDate: null,
-                    reviews: [],
-                    note: ''
+                    lessonId: lessonId,
+                    topic: t,
+                    status: 'pendente', completedDate: null, reviews: [], note: ''
                 });
             });
             saveDataInternal();
             document.getElementById('new-topic-name').value = '';
-            showToast(`${topics.length} tópicos adicionados!`, 'success');
-            renderAll();
-            openManageModal(); 
-        };
-
-        window.deleteDiscipline = (id) => {
-            if(!confirm('Apagar disciplina e todas as aulas?')) return;
-            appState.items = appState.items.filter(i => i.disciplineId !== id);
-            appState.disciplines = appState.disciplines.filter(d => d.id !== id);
-            saveDataInternal();
-            renderAll();
-            openManageModal();
-            showToast('Disciplina removida.', 'info');
-        };
-
-        window.deleteTopic = (itemId) => {
-            if(!confirm('Excluir este tópico?')) return;
-            appState.items = appState.items.filter(i => i.id !== itemId);
-            saveDataInternal();
-            renderAll();
-            openManageModal();
-            showToast('Tópico excluído.', 'info');
-        };
-
-        window.deleteSelectedTopics = () => {
-            const checkboxes = document.querySelectorAll('.delete-topic-checkbox:checked');
-            if(checkboxes.length === 0) return alert('Selecione itens.');
-            if(!confirm(`Excluir ${checkboxes.length} tópicos?`)) return;
-            const idsToDelete = Array.from(checkboxes).map(cb => parseInt(cb.value));
-            appState.items = appState.items.filter(item => !idsToDelete.includes(item.id));
-            saveDataInternal();
-            renderAll();
-            openManageModal();
-            showToast('Tópicos excluídos.', 'info');
-        };
-
-        window.saveNote = () => {
-            if (currentEditingId !== null) {
-                const note = document.getElementById('modal-note-input').value;
-                const item = appState.items.find(i => i.id === currentEditingId);
-                if(item) {
-                    item.note = note;
-                    saveDataInternal();
-                    renderSyllabus(); 
-                    closeModal('note-modal');
-                    showToast('Anotação salva!', 'success');
-                }
-            }
-        };
-
-        window.saveSettings = () => {
-            const title = document.getElementById('config-title').value;
-            const role = document.getElementById('config-role').value;
-            const date = document.getElementById('config-date').value;
-            if(!title || !role || !date) return alert('Preencha tudo.');
-            appState.config = { title, role, examDate: date };
-            saveDataInternal();
-            renderHeader();
-            initCountdown();
-            closeModal('settings-modal');
-            showToast('Dados salvos!', 'success');
-        };
-
-        window.loadFromSyncId = () => {
-            if(!useFirebase) return alert("Configure o Firebase primeiro para usar esta função.");
-            const newId = document.getElementById('input-sync-id').value.trim();
-            if(!newId) return;
-            if(confirm("Carregar dados deste ID substituirá os dados atuais. Continuar?")) {
-                localStorage.setItem('pcpi_sync_id', newId);
-                currentSyncId = newId;
-                setupRealtimeListener(newId);
-                updateSyncUI(true);
-                closeModal('sync-modal');
-                showToast("Conectando ao novo ID...", "info");
-            }
-        };
-
-        window.resetHours = () => {
-            if(confirm('Zerar o banco de horas?')) {
-                appState.totalHours = 0;
-                saveDataInternal();
-                renderProductivity();
-                showToast('Banco de horas zerado.', 'info');
-            }
-        };
-
-        window.resetData = () => {
-            if(confirm('Tem certeza? Isso irá zerar suas horas e marcar todos os tópicos como pendentes. As disciplinas criadas serão mantidas.')) {
-                appState.totalHours = 0;
-                appState.items.forEach(item => {
-                    item.status = 'pendente';
-                    item.completedDate = null;
-                    item.reviews = [];
-                });
-                saveDataInternal();
-                renderAll();
-                showToast('Progresso resetado com sucesso.', 'success');
-            }
-        };
-
-        window.toggleDiscipline = (id) => {
-            if(expandedDisciplines.has(id)) {
-                expandedDisciplines.delete(id);
-            } else {
-                expandedDisciplines.add(id);
-            }
+            showToast('Tópicos adicionados!', 'success');
             renderSyllabus();
+            renderBulkDeleteTopicList();
         };
 
-        window.openSyncModal = () => { 
-            // Update UI based on current state (logged in or not)
-            updateSyncUI(useFirebase); // Helper to show correct tab/state
-            document.getElementById('sync-modal').classList.remove('opacity-0', 'pointer-events-none'); 
-            document.body.classList.add('modal-active'); 
-        };
-
-        // --- UI FUNCTIONS ---
-        let currentFilterDiscipline = 'all';
-        let currentFilterStatus = 'all';
-        let currentEditingId = null;
-        let chartInstances = {};
-
-        function renderAll() {
-            renderSyllabus();
-            renderCharts();
-            renderDisciplineCards();
-            renderProductivity();
+        // --- RENDERERS ---
+        function renderAll() { renderSyllabus(); renderCharts(); renderDisciplineCards(); renderProductivity(); }
+        function renderHeader() { 
+            if(!appState.config) return;
+            document.getElementById('header-title').innerText = appState.config.title;
+            document.getElementById('header-subtitle').innerText = appState.config.role;
+            const d = appState.config.examDate.split('-');
+            const fmt = `${d[2]}/${d[1]}/${d[0]}`;
+            document.getElementById('header-date').innerText = fmt;
+            document.getElementById('header-date-mobile').innerText = fmt;
         }
-
-        function renderHeader() {
-            if(appState.config) {
-                document.getElementById('header-title').innerText = appState.config.title;
-                document.getElementById('header-subtitle').innerText = appState.config.role;
-                const parts = appState.config.examDate.split('-');
-                const fmtDate = `${parts[2]}/${parts[1]}/${parts[0]}`;
-                document.getElementById('header-date').innerText = fmtDate;
-                document.getElementById('header-date-mobile').innerText = fmtDate;
-            }
-        }
-
-        function renderProductivity() {
-            document.getElementById('total-hours').innerText = appState.totalHours.toFixed(1);
-        }
-
-        function renderDisciplineCards() {
-            const container = document.getElementById('discipline-cards-container');
-            container.innerHTML = '';
-            appState.disciplines.forEach(disc => {
-                const items = appState.items.filter(i => i.disciplineId === disc.id);
-                const total = items.length;
-                const completed = items.filter(i => i.status === 'concluido').length;
-                const percent = total === 0 ? 0 : Math.round((completed / total) * 100);
-                const card = document.createElement('div');
-                card.className = "bg-white dark:bg-slate-800 border dark:border-slate-700 rounded-lg p-4 shadow-sm transition cursor-pointer relative overflow-hidden group disc-card";
-                card.onclick = () => filterByDisciplineFromCard(disc.id);
-                card.innerHTML = `
-                    <div class="flex justify-between items-end mb-2">
-                        <h4 class="font-bold text-slate-700 dark:text-gray-200 text-sm truncate pr-2 flex-1">${disc.name}</h4>
-                        <span class="text-xs font-bold ${percent === 100 ? 'text-green-600 dark:text-green-400' : 'text-blue-600 dark:text-blue-400'}">${percent}%</span>
-                    </div>
-                    <div class="w-full bg-gray-100 dark:bg-slate-700 rounded-full h-2 overflow-hidden">
-                        <div class="bg-blue-500 dark:bg-blue-600 h-2 rounded-full transition-all duration-700 ease-out" style="width: ${percent}%"></div>
-                    </div>
-                    <div class="flex justify-between items-center mt-3">
-                        <span class="text-[10px] text-gray-400 dark:text-gray-500 font-medium uppercase tracking-wide">Progresso</span>
-                        <span class="text-[10px] text-gray-500 dark:text-gray-400 font-bold">${completed}/${total}</span>
-                    </div>
-                `;
-                container.appendChild(card);
-            });
-        }
-
-        window.filterByDisciplineFromCard = (id) => {
-            expandedDisciplines.add(id);
-            currentFilterDiscipline = id;
-            document.getElementById('filter-discipline').value = id;
-            renderSyllabus();
-            document.getElementById('syllabus-section').scrollIntoView({ behavior: 'smooth' });
-        };
-
-        window.filterStatus = (status) => {
-            currentFilterStatus = status;
-            renderSyllabus();
-        };
-
+        
         function renderSyllabus() {
             const container = document.getElementById('syllabus-container');
             container.innerHTML = '';
             const today = new Date().setHours(0,0,0,0);
 
-            const filteredItems = appState.items.filter(item => {
-                if (currentFilterDiscipline !== 'all' && item.disciplineId !== currentFilterDiscipline) return false;
-                if (currentFilterStatus === 'all') return true;
-                if (currentFilterStatus === 'revisar') {
-                    return item.reviews.some(r => {
-                        const rDate = new Date(r.date).setHours(0,0,0,0);
-                        return rDate <= today && !r.done;
-                    });
-                }
-                return item.status === currentFilterStatus;
+            const activeItems = appState.items.filter(i => {
+                if(currentFilterDiscipline !== 'all' && i.disciplineId !== currentFilterDiscipline) return false;
+                if(currentFilterStatus === 'all') return true;
+                if(currentFilterStatus === 'revisar') return i.reviews.some(r => new Date(r.date).setHours(0,0,0,0) <= today && !r.done);
+                return i.status === currentFilterStatus;
             });
 
-            document.getElementById('filtered-count').innerText = `${filteredItems.length} itens`;
+            document.getElementById('filtered-count').innerText = `${activeItems.length} itens`;
 
-            if (filteredItems.length === 0) {
-                container.innerHTML = `<div class="p-8 text-center text-gray-400 dark:text-gray-500">Nenhum tópico encontrado.</div>`;
-                return;
-            }
+            if (activeItems.length === 0) { container.innerHTML = '<div class="p-8 text-center text-gray-400">Nada encontrado.</div>'; return; }
 
-            const discsToShow = currentFilterDiscipline === 'all' 
-                ? appState.disciplines 
-                : appState.disciplines.filter(d => d.id === currentFilterDiscipline);
+            // Group by Discipline
+            const visibleDiscs = appState.disciplines.filter(d => 
+                currentFilterDiscipline === 'all' || currentFilterDiscipline === d.id
+            );
 
-            discsToShow.forEach(disc => {
-                const itemsInDisc = filteredItems.filter(i => i.disciplineId === disc.id);
+            visibleDiscs.forEach(disc => {
+                const discItems = activeItems.filter(i => i.disciplineId === disc.id);
+                if (discItems.length === 0) return;
+
+                const isDiscExpanded = expandedSections.has(disc.id) || currentFilterDiscipline === disc.id;
                 
-                if (itemsInDisc.length > 0) {
-                    const isExpanded = expandedDisciplines.has(disc.id) || currentFilterDiscipline === disc.id; 
-                    
-                    const discContainer = document.createElement('div');
-                    discContainer.className = 'border-b border-gray-200 dark:border-slate-700 last:border-0';
+                // Discipline Wrapper
+                const discDiv = document.createElement('div');
+                discDiv.className = 'border-b border-gray-200 dark:border-slate-700';
+                
+                // Discipline Header (Level 1)
+                const discHeader = document.createElement('button');
+                discHeader.onclick = () => window.toggleSection(disc.id);
+                discHeader.className = 'w-full bg-blue-50 dark:bg-slate-700 hover:bg-blue-100 dark:hover:bg-slate-600 px-6 py-4 flex justify-between items-center text-left focus:outline-none transition border-l-4 border-blue-500 dark:border-blue-400 shadow-sm z-10 relative';
+                discHeader.innerHTML = `
+                    <span class="text-sm font-bold text-slate-800 dark:text-white uppercase tracking-wide flex items-center gap-2">
+                        <i class="fa-solid fa-book text-blue-500/50"></i>
+                        ${disc.name} 
+                        <span class="text-xs bg-blue-200 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-0.5 rounded-full ml-2 font-bold normal-case">${discItems.length}</span>
+                    </span>
+                    <i class="fa-solid fa-chevron-down text-slate-400 dark:text-slate-300 text-xs accordion-icon ${isDiscExpanded ? 'rotate' : ''}"></i>
+                `;
+                discDiv.appendChild(discHeader);
 
-                    const headerBtn = document.createElement('button');
-                    headerBtn.onclick = () => window.toggleDiscipline(disc.id);
-                    // NEW STYLING FOR DISTINCT HEADER
-                    headerBtn.className = 'w-full bg-blue-50 dark:bg-slate-700 hover:bg-blue-100 dark:hover:bg-slate-600 px-6 py-4 flex justify-between items-center text-left focus:outline-none transition border-l-4 border-blue-500 dark:border-blue-400 shadow-sm';
-                    headerBtn.innerHTML = `
-                        <span class="text-sm font-bold text-slate-800 dark:text-white uppercase tracking-wide flex items-center gap-2">
-                            <i class="fa-solid fa-book text-blue-500/50"></i>
-                            ${disc.name} 
-                            <span class="text-xs bg-blue-200 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-0.5 rounded-full ml-2 font-bold normal-case">${itemsInDisc.length}</span>
-                        </span>
-                        <i class="fa-solid fa-chevron-down text-slate-400 dark:text-slate-300 text-xs accordion-icon ${isExpanded ? 'rotate' : ''}"></i>
+                // Discipline Content
+                const discContent = document.createElement('div');
+                discContent.className = `accordion-content ${isDiscExpanded ? 'open' : ''}`;
+
+                // Group by Lesson within Discipline
+                const discLessons = appState.lessons.filter(l => l.disciplineId === disc.id);
+                
+                // Include a "No Lesson" group if needed (for safety)
+                const itemsWithLesson = discItems.filter(i => i.lessonId);
+                const itemsNoLesson = discItems.filter(i => !i.lessonId); // Should be empty after migration
+                
+                // Render Lesson Groups
+                discLessons.forEach(lesson => {
+                    const lessonItems = discItems.filter(i => i.lessonId === lesson.id);
+                    if (lessonItems.length === 0) return;
+
+                    const lessonKey = `lesson_${lesson.id}`;
+                    const isLessonExpanded = expandedSections.has(lessonKey);
+
+                    // Lesson Header (Level 2)
+                    const lessonHeader = document.createElement('button');
+                    lessonHeader.onclick = () => window.toggleSection(lessonKey);
+                    lessonHeader.className = 'w-full bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 dark:hover:bg-slate-750 px-6 py-2 flex justify-between items-center text-left focus:outline-none transition border-l-4 border-gray-300 dark:border-slate-600 ml-0';
+                    lessonHeader.innerHTML = `
+                        <span class="text-xs font-bold text-gray-600 dark:text-gray-300 uppercase tracking-wider pl-4">${lesson.name}</span>
+                        <i class="fa-solid fa-chevron-down text-gray-400 text-xs accordion-icon ${isLessonExpanded ? 'rotate' : ''}"></i>
                     `;
-                    discContainer.appendChild(headerBtn);
+                    discContent.appendChild(lessonHeader);
 
-                    const contentDiv = document.createElement('div');
-                    contentDiv.className = `accordion-content ${isExpanded ? 'open' : ''}`;
+                    // Lesson Content (Level 3 - Items)
+                    const lessonContent = document.createElement('div');
+                    lessonContent.className = `accordion-content ${isLessonExpanded ? 'open' : ''}`;
                     
-                    itemsInDisc.forEach(item => {
-                        const el = document.createElement('div');
-                        let statusClass = 'status-pendente';
-                        if (item.status === 'estudando') statusClass = 'status-estudo';
-                        if (item.status === 'concluido') statusClass = 'status-concluido';
-
-                        // NEW STYLING FOR DISTINCT CONTENT
-                        el.className = `p-4 pl-8 hover:bg-gray-50 dark:hover:bg-slate-700/30 transition flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-t border-gray-100 dark:border-slate-700/50 bg-white dark:bg-slate-800 ${statusClass}`;
-                        
-                        let reviewsHtml = '';
-                        if (item.status === 'concluido') {
-                            reviewsHtml = `<div class="flex gap-2 mt-2 sm:mt-0">`;
-                            item.reviews.forEach((r, idx) => {
-                                const rDate = new Date(r.date);
-                                const isDue = rDate.setHours(0,0,0,0) <= today;
-                                const dateStr = new Date(r.date).toLocaleDateString('pt-BR', {day:'2-digit', month:'2-digit'});
-                                let colorClass = 'bg-gray-200 dark:bg-slate-700 text-gray-400 dark:text-gray-500';
-                                if (r.done) colorClass = 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border border-green-300 dark:border-green-800';
-                                else if (isDue) colorClass = 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 border border-yellow-400 dark:border-yellow-700 animate-pulse font-bold';
-                                else colorClass = 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800';
-
-                                reviewsHtml += `
-                                    <div class="flex flex-col items-center cursor-pointer" onclick="toggleReview(${item.id}, ${idx})" title="${dateStr}">
-                                        <span class="text-[10px] uppercase font-bold text-gray-500 dark:text-gray-400">${r.label}</span>
-                                        <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs ${colorClass}">
-                                            ${r.done ? '<i class="fa-solid fa-check"></i>' : dateStr}
-                                        </div>
-                                    </div>
-                                `;
-                            });
-                            reviewsHtml += `</div>`;
-                        }
-
-                        el.innerHTML = `
-                            <div class="flex-1 pl-2">
-                                <div class="flex items-start justify-between">
-                                    <span class="text-sm font-medium text-slate-700 dark:text-gray-200">${item.topic}</span>
-                                    <div class="flex items-center gap-2 ml-2">
-                                        <button onclick="openNoteModal(${item.id})" class="text-gray-400 dark:text-gray-500 hover:text-blue-500 dark:hover:text-blue-400" title="Anotações">
-                                            <i class="fa-regular fa-pen-to-square"></i> ${item.note ? '<i class="fa-solid fa-circle text-[8px] text-blue-500 dark:text-blue-400 align-top"></i>' : ''}
-                                        </button>
-                                        <button onclick="deleteTopic(${item.id})" class="text-gray-300 dark:text-gray-600 hover:text-red-500 dark:hover:text-red-400" title="Excluir Tópico">
-                                            <i class="fa-solid fa-trash text-xs"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                                <div class="mt-2">
-                                    <select onchange="updateStatus(${item.id}, this.value)" class="text-xs border dark:border-slate-600 rounded p-1 bg-white dark:bg-slate-700 focus:ring-1 focus:ring-blue-500 ${item.status === 'estudando' ? 'text-blue-600 dark:text-blue-400 font-bold' : (item.status === 'concluido' ? 'text-green-600 dark:text-green-400 font-bold' : 'text-gray-600 dark:text-gray-400')}">
-                                        <option value="pendente" ${item.status === 'pendente' ? 'selected' : ''}>Pendente</option>
-                                        <option value="estudando" ${item.status === 'estudando' ? 'selected' : ''}>Em Estudo</option>
-                                        <option value="concluido" ${item.status === 'concluido' ? 'selected' : ''}>Concluído</option>
-                                    </select>
-                                </div>
-                            </div>
-                            ${reviewsHtml}
-                        `;
-                        contentDiv.appendChild(el);
+                    lessonItems.forEach(item => {
+                        lessonContent.appendChild(createItemElement(item, today));
                     });
+                    
+                    discContent.appendChild(lessonContent);
+                });
 
-                    discContainer.appendChild(contentDiv);
-                    container.appendChild(discContainer);
+                // Render orphans if any (fallback)
+                if(itemsNoLesson.length > 0) {
+                     itemsNoLesson.forEach(item => {
+                        discContent.appendChild(createItemElement(item, today));
+                     });
                 }
+
+                discDiv.appendChild(discContent);
+                container.appendChild(discDiv);
             });
         }
 
-        // --- RENDER CHARTS ---
+        function createItemElement(item, today) {
+            const el = document.createElement('div');
+            let statusClass = 'status-pendente';
+            if (item.status === 'estudando') statusClass = 'status-estudo';
+            if (item.status === 'concluido') statusClass = 'status-concluido';
+
+            el.className = `p-4 pl-8 hover:bg-gray-50 dark:hover:bg-slate-700/30 transition flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-t border-gray-100 dark:border-slate-700/50 bg-white dark:bg-slate-800 ${statusClass}`;
+            
+            let reviewsHtml = '';
+            if (item.status === 'concluido') {
+                reviewsHtml = `<div class="flex gap-2 mt-2 sm:mt-0">`;
+                item.reviews.forEach((r, idx) => {
+                    const rDate = new Date(r.date);
+                    const isDue = rDate.setHours(0,0,0,0) <= today;
+                    const dateStr = new Date(r.date).toLocaleDateString('pt-BR', {day:'2-digit', month:'2-digit'});
+                    let colorClass = 'bg-gray-200 dark:bg-slate-700 text-gray-400 dark:text-gray-500';
+                    if (r.done) colorClass = 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border border-green-300 dark:border-green-800';
+                    else if (isDue) colorClass = 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 border border-yellow-400 dark:border-yellow-700 animate-pulse font-bold';
+                    else colorClass = 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800';
+
+                    reviewsHtml += `<div class="flex flex-col items-center cursor-pointer" onclick="toggleReview(${item.id}, ${idx})" title="${dateStr}"><span class="text-[10px] uppercase font-bold text-gray-500 dark:text-gray-400">${r.label}</span><div class="w-8 h-8 rounded-full flex items-center justify-center text-xs ${colorClass}">${r.done ? '<i class="fa-solid fa-check"></i>' : dateStr}</div></div>`;
+                });
+                reviewsHtml += `</div>`;
+            }
+
+            el.innerHTML = `
+                <div class="flex-1 pl-4">
+                    <div class="flex items-start justify-between">
+                        <span class="text-sm font-medium text-slate-700 dark:text-gray-200">${item.topic}</span>
+                        <div class="flex items-center gap-2 ml-2">
+                            <button onclick="openNoteModal(${item.id})" class="text-gray-400 dark:text-gray-500 hover:text-blue-500 dark:hover:text-blue-400"><i class="fa-regular fa-pen-to-square"></i> ${item.note ? '<i class="fa-solid fa-circle text-[8px] text-blue-500 dark:text-blue-400 align-top"></i>' : ''}</button>
+                            <button onclick="deleteTopic(${item.id})" class="text-gray-300 dark:text-gray-600 hover:text-red-500 dark:hover:text-red-400"><i class="fa-solid fa-trash text-xs"></i></button>
+                        </div>
+                    </div>
+                    <div class="mt-2">
+                        <select onchange="updateStatus(${item.id}, this.value)" class="text-xs border dark:border-slate-600 rounded p-1 bg-white dark:bg-slate-700 focus:ring-1 focus:ring-blue-500 ${item.status === 'estudando' ? 'text-blue-600 dark:text-blue-400 font-bold' : (item.status === 'concluido' ? 'text-green-600 dark:text-green-400 font-bold' : 'text-gray-600 dark:text-gray-400')}">
+                            <option value="pendente" ${item.status === 'pendente' ? 'selected' : ''}>Pendente</option>
+                            <option value="estudando" ${item.status === 'estudando' ? 'selected' : ''}>Em Estudo</option>
+                            <option value="concluido" ${item.status === 'concluido' ? 'selected' : ''}>Concluído</option>
+                        </select>
+                    </div>
+                </div>
+                ${reviewsHtml}
+            `;
+            return el;
+        }
+
+        // --- OTHER RENDERERS ---
         function renderCharts() {
             const total = appState.items.length;
             const completed = appState.items.filter(i => i.status === 'concluido').length;
             const percent = total === 0 ? 0 : Math.round((completed / total) * 100);
-            
             document.getElementById('progress-text').innerText = `${percent}%`;
             document.getElementById('topics-count').innerText = `${completed}/${total} Tópicos`;
-
-            const ctxProgress = document.getElementById('progressChart').getContext('2d');
-            if (chartInstances.progress) chartInstances.progress.destroy();
-
-            chartInstances.progress = new Chart(ctxProgress, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Concluído', 'Restante'],
-                    datasets: [{
-                        data: [completed, total - completed],
-                        backgroundColor: ['#10b981', '#e2e8f0'], // Dark mode colors handled via CSS classes usually, but chart.js needs manual config or CSS var reading. Keeping simple green/gray.
-                        borderWidth: 0,
-                        cutout: '75%'
-                    }]
-                },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { enabled: false } } }
-            });
+            const ctx = document.getElementById('progressChart').getContext('2d');
+            if(chartInstances.progress) chartInstances.progress.destroy();
+            chartInstances.progress = new Chart(ctx, { type: 'doughnut', data: { labels: ['Concluído', 'Restante'], datasets: [{ data: [completed, total-completed], backgroundColor: ['#10b981', '#e2e8f0'], borderWidth: 0, cutout: '75%' }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { enabled: false } } } });
         }
 
-        // --- UTILS ---
-        function initCountdown() {
-            const examDateStr = (appState.config ? appState.config.examDate : '2026-01-25') + 'T00:00:00';
-            const examDate = new Date(examDateStr);
-            
-            const update = () => {
-                const now = new Date();
-                const diff = examDate - now;
-                const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
-                const text = days > 0 ? `${days} dias` : 'Hoje!';
-                
-                document.getElementById('countdown-mobile').innerText = text;
-                document.getElementById('countdown-desktop').innerText = text; 
-            };
-            update();
-        }
-
-        function showToast(message, type='info') {
-            const container = document.getElementById('toast-container');
-            const el = document.createElement('div');
-            const color = type === 'success' ? 'bg-green-600' : (type === 'error' ? 'bg-red-600' : 'bg-slate-800 dark:bg-slate-700');
-            el.className = `${color} text-white text-sm px-4 py-3 rounded shadow-lg transition transform translate-y-2 opacity-0 flex items-center gap-2`;
-            el.innerHTML = `<i class="fa-solid fa-circle-info"></i> ${message}`;
-            container.appendChild(el);
-            requestAnimationFrame(() => el.classList.remove('translate-y-2', 'opacity-0'));
-            setTimeout(() => {
-                el.classList.add('opacity-0', 'translate-x-full');
-                setTimeout(() => el.remove(), 300);
-            }, 3000);
-        }
-
-        // Expose helpers
-        window.openNoteModal = openNoteModal;
-        window.closeModal = closeModal;
-        window.openManageModal = openManageModal;
-        window.openSettingsModal = openSettingsModal;
-        window.switchTab = switchTab;
-        window.renderDeleteDiscList = renderDeleteDiscList;
-        window.renderBulkDeleteTopicList = renderBulkDeleteTopicList;
-        window.toggleSelectAllDelete = toggleSelectAllDelete;
-
-        function openNoteModal(id) {
-            currentEditingId = id;
-            const item = appState.items.find(i => i.id === id);
-            document.getElementById('modal-topic-title').innerText = item.topic;
-            document.getElementById('modal-note-input').value = item.note || '';
-            const modal = document.getElementById('note-modal');
-            modal.classList.remove('opacity-0', 'pointer-events-none');
-            document.body.classList.add('modal-active');
-        }
-
-        function closeModal(modalId) {
-            const modal = document.getElementById(modalId);
-            modal.classList.add('opacity-0', 'pointer-events-none');
-            document.body.classList.remove('modal-active');
-            if(modalId === 'note-modal') currentEditingId = null;
-        }
-
-        function openManageModal() {
-            populateFilterDropdown(); // Refresh selects
-            renderDeleteDiscList();
-            renderBulkDeleteTopicList();
-            const modal = document.getElementById('manage-modal');
-            modal.classList.remove('opacity-0', 'pointer-events-none');
-            document.body.classList.add('modal-active');
-        }
-
-        function openSettingsModal() {
-            document.getElementById('config-title').value = appState.config.title;
-            document.getElementById('config-role').value = appState.config.role;
-            document.getElementById('config-date').value = appState.config.examDate;
-            const modal = document.getElementById('settings-modal');
-            modal.classList.remove('opacity-0', 'pointer-events-none');
-            document.body.classList.add('modal-active');
-        }
-
-        function switchTab(tabId) {
-            ['tab-add-topic', 'tab-add-disc', 'tab-del-disc', 'tab-del-topic'].forEach(id => {
-                document.getElementById(id).classList.add('hidden');
-                document.getElementById('btn-'+id).classList.remove('tab-active');
-                document.getElementById('btn-'+id).classList.add('tab-inactive');
-            });
-            document.getElementById(tabId).classList.remove('hidden');
-            document.getElementById('btn-'+tabId).classList.add('tab-active');
-            document.getElementById('btn-'+tabId).classList.remove('tab-inactive');
-        }
-
-        function renderDeleteDiscList() {
-            const list = document.getElementById('delete-disc-list');
-            list.innerHTML = '';
+        function renderDisciplineCards() {
+            const c = document.getElementById('discipline-cards-container'); c.innerHTML = '';
             appState.disciplines.forEach(d => {
-                const div = document.createElement('div');
-                div.className = "flex justify-between items-center bg-gray-50 dark:bg-slate-700/50 p-2 rounded border dark:border-slate-600";
-                div.innerHTML = `<span class="text-sm text-gray-700 dark:text-gray-200">${d.name}</span><button onclick="deleteDiscipline('${d.id}')" class="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 text-sm px-2"><i class="fa-solid fa-trash"></i></button>`;
-                list.appendChild(div);
+                const items = appState.items.filter(i => i.disciplineId === d.id);
+                const total = items.length;
+                const comp = items.filter(i => i.status === 'concluido').length;
+                const pct = total === 0 ? 0 : Math.round((comp / total) * 100);
+                const el = document.createElement('div');
+                el.className = "bg-white dark:bg-slate-800 border dark:border-slate-700 rounded-lg p-4 shadow-sm transition cursor-pointer relative overflow-hidden group disc-card";
+                el.onclick = () => window.filterByDisciplineFromCard(d.id);
+                el.innerHTML = `<div class="flex justify-between items-end mb-2"><h4 class="font-bold text-slate-700 dark:text-gray-200 text-sm truncate pr-2 flex-1">${d.name}</h4><span class="text-xs font-bold ${pct===100?'text-green-600':'text-blue-600'}">${pct}%</span></div><div class="w-full bg-gray-100 dark:bg-slate-700 rounded-full h-2 overflow-hidden"><div class="bg-blue-500 h-2 rounded-full" style="width: ${pct}%"></div></div><div class="flex justify-between items-center mt-3"><span class="text-[10px] text-gray-400 uppercase">Progresso</span><span class="text-[10px] text-gray-500 font-bold">${comp}/${total}</span></div>`;
+                c.appendChild(el);
             });
         }
 
-        function renderBulkDeleteTopicList() {
-            const list = document.getElementById('bulk-delete-list');
-            list.innerHTML = '';
-            const filterDisc = document.getElementById('del-topic-disc-select').value;
-            const discsToRender = filterDisc === 'all' ? appState.disciplines : appState.disciplines.filter(d => d.id === filterDisc);
-            let hasItems = false;
-            discsToRender.forEach(disc => {
-                const items = appState.items.filter(i => i.disciplineId === disc.id);
-                if(items.length > 0) {
-                    hasItems = true;
-                    const header = document.createElement('div');
-                    header.className = 'text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase mt-2 mb-1 px-2 py-1 bg-gray-100 dark:bg-slate-800 border-t border-b dark:border-slate-700 sticky top-0 z-10';
-                    header.innerText = disc.name;
-                    list.appendChild(header);
-                    items.forEach(i => {
-                        const row = document.createElement('div');
-                        row.className = 'flex items-start gap-2 p-2 hover:bg-gray-50 dark:hover:bg-slate-700/50 border-b border-gray-100 dark:border-slate-700/50';
-                        row.innerHTML = `<input type="checkbox" class="delete-topic-checkbox mt-1" value="${i.id}"><label class="text-sm text-gray-700 dark:text-gray-300 flex-1">${i.topic}</label>`;
-                        list.appendChild(row);
-                    });
-                }
-            });
-            if(!hasItems) list.innerHTML = '<p class="text-xs text-gray-400 text-center py-4">Nenhum tópico encontrado.</p>';
-            const btn = document.getElementById('btn-select-all-del');
-            if(btn) btn.innerHTML = '<i class="fa-regular fa-square-check mr-1"></i> Selecionar Todos';
-        }
-
-        function toggleSelectAllDelete() {
-            const cbs = document.querySelectorAll('.delete-topic-checkbox');
-            if(cbs.length === 0) return;
-            const allChecked = Array.from(cbs).every(c => c.checked);
-            cbs.forEach(c => c.checked = !allChecked);
-            const btn = document.getElementById('btn-select-all-del');
-            if(btn) {
-                if(!allChecked) btn.innerHTML = '<i class="fa-solid fa-square-check mr-1"></i> Desmarcar Todos';
-                else btn.innerHTML = '<i class="fa-regular fa-square-check mr-1"></i> Selecionar Todos';
-            }
-        }
-
-        // Manual form
-        document.getElementById('hours-form').addEventListener('submit', (e) => { e.preventDefault(); const val = parseFloat(document.getElementById('study-input').value); if(!isNaN(val)) { document.getElementById('study-input').value=''; addStudyHoursInternal(val); } });
+        function renderProductivity() { document.getElementById('total-hours').innerText = appState.totalHours.toFixed(1); }
         
-        // Populate modal selects
-        function populateFilterDropdown() { 
-            const s1 = document.getElementById('new-topic-disc-select'); 
-            const s2 = document.getElementById('del-topic-disc-select');
-            s1.innerHTML = ''; s2.innerHTML = '<option value="all">Todas as Disciplinas</option>';
-            appState.disciplines.forEach(d => {
-                const o1 = document.createElement('option'); o1.value = d.id; o1.innerText = d.name; s1.appendChild(o1);
-                const o2 = document.createElement('option'); o2.value = d.id; o2.innerText = d.name; s2.appendChild(o2);
-            });
-            const filterMain = document.getElementById('filter-discipline');
-            filterMain.innerHTML = '<option value="all">Todas as Disciplinas</option>';
-            appState.disciplines.forEach(d => { const o = document.createElement('option'); o.value = d.id; o.innerText = d.name; filterMain.appendChild(o); });
-            filterMain.value = currentFilterDiscipline;
-            filterMain.onchange = (e) => { currentFilterDiscipline = e.target.value; renderSyllabus(); };
+        // --- MODAL HELPERS ---
+        function populateModalSelects() {
+            // Disc Selects
+            const d1 = document.getElementById('new-topic-disc-select');
+            const d2 = document.getElementById('new-lesson-disc-select');
+            const d3 = document.getElementById('del-lesson-disc-select');
+            const d4 = document.getElementById('del-topic-disc-select');
+            [d1, d2, d3, d4].forEach(s => { s.innerHTML = ''; appState.disciplines.forEach(d => { const o = document.createElement('option'); o.value = d.id; o.innerText = d.name; s.appendChild(o); }) });
+            
+            // Trigger lesson population for topic add
+            if(appState.disciplines.length > 0) populateLessonSelect(appState.disciplines[0].id, 'new-topic-lesson-select');
+            
+            // Filter Main
+            const fm = document.getElementById('filter-discipline');
+            fm.innerHTML = '<option value="all">Todas as Disciplinas</option>';
+            appState.disciplines.forEach(d => { const o = document.createElement('option'); o.value = d.id; o.innerText = d.name; fm.appendChild(o); });
+            fm.value = currentFilterDiscipline;
+            fm.onchange = (e) => { currentFilterDiscipline = e.target.value; renderSyllabus(); };
         }
 
+        window.populateLessonSelect = (discId, targetId) => {
+            const sel = document.getElementById(targetId);
+            sel.innerHTML = '';
+            const lessons = appState.lessons.filter(l => l.disciplineId === discId);
+            lessons.forEach(l => { const o = document.createElement('option'); o.value = l.id; o.innerText = l.name; sel.appendChild(o); });
+        };
+        
+        window.renderDeleteLessonList = () => {
+            const list = document.getElementById('delete-lesson-list'); list.innerHTML = '';
+            const discId = document.getElementById('del-lesson-disc-select').value;
+            const lessons = appState.lessons.filter(l => l.disciplineId === discId);
+            lessons.forEach(l => {
+                const d = document.createElement('div'); d.className = "flex justify-between items-center bg-gray-50 dark:bg-slate-700/50 p-2 rounded border dark:border-slate-600";
+                d.innerHTML = `<span class="text-sm text-gray-700 dark:text-gray-200">${l.name}</span><button onclick="deleteLesson('${l.id}')" class="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 text-sm px-2"><i class="fa-solid fa-trash"></i></button>`;
+                list.appendChild(d);
+            });
+        };
+
+        // --- EXPORTS & EVENT HANDLERS ---
+        window.openNoteModal = (id) => { currentEditingId = id; const item = appState.items.find(i => i.id === id); document.getElementById('modal-topic-title').innerText = item.topic; document.getElementById('modal-note-input').value = item.note || ''; document.getElementById('note-modal').classList.remove('opacity-0', 'pointer-events-none'); document.body.classList.add('modal-active'); };
+        window.closeModal = (id) => { document.getElementById(id).classList.add('opacity-0', 'pointer-events-none'); document.body.classList.remove('modal-active'); if(id==='note-modal') currentEditingId=null; };
+        window.toggleReview = (itemId, reviewIndex) => { const item = appState.items.find(i => i.id === itemId); if (item && item.reviews[reviewIndex]) { item.reviews[reviewIndex].done = !item.reviews[reviewIndex].done; saveDataInternal(); renderSyllabus(); } };
+        window.addStudyHoursInternal = (val) => { appState.totalHours += val; saveDataInternal(); renderProductivity(); showToast(`+${val} horas registradas!`, 'success'); };
+        window.openSyncModal = () => { updateSyncUI(useFirebase); document.getElementById('sync-modal').classList.remove('opacity-0', 'pointer-events-none'); document.body.classList.add('modal-active'); };
+        window.openManageModal = () => { populateModalSelects(); renderDeleteDiscList(); renderBulkDeleteTopicList(); document.getElementById('manage-modal').classList.remove('opacity-0', 'pointer-events-none'); document.body.classList.add('modal-active'); };
+        window.openSettingsModal = () => { document.getElementById('config-title').value = appState.config.title; document.getElementById('config-role').value = appState.config.role; document.getElementById('config-date').value = appState.config.examDate; document.getElementById('settings-modal').classList.remove('opacity-0', 'pointer-events-none'); document.body.classList.add('modal-active'); };
+        window.switchTab = (tabId) => { ['tab-add-topic', 'tab-add-lesson', 'tab-add-disc', 'tab-del-disc', 'tab-del-lesson', 'tab-del-topic'].forEach(id => { document.getElementById(id).classList.add('hidden'); document.getElementById('btn-'+id).classList.remove('tab-active'); document.getElementById('btn-'+id).classList.add('tab-inactive'); }); document.getElementById(tabId).classList.remove('hidden'); document.getElementById('btn-'+tabId).classList.add('tab-active'); document.getElementById('btn-'+tabId).classList.remove('tab-inactive'); };
+        window.updateStatus = (id, newStatus) => { const item = appState.items.find(i => i.id === id); if (!item) return; item.status = newStatus; if (newStatus === 'concluido') { const today = new Date(); item.completedDate = today.toISOString(); const r1 = new Date(today); r1.setDate(r1.getDate() + 1); const r2 = new Date(today); r2.setDate(r2.getDate() + 7); const r3 = new Date(today); r3.setDate(r3.getDate() + 30); item.reviews = [ { date: r1.toISOString(), done: false, label: '24h' }, { date: r2.toISOString(), done: false, label: '7d' }, { date: r3.toISOString(), done: false, label: '30d' } ]; showToast(`Status atualizado!`, 'success'); } else { item.completedDate = null; item.reviews = []; } saveDataInternal(); renderAll(); };
+        window.deleteTopic = (itemId) => { if(!confirm('Excluir?')) return; appState.items = appState.items.filter(i => i.id !== itemId); saveDataInternal(); renderAll(); showToast('Excluído.', 'info'); };
+        window.saveNote = () => { if (currentEditingId !== null) { const note = document.getElementById('modal-note-input').value; const item = appState.items.find(i => i.id === currentEditingId); if(item) { item.note = note; saveDataInternal(); renderSyllabus(); closeModal('note-modal'); showToast('Salvo!', 'success'); } } };
+        window.saveSettings = () => { const title = document.getElementById('config-title').value; const role = document.getElementById('config-role').value; const date = document.getElementById('config-date').value; if(!title || !role || !date) return alert('Preencha tudo.'); appState.config = { title, role, examDate: date }; saveDataInternal(); renderHeader(); initCountdown(); closeModal('settings-modal'); showToast('Dados salvos!', 'success'); };
+        window.resetHours = () => { if(confirm('Zerar horas?')) { appState.totalHours = 0; saveDataInternal(); renderProductivity(); showToast('Zerado.', 'info'); } };
+        window.resetData = () => { if(confirm('Resetar progresso?')) { appState.totalHours = 0; appState.items.forEach(item => { item.status = 'pendente'; item.completedDate = null; item.reviews = []; }); saveDataInternal(); renderAll(); showToast('Resetado.', 'success'); } };
+        window.filterByDisciplineFromCard = (id) => { expandedSections.add(id); currentFilterDiscipline = id; document.getElementById('filter-discipline').value = id; renderSyllabus(); document.getElementById('syllabus-section').scrollIntoView({ behavior: 'smooth' }); };
+        window.filterStatus = (status) => { currentFilterStatus = status; renderSyllabus(); };
+        window.renderDeleteDiscList = () => { const list = document.getElementById('delete-disc-list'); list.innerHTML = ''; appState.disciplines.forEach(d => { const div = document.createElement('div'); div.className = "flex justify-between items-center bg-gray-50 dark:bg-slate-700/50 p-2 rounded border dark:border-slate-600"; div.innerHTML = `<span class="text-sm text-gray-700 dark:text-gray-200">${d.name}</span><button onclick="deleteDiscipline('${d.id}')" class="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 text-sm px-2"><i class="fa-solid fa-trash"></i></button>`; list.appendChild(div); }); };
+        window.renderBulkDeleteTopicList = () => { const list = document.getElementById('bulk-delete-list'); list.innerHTML = ''; const filterDisc = document.getElementById('del-topic-disc-select').value; const discs = filterDisc === 'all' ? appState.disciplines : appState.disciplines.filter(d => d.id === filterDisc); discs.forEach(d => { const items = appState.items.filter(i => i.disciplineId === d.id); if(items.length > 0) { const h = document.createElement('div'); h.className = 'text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase mt-2 mb-1 px-2 py-1 bg-gray-100 dark:bg-slate-800 border-t border-b dark:border-slate-700 sticky top-0 z-10'; h.innerText = d.name; list.appendChild(h); items.forEach(i => { const row = document.createElement('div'); row.className = 'flex items-start gap-2 p-2 hover:bg-gray-50 dark:hover:bg-slate-700/50 border-b border-gray-100 dark:border-slate-700/50'; row.innerHTML = `<input type="checkbox" class="delete-topic-checkbox mt-1" value="${i.id}"><label class="text-sm text-gray-700 dark:text-gray-300 flex-1">${i.topic}</label>`; list.appendChild(row); }); } }); };
+        window.toggleSelectAllDelete = () => { const cbs = document.querySelectorAll('.delete-topic-checkbox'); if(cbs.length === 0) return; const all = Array.from(cbs).every(c => c.checked); cbs.forEach(c => c.checked = !all); const btn = document.getElementById('btn-select-all-del'); if(btn) { if(!all) btn.innerHTML = '<i class="fa-solid fa-square-check mr-1"></i> Desmarcar'; else btn.innerHTML = '<i class="fa-regular fa-square-check mr-1"></i> Selecionar Todos'; } };
         window.copySyncId = () => { navigator.clipboard.writeText(currentSyncId).then(() => showToast("Copiado!", "success")); };
         window.exportData = () => { const a = document.createElement('a'); a.href = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appState)); a.download = "backup_pcpi.json"; document.body.appendChild(a); a.click(); a.remove(); };
         window.importData = (input) => { const f = input.files[0]; if(!f) return; const r = new FileReader(); r.onload = (e) => { try { appState = JSON.parse(e.target.result); saveDataInternal(); location.reload(); } catch(err) { alert('Erro no arquivo.'); } }; r.readAsText(f); };
+        window.loadFromSyncId = () => { if(!useFirebase) return alert("Configure o Firebase."); const newId = document.getElementById('input-sync-id').value.trim(); if(!newId) return; if(confirm("Carregar?")) { localStorage.setItem('pcpi_sync_id', newId); currentSyncId = newId; setupRealtimeListener(newId); updateSyncUI(true); closeModal('sync-modal'); showToast("Conectando...", "info"); } };
+        window.deleteDiscipline = (id) => { if(!confirm('Apagar disciplina?')) return; appState.items = appState.items.filter(i => i.disciplineId !== id); appState.lessons = appState.lessons.filter(l => l.disciplineId !== id); appState.disciplines = appState.disciplines.filter(d => d.id !== id); saveDataInternal(); renderAll(); renderDeleteDiscList(); showToast('Excluída.', 'info'); };
+        window.deleteSelectedTopics = () => { const cbs = document.querySelectorAll('.delete-topic-checkbox:checked'); if(cbs.length === 0) return alert('Selecione itens.'); if(!confirm(`Excluir ${cbs.length}?`)) return; const ids = Array.from(cbs).map(c => parseInt(c.value)); appState.items = appState.items.filter(i => !ids.includes(i.id)); saveDataInternal(); renderAll(); renderBulkDeleteTopicList(); showToast('Excluídos.', 'info'); };
+        window.addNewDiscipline = () => { const txt = document.getElementById('new-disc-name').value; if(!txt.trim()) return alert('Digite nomes.'); const names = txt.split('\n').map(t=>t.trim()).filter(t=>t.length>0); if(names.length===0) return; let cnt=0; names.forEach((n,i) => { const id = 'custom_'+(Date.now()+i); appState.disciplines.push({id: id, name: n}); appState.lessons.push({id: `l_${id}_01`, disciplineId: id, name: 'Aula 01'}); cnt++; }); saveDataInternal(); document.getElementById('new-disc-name').value=''; showToast(`${cnt} criadas!`, 'success'); populateModalSelects(); renderAll(); switchTab('tab-add-topic'); };
+        window.updateStatusIndicator = updateStatusIndicator;
+        window.updateSyncUI = updateSyncUI;
 
+        function updateStatusIndicator(online) { const t = online ? "Online" : "Offline"; const c = online ? "text-green-400" : "text-gray-400"; document.getElementById('header-sync-status').innerText = t; document.getElementById('header-sync-status-mobile').innerText = t; document.getElementById('status-icon-desktop').className = `fa-solid fa-wifi ${c}`; document.getElementById('status-icon-mobile').className = `fa-solid fa-wifi ${c} mr-1`; }
+        function updateSyncUI(isActive) { const a = document.getElementById('sync-active-ui'); const s = document.getElementById('sync-setup-ui'); if (isActive) { a.classList.remove('hidden'); s.classList.add('hidden'); document.getElementById('current-sync-id-display').value = currentSyncId; } else { a.classList.add('hidden'); s.classList.remove('hidden'); if(userFirebaseConfig) document.getElementById('firebase-config-input').value = userFirebaseConfig; } }
+        function showToast(msg, type='info') { const c = document.getElementById('toast-container'); const e = document.createElement('div'); const cl = type === 'success' ? 'bg-green-600' : (type === 'error' ? 'bg-red-600' : 'bg-slate-800 dark:bg-slate-700'); e.className = `${cl} text-white text-sm px-4 py-3 rounded shadow-lg transition transform translate-y-2 opacity-0 flex items-center gap-2`; e.innerHTML = `<i class="fa-solid fa-circle-info"></i> ${msg}`; c.appendChild(e); requestAnimationFrame(() => e.classList.remove('translate-y-2', 'opacity-0')); setTimeout(() => { e.classList.add('opacity-0', 'translate-x-full'); setTimeout(() => e.remove(), 300); }, 3000); }
+        function initCountdown() { const d = (appState.config?appState.config.examDate:'2026-01-25')+'T00:00:00'; const t = new Date(d); const u = () => { const n = new Date(); const diff = t - n; const days = Math.ceil(diff / (1000*60*60*24)); const txt = days > 0 ? `${days} dias` : 'Hoje!'; document.getElementById('countdown-mobile').innerText = txt; document.getElementById('countdown-desktop').innerText = txt; }; u(); }
+        document.getElementById('hours-form').addEventListener('submit', (e) => { e.preventDefault(); const v = parseFloat(document.getElementById('study-input').value); if(!isNaN(v)) { document.getElementById('study-input').value=''; addStudyHoursInternal(v); } });
     </script>
 </body>
 </html>
