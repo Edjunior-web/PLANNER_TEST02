@@ -997,6 +997,13 @@
             renderSyllabus();
         };
 
+        window.openSyncModal = () => { 
+            // Update UI based on current state (logged in or not)
+            updateSyncUI(useFirebase); // Helper to show correct tab/state
+            document.getElementById('sync-modal').classList.remove('opacity-0', 'pointer-events-none'); 
+            document.body.classList.add('modal-active'); 
+        };
+
         // --- UI FUNCTIONS ---
         let currentFilterDiscipline = 'all';
         let currentFilterStatus = 'all';
