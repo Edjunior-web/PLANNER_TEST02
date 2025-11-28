@@ -143,7 +143,9 @@
             <div class="glass-panel rounded-xl p-4 flex flex-col justify-center">
                 <h3 class="text-gray-500 text-xs font-bold uppercase tracking-wide mb-2 flex justify-between items-center">
                     <span>Banco de Horas</span>
-                    <i class="fa-solid fa-clock text-blue-500"></i>
+                    <button onclick="resetHours()" class="text-gray-400 hover:text-red-500 transition" title="Zerar Horas">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
                 </h3>
                 <div class="flex items-center gap-4">
                     <div>
@@ -223,7 +225,7 @@
                             <i class="fa-solid fa-upload"></i> Restaurar Backup
                             <input type="file" id="import-file" class="hidden" onchange="importData(this)">
                         </label>
-                        <button onclick="resetData()" class="text-xs text-red-500 hover:underline mt-2 text-left"><i class="fa-solid fa-trash"></i> Resetar Tudo</button>
+                        <button onclick="resetData()" class="text-xs text-red-500 hover:underline mt-2 text-left"><i class="fa-solid fa-trash"></i> Resetar Tudo (Progresso)</button>
                     </div>
                 </div>
             </div>
@@ -887,6 +889,30 @@
             }
         };
 
+        // --- NEW RESET FUNCTIONS ---
+        window.resetHours = () => {
+            if(confirm('Zerar o banco de horas?')) {
+                appState.totalHours = 0;
+                saveDataInternal();
+                renderProductivity();
+                showToast('Banco de horas zerado.', 'info');
+            }
+        };
+
+        window.resetData = () => {
+            if(confirm('Tem certeza? Isso irá zerar suas horas e marcar todos os tópicos como pendentes. As disciplinas criadas serão mantidas.')) {
+                appState.totalHours = 0;
+                appState.items.forEach(item => {
+                    item.status = 'pendente';
+                    item.completedDate = null;
+                    item.reviews = [];
+                });
+                saveDataInternal();
+                renderAll();
+                showToast('Progresso resetado com sucesso.', 'success');
+            }
+        };
+
         // --- UI FUNCTIONS ---
         let currentFilterDiscipline = 'all';
         let currentFilterStatus = 'all';
@@ -1144,7 +1170,6 @@
 
         window.copySyncId = () => { navigator.clipboard.writeText(currentSyncId).then(() => showToast("Copiado!", "success")); };
         window.exportData = () => { const a = document.createElement('a'); a.href = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appState)); a.download = "backup_pcpi.json"; document.body.appendChild(a); a.click(); a.remove(); };
-        window.resetData = () => { if(confirm('Apagar tudo?')) { localStorage.removeItem('pcpi_planner_v1'); location.reload(); } };
         window.importData = (input) => { const f = input.files[0]; if(!f) return; const r = new FileReader(); r.onload = (e) => { try { appState = JSON.parse(e.target.result); saveDataInternal(); location.reload(); } catch(err) { alert('Erro no arquivo.'); } }; r.readAsText(f); };
 
     </script>
