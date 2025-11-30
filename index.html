@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Planner de Estudos</title>
+    <title>Planner PC-PI 2026 | Oficial Investigador</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -278,6 +278,51 @@
         </div>
     </div>
 
+    <!-- Confirm Modal -->
+    <div id="confirm-modal" class="modal opacity-0 pointer-events-none fixed w-full h-full top-0 left-0 flex items-center justify-center z-[60]">
+        <div class="modal-overlay absolute w-full h-full bg-gray-900 opacity-60 dark:opacity-80"></div>
+        <div class="modal-container bg-white dark:bg-slate-800 w-11/12 md:max-w-sm mx-auto rounded-lg shadow-xl z-[70] overflow-hidden animate-fade-in-down transition-colors transform scale-100">
+            <div class="p-6 text-center">
+                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-yellow-100 dark:bg-yellow-900/30 mb-4">
+                    <i class="fa-solid fa-exclamation text-yellow-600 dark:text-yellow-400 text-xl"></i>
+                </div>
+                <h3 class="text-lg leading-6 font-medium text-slate-900 dark:text-white mb-2" id="confirm-title">Confirmação</h3>
+                <div class="mt-2">
+                    <p class="text-sm text-gray-500 dark:text-gray-300" id="confirm-message">Tem certeza que deseja realizar esta ação?</p>
+                </div>
+            </div>
+            <div class="bg-gray-50 dark:bg-slate-750 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse gap-2">
+                <button type="button" id="btn-confirm-yes" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm transition">
+                    Sim, confirmar
+                </button>
+                <button type="button" onclick="closeConfirmModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-slate-600 shadow-sm px-4 py-2 bg-white dark:bg-slate-700 text-base font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-slate-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm transition">
+                    Cancelar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Prompt Modal (NEW) -->
+    <div id="prompt-modal" class="modal opacity-0 pointer-events-none fixed w-full h-full top-0 left-0 flex items-center justify-center z-[60]">
+        <div class="modal-overlay absolute w-full h-full bg-gray-900 opacity-60 dark:opacity-80"></div>
+        <div class="modal-container bg-white dark:bg-slate-800 w-11/12 md:max-w-sm mx-auto rounded-lg shadow-xl z-[70] overflow-hidden animate-fade-in-down transition-colors transform scale-100">
+            <div class="p-6">
+                <h3 class="text-lg leading-6 font-bold text-slate-900 dark:text-white mb-2" id="prompt-title">Editar</h3>
+                <div class="mt-2">
+                    <input type="text" id="prompt-input" class="w-full border dark:border-slate-600 rounded p-2 text-sm bg-gray-50 dark:bg-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500" onkeydown="if(event.key==='Enter') document.getElementById('btn-prompt-confirm').click()">
+                </div>
+            </div>
+            <div class="bg-gray-50 dark:bg-slate-750 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse gap-2">
+                <button type="button" id="btn-prompt-confirm" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm transition">
+                    Salvar
+                </button>
+                <button type="button" onclick="closePromptModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-slate-600 shadow-sm px-4 py-2 bg-white dark:bg-slate-700 text-base font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-slate-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm transition">
+                    Cancelar
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal for Management -->
     <div id="manage-modal" class="modal opacity-0 pointer-events-none fixed w-full h-full top-0 left-0 flex items-center justify-center z-50">
         <div class="modal-overlay absolute w-full h-full bg-gray-900 opacity-50 dark:opacity-80" onclick="closeModal('manage-modal')"></div>
@@ -448,6 +493,47 @@
         let currentFilterStatus = 'all';
         let currentEditingId = null;
         let chartInstances = {};
+        
+        // --- CUSTOM MODAL LOGIC (CONFIRM & PROMPT) ---
+        let pendingConfirmCallback = null;
+        let pendingPromptCallback = null;
+        
+        window.showConfirm = (message, onConfirm) => {
+            document.getElementById('confirm-message').innerText = message;
+            document.getElementById('confirm-modal').classList.remove('opacity-0', 'pointer-events-none');
+            pendingConfirmCallback = onConfirm;
+        };
+        
+        window.closeConfirmModal = () => {
+             document.getElementById('confirm-modal').classList.add('opacity-0', 'pointer-events-none');
+             pendingConfirmCallback = null;
+        };
+        
+        document.getElementById('btn-confirm-yes').addEventListener('click', () => {
+            if(pendingConfirmCallback) pendingConfirmCallback();
+            closeConfirmModal();
+        });
+
+        // Prompt Logic
+        window.showPrompt = (title, initialValue, onConfirm) => {
+            document.getElementById('prompt-title').innerText = title;
+            const input = document.getElementById('prompt-input');
+            input.value = initialValue;
+            document.getElementById('prompt-modal').classList.remove('opacity-0', 'pointer-events-none');
+            setTimeout(() => input.focus(), 100); 
+            pendingPromptCallback = onConfirm;
+        };
+
+        window.closePromptModal = () => {
+             document.getElementById('prompt-modal').classList.add('opacity-0', 'pointer-events-none');
+             pendingPromptCallback = null;
+        };
+
+        document.getElementById('btn-prompt-confirm').addEventListener('click', () => {
+            const val = document.getElementById('prompt-input').value;
+            if(val.trim() && pendingPromptCallback) pendingPromptCallback(val.trim());
+            closePromptModal();
+        });
 
         // --- USER CONSTANTS ---
         let userFirebaseConfig = localStorage.getItem('pcpi_firebase_config');
@@ -625,13 +711,13 @@
         // --- GLOBAL FUNCTIONS ---
         window.saveFirebaseConfig = () => {
             let v = document.getElementById('firebase-config-input').value.trim();
-            if(!v) return alert('Cole o código');
+            if(!v) return showToast('Cole o código', 'error');
             if(v.includes('=')) v = v.split('=')[1].trim();
             if(v.endsWith(';')) v = v.slice(0,-1);
             try { JSON.parse(v); localStorage.setItem('pcpi_firebase_config', v); location.reload(); }
             catch(e) {
                 try { const f=v.replace(/(^|{|,)\s*([a-zA-Z0-9_]+)\s*:/g, '$1"$2":').replace(/'/g,'"'); JSON.parse(f); localStorage.setItem('pcpi_firebase_config', f); location.reload(); }
-                catch(e2){ alert('JSON Inválido'); }
+                catch(e2){ showToast('JSON Inválido', 'error'); }
             }
         };
 
@@ -645,7 +731,7 @@
         window.addNewLesson = () => {
             const discId = document.getElementById('new-lesson-disc-select').value;
             const name = document.getElementById('new-lesson-name').value.trim();
-            if(!discId || !name) return alert('Preencha tudo');
+            if(!discId || !name) return showToast('Preencha todos os campos', 'error');
             
             appState.lessons.push({
                 id: `l_${Date.now()}`,
@@ -660,13 +746,14 @@
         };
 
         window.deleteLesson = (lessonId) => {
-            if(!confirm('Excluir esta aula e todos os seus tópicos?')) return;
-            appState.items = appState.items.filter(i => i.lessonId !== lessonId);
-            appState.lessons = appState.lessons.filter(l => l.id !== lessonId);
-            saveDataInternal();
-            renderAll();
-            renderDeleteLessonList();
-            showToast('Aula excluída.', 'info');
+            showConfirm('Excluir esta aula e todos os seus tópicos?', () => {
+                appState.items = appState.items.filter(i => i.lessonId !== lessonId);
+                appState.lessons = appState.lessons.filter(l => l.id !== lessonId);
+                saveDataInternal();
+                renderAll();
+                renderDeleteLessonList();
+                showToast('Aula excluída.', 'info');
+            });
         };
 
         window.addNewTopic = () => {
@@ -674,8 +761,8 @@
             const lessonId = document.getElementById('new-topic-lesson-select').value;
             const txt = document.getElementById('new-topic-name').value;
             
-            if(!discId || !lessonId) return alert('Selecione disciplina e aula.');
-            if(!txt.trim()) return alert('Digite os tópicos.');
+            if(!discId || !lessonId) return showToast('Selecione disciplina e aula.', 'error');
+            if(!txt.trim()) return showToast('Digite os tópicos.', 'error');
 
             const lines = txt.split('\n').map(t=>t.trim()).filter(t=>t.length>0);
             lines.forEach((t,i) => {
@@ -771,11 +858,17 @@
                     const isLessonExpanded = expandedSections.has(lessonKey);
 
                     // Lesson Header (Level 2)
-                    const lessonHeader = document.createElement('button');
+                    const lessonHeader = document.createElement('div');
+                    // Changed from button to div to better handle nested clicks, manually styling as button
                     lessonHeader.onclick = () => window.toggleSection(lessonKey);
-                    lessonHeader.className = 'w-full bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 dark:hover:bg-slate-750 px-6 py-2 flex justify-between items-center text-left focus:outline-none transition border-l-4 border-gray-300 dark:border-slate-600 ml-0';
+                    lessonHeader.className = 'w-full bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 dark:hover:bg-slate-750 px-6 py-2 flex justify-between items-center text-left cursor-pointer transition border-l-4 border-gray-300 dark:border-slate-600 ml-0 group';
                     lessonHeader.innerHTML = `
-                        <span class="text-xs font-bold text-gray-600 dark:text-gray-300 uppercase tracking-wider pl-4">${lesson.name}</span>
+                        <div class="flex items-center gap-3">
+                            <span class="text-xs font-bold text-gray-600 dark:text-gray-300 uppercase tracking-wider pl-4">${lesson.name}</span>
+                            <button onclick="editLessonName('${lesson.id}', event)" class="text-gray-400 hover:text-blue-500 dark:hover:text-blue-400 transition p-1 rounded-full hover:bg-gray-200 dark:hover:bg-slate-700 opacity-0 group-hover:opacity-100" title="Renomear Aula">
+                                <i class="fa-solid fa-pen text-[10px]"></i>
+                            </button>
+                        </div>
                         <i class="fa-solid fa-chevron-down text-gray-400 text-xs accordion-icon ${isLessonExpanded ? 'rotate' : ''}"></i>
                     `;
                     discContent.appendChild(lessonHeader);
@@ -793,9 +886,9 @@
 
                 // Render orphans if any (fallback)
                 if(itemsNoLesson.length > 0) {
-                     itemsNoLesson.forEach(item => {
+                      itemsNoLesson.forEach(item => {
                         discContent.appendChild(createItemElement(item, today));
-                     });
+                      });
                 }
 
                 discDiv.appendChild(discContent);
@@ -927,11 +1020,11 @@
         window.openSettingsModal = () => { document.getElementById('config-title').value = appState.config.title; document.getElementById('config-role').value = appState.config.role; document.getElementById('config-date').value = appState.config.examDate; document.getElementById('settings-modal').classList.remove('opacity-0', 'pointer-events-none'); document.body.classList.add('modal-active'); };
         window.switchTab = (tabId) => { ['tab-add-topic', 'tab-add-lesson', 'tab-add-disc', 'tab-del-disc', 'tab-del-lesson', 'tab-del-topic'].forEach(id => { document.getElementById(id).classList.add('hidden'); document.getElementById('btn-'+id).classList.remove('tab-active'); document.getElementById('btn-'+id).classList.add('tab-inactive'); }); document.getElementById(tabId).classList.remove('hidden'); document.getElementById('btn-'+tabId).classList.add('tab-active'); document.getElementById('btn-'+tabId).classList.remove('tab-inactive'); };
         window.updateStatus = (id, newStatus) => { const item = appState.items.find(i => i.id === id); if (!item) return; item.status = newStatus; if (newStatus === 'concluido') { const today = new Date(); item.completedDate = today.toISOString(); const r1 = new Date(today); r1.setDate(r1.getDate() + 1); const r2 = new Date(today); r2.setDate(r2.getDate() + 7); const r3 = new Date(today); r3.setDate(r3.getDate() + 30); item.reviews = [ { date: r1.toISOString(), done: false, label: '24h' }, { date: r2.toISOString(), done: false, label: '7d' }, { date: r3.toISOString(), done: false, label: '30d' } ]; showToast(`Status atualizado!`, 'success'); } else { item.completedDate = null; item.reviews = []; } saveDataInternal(); renderAll(); };
-        window.deleteTopic = (itemId) => { if(!confirm('Excluir?')) return; appState.items = appState.items.filter(i => i.id !== itemId); saveDataInternal(); renderAll(); showToast('Excluído.', 'info'); };
+        window.deleteTopic = (itemId) => { showConfirm('Excluir este tópico?', () => { appState.items = appState.items.filter(i => i.id !== itemId); saveDataInternal(); renderAll(); showToast('Excluído.', 'info'); }); };
         window.saveNote = () => { if (currentEditingId !== null) { const note = document.getElementById('modal-note-input').value; const item = appState.items.find(i => i.id === currentEditingId); if(item) { item.note = note; saveDataInternal(); renderSyllabus(); closeModal('note-modal'); showToast('Salvo!', 'success'); } } };
-        window.saveSettings = () => { const title = document.getElementById('config-title').value; const role = document.getElementById('config-role').value; const date = document.getElementById('config-date').value; if(!title || !role || !date) return alert('Preencha tudo.'); appState.config = { title, role, examDate: date }; saveDataInternal(); renderHeader(); initCountdown(); closeModal('settings-modal'); showToast('Dados salvos!', 'success'); };
-        window.resetHours = () => { if(confirm('Zerar horas?')) { appState.totalHours = 0; saveDataInternal(); renderProductivity(); showToast('Zerado.', 'info'); } };
-        window.resetData = () => { if(confirm('Resetar progresso?')) { appState.totalHours = 0; appState.items.forEach(item => { item.status = 'pendente'; item.completedDate = null; item.reviews = []; }); saveDataInternal(); renderAll(); showToast('Resetado.', 'success'); } };
+        window.saveSettings = () => { const title = document.getElementById('config-title').value; const role = document.getElementById('config-role').value; const date = document.getElementById('config-date').value; if(!title || !role || !date) return showToast('Preencha todos os campos.', 'error'); appState.config = { title, role, examDate: date }; saveDataInternal(); renderHeader(); initCountdown(); closeModal('settings-modal'); showToast('Dados salvos!', 'success'); };
+        window.resetHours = () => { showConfirm('Zerar horas estudadas?', () => { appState.totalHours = 0; saveDataInternal(); renderProductivity(); showToast('Zerado.', 'info'); }); };
+        window.resetData = () => { showConfirm('ATENÇÃO: Resetar todo o progresso?', () => { appState.totalHours = 0; appState.items.forEach(item => { item.status = 'pendente'; item.completedDate = null; item.reviews = []; }); saveDataInternal(); renderAll(); showToast('Resetado.', 'success'); }); };
         window.filterByDisciplineFromCard = (id) => { expandedSections.add(id); currentFilterDiscipline = id; document.getElementById('filter-discipline').value = id; renderSyllabus(); document.getElementById('syllabus-section').scrollIntoView({ behavior: 'smooth' }); };
         window.filterStatus = (status) => { currentFilterStatus = status; renderSyllabus(); };
         window.renderDeleteDiscList = () => { const list = document.getElementById('delete-disc-list'); list.innerHTML = ''; appState.disciplines.forEach(d => { const div = document.createElement('div'); div.className = "flex justify-between items-center bg-gray-50 dark:bg-slate-700/50 p-2 rounded border dark:border-slate-600"; div.innerHTML = `<span class="text-sm text-gray-700 dark:text-gray-200">${d.name}</span><button onclick="deleteDiscipline('${d.id}')" class="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 text-sm px-2"><i class="fa-solid fa-trash"></i></button>`; list.appendChild(div); }); };
@@ -939,11 +1032,28 @@
         window.toggleSelectAllDelete = () => { const cbs = document.querySelectorAll('.delete-topic-checkbox'); if(cbs.length === 0) return; const all = Array.from(cbs).every(c => c.checked); cbs.forEach(c => c.checked = !all); const btn = document.getElementById('btn-select-all-del'); if(btn) { if(!all) btn.innerHTML = '<i class="fa-solid fa-square-check mr-1"></i> Desmarcar'; else btn.innerHTML = '<i class="fa-regular fa-square-check mr-1"></i> Selecionar Todos'; } };
         window.copySyncId = () => { navigator.clipboard.writeText(currentSyncId).then(() => showToast("Copiado!", "success")); };
         window.exportData = () => { const a = document.createElement('a'); a.href = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appState)); a.download = "backup_pcpi.json"; document.body.appendChild(a); a.click(); a.remove(); };
-        window.importData = (input) => { const f = input.files[0]; if(!f) return; const r = new FileReader(); r.onload = (e) => { try { appState = JSON.parse(e.target.result); saveDataInternal(); location.reload(); } catch(err) { alert('Erro no arquivo.'); } }; r.readAsText(f); };
-        window.loadFromSyncId = () => { if(!useFirebase) return alert("Configure o Firebase."); const newId = document.getElementById('input-sync-id').value.trim(); if(!newId) return; if(confirm("Carregar?")) { localStorage.setItem('pcpi_sync_id', newId); currentSyncId = newId; setupRealtimeListener(newId); updateSyncUI(true); closeModal('sync-modal'); showToast("Conectando...", "info"); } };
-        window.deleteDiscipline = (id) => { if(!confirm('Apagar disciplina?')) return; appState.items = appState.items.filter(i => i.disciplineId !== id); appState.lessons = appState.lessons.filter(l => l.disciplineId !== id); appState.disciplines = appState.disciplines.filter(d => d.id !== id); saveDataInternal(); renderAll(); renderDeleteDiscList(); showToast('Excluída.', 'info'); };
-        window.deleteSelectedTopics = () => { const cbs = document.querySelectorAll('.delete-topic-checkbox:checked'); if(cbs.length === 0) return alert('Selecione itens.'); if(!confirm(`Excluir ${cbs.length}?`)) return; const ids = Array.from(cbs).map(c => parseInt(c.value)); appState.items = appState.items.filter(i => !ids.includes(i.id)); saveDataInternal(); renderAll(); renderBulkDeleteTopicList(); showToast('Excluídos.', 'info'); };
-        window.addNewDiscipline = () => { const txt = document.getElementById('new-disc-name').value; if(!txt.trim()) return alert('Digite nomes.'); const names = txt.split('\n').map(t=>t.trim()).filter(t=>t.length>0); if(names.length===0) return; let cnt=0; names.forEach((n,i) => { const id = 'custom_'+(Date.now()+i); appState.disciplines.push({id: id, name: n}); appState.lessons.push({id: `l_${id}_01`, disciplineId: id, name: 'Aula 01'}); cnt++; }); saveDataInternal(); document.getElementById('new-disc-name').value=''; showToast(`${cnt} criadas!`, 'success'); populateModalSelects(); renderAll(); switchTab('tab-add-topic'); };
+        window.importData = (input) => { const f = input.files[0]; if(!f) return; const r = new FileReader(); r.onload = (e) => { try { appState = JSON.parse(e.target.result); saveDataInternal(); location.reload(); } catch(err) { showToast('Erro no arquivo.', 'error'); } }; r.readAsText(f); };
+        window.loadFromSyncId = () => { if(!useFirebase) return showToast("Configure o Firebase primeiro.", 'error'); const newId = document.getElementById('input-sync-id').value.trim(); if(!newId) return; showConfirm("Carregar este ID?", () => { localStorage.setItem('pcpi_sync_id', newId); currentSyncId = newId; setupRealtimeListener(newId); updateSyncUI(true); closeModal('sync-modal'); showToast("Conectando...", "info"); }); };
+        window.deleteDiscipline = (id) => { showConfirm('Apagar disciplina e todo o conteúdo dela?', () => { appState.items = appState.items.filter(i => i.disciplineId !== id); appState.lessons = appState.lessons.filter(l => l.disciplineId !== id); appState.disciplines = appState.disciplines.filter(d => d.id !== id); saveDataInternal(); renderAll(); renderDeleteDiscList(); showToast('Excluída.', 'info'); }); };
+        window.deleteSelectedTopics = () => { const cbs = document.querySelectorAll('.delete-topic-checkbox:checked'); if(cbs.length === 0) return showToast('Selecione itens.', 'error'); showConfirm(`Excluir ${cbs.length} tópicos selecionados?`, () => { const ids = Array.from(cbs).map(c => parseInt(c.value)); appState.items = appState.items.filter(i => !ids.includes(i.id)); saveDataInternal(); renderAll(); renderBulkDeleteTopicList(); showToast('Excluídos.', 'info'); }); };
+        window.addNewDiscipline = () => { const txt = document.getElementById('new-disc-name').value; if(!txt.trim()) return showToast('Digite nomes.', 'error'); const names = txt.split('\n').map(t=>t.trim()).filter(t=>t.length>0); if(names.length===0) return; let cnt=0; names.forEach((n,i) => { const id = 'custom_'+(Date.now()+i); appState.disciplines.push({id: id, name: n}); appState.lessons.push({id: `l_${id}_01`, disciplineId: id, name: 'Aula 01'}); cnt++; }); saveDataInternal(); document.getElementById('new-disc-name').value=''; showToast(`${cnt} criadas!`, 'success'); populateModalSelects(); renderAll(); switchTab('tab-add-topic'); };
+        
+        // --- NEW EDIT LESSON LOGIC ---
+        window.editLessonName = (lessonId, event) => {
+            event.stopPropagation(); // Stop accordion toggle
+            const lesson = appState.lessons.find(l => l.id === lessonId);
+            if(!lesson) return;
+
+            showPrompt('Renomear Aula', lesson.name, (newName) => {
+                lesson.name = newName;
+                saveDataInternal();
+                renderSyllabus(); // Re-render to show new name
+                populateModalSelects(); 
+                renderDeleteLessonList();
+                showToast('Renomeado!', 'success');
+            });
+        };
+
         window.updateStatusIndicator = updateStatusIndicator;
         window.updateSyncUI = updateSyncUI;
 
