@@ -374,10 +374,11 @@
                             <select id="new-lesson-disc-select" class="w-full border dark:border-slate-600 rounded p-2 text-sm bg-white dark:bg-slate-700 dark:text-white"></select>
                         </div>
                         <div>
-                            <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">Nome da Aula</label>
-                            <input type="text" id="new-lesson-name" class="w-full border dark:border-slate-600 rounded p-2 text-sm bg-white dark:bg-slate-700 dark:text-white" placeholder="Ex: Aula 02 - Fonologia">
+                            <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">Lista de Aulas</label>
+                            <p class="text-[10px] text-gray-400 dark:text-gray-500 mb-1">Cole a lista abaixo, uma aula por linha.</p>
+                            <textarea id="new-lesson-name" class="w-full border dark:border-slate-600 rounded p-2 text-sm h-24 bg-white dark:bg-slate-700 dark:text-white" placeholder="Ex:&#10;Aula 02 - Fonologia&#10;Aula 03 - Morfologia..."></textarea>
                         </div>
-                        <button onclick="addNewLesson()" class="w-full bg-blue-500 text-white py-2 rounded text-sm font-bold hover:bg-blue-600">Adicionar Aula</button>
+                        <button onclick="addNewLesson()" class="w-full bg-blue-500 text-white py-2 rounded text-sm font-bold hover:bg-blue-600">Adicionar Aulas</button>
                     </div>
                 </div>
 
@@ -730,17 +731,26 @@
         // --- MANAGEMENT ---
         window.addNewLesson = () => {
             const discId = document.getElementById('new-lesson-disc-select').value;
-            const name = document.getElementById('new-lesson-name').value.trim();
-            if(!discId || !name) return showToast('Preencha todos os campos', 'error');
+            const txt = document.getElementById('new-lesson-name').value;
             
-            appState.lessons.push({
-                id: `l_${Date.now()}`,
-                disciplineId: discId,
-                name: name
+            if(!discId) return showToast('Selecione uma disciplina.', 'error');
+            if(!txt.trim()) return showToast('Digite os nomes das aulas.', 'error');
+
+            const names = txt.split('\n').map(t=>t.trim()).filter(t=>t.length>0);
+            
+            if(names.length === 0) return showToast('Nenhuma aula válida.', 'error');
+
+            names.forEach((name, i) => {
+                appState.lessons.push({
+                    id: `l_${Date.now()}_${i}`,
+                    disciplineId: discId,
+                    name: name
+                });
             });
+
             saveDataInternal();
             document.getElementById('new-lesson-name').value = '';
-            showToast('Aula criada!', 'success');
+            showToast(`${names.length} aulas criadas!`, 'success');
             populateModalSelects(); // Refresh selects
             renderSyllabus();
         };
