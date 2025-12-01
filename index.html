@@ -867,7 +867,7 @@
                     const lessonKey = `lesson_${lesson.id}`;
                     const isLessonExpanded = expandedSections.has(lessonKey);
 
-                    // Lesson Header (Level 2)
+                  // Lesson Header (Level 2)
                     const lessonHeader = document.createElement('div');
                     // Changed from button to div to better handle nested clicks, manually styling as button
                     lessonHeader.onclick = () => window.toggleSection(lessonKey);
@@ -875,7 +875,8 @@
                     lessonHeader.innerHTML = `
                         <div class="flex items-center gap-3">
                             <span class="text-xs font-bold text-gray-600 dark:text-gray-300 uppercase tracking-wider pl-4">${lesson.name}</span>
-                            <button onclick="editLessonName('${lesson.id}', event)" class="text-gray-400 hover:text-blue-500 dark:hover:text-blue-400 transition p-1 rounded-full hover:bg-gray-200 dark:hover:bg-slate-700 opacity-0 group-hover:opacity-100" title="Renomear Aula">
+                            <!-- Botão de editar com as classes hidden (oculto no celular) e md:block (visível no PC) -->
+                            <button onclick="editLessonName('${lesson.id}', event)" class="hidden md:block text-gray-400 hover:text-blue-500 dark:hover:text-blue-400 transition p-1 rounded-full hover:bg-gray-200 dark:hover:bg-slate-700 opacity-0 group-hover:opacity-100" title="Renomear Aula">
                                 <i class="fa-solid fa-pen text-[10px]"></i>
                             </button>
                         </div>
@@ -1075,3 +1076,4 @@
     </script>
 </body>
 </html>
+
