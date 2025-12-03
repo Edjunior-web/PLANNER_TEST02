@@ -170,9 +170,17 @@
             <!-- CARD DE MISSÃO DIÁRIA -->
             <div class="lg:col-span-2 glass-panel rounded-xl p-4 flex flex-col relative overflow-hidden mission-card min-h-[200px]">
                 <div class="absolute top-0 right-0 p-2 opacity-10"><i class="fa-solid fa-scroll text-6xl text-purple-500"></i></div>
-                <h3 class="text-purple-600 dark:text-purple-400 text-xs font-bold uppercase tracking-wide mb-3 flex items-center gap-2">
-                    <i class="fa-solid fa-calendar-day"></i> Missão de Hoje (<span id="mission-day-display">Dia 0</span>)
-                </h3>
+                
+                <!-- Header com Botão de Configuração -->
+                <div class="flex justify-between items-center mb-3 z-10 relative">
+                    <h3 class="text-purple-600 dark:text-purple-400 text-xs font-bold uppercase tracking-wide flex items-center gap-2">
+                        <i class="fa-solid fa-calendar-day"></i> Missão de Hoje (<span id="mission-day-display">Dia 0</span>)
+                    </h3>
+                    <button onclick="configureScheduleStart()" class="text-xs bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-300 hover:bg-purple-200 dark:hover:bg-purple-800 px-2 py-1 rounded transition flex items-center gap-1" title="Configurar Dia 1">
+                        <i class="fa-solid fa-calendar-check"></i> Definir Início
+                    </button>
+                </div>
+
                 <div id="daily-mission-content" class="space-y-3 flex-1 flex flex-col justify-center">
                     <p class="text-xs text-gray-400 italic">Carregando plano...</p>
                 </div>
@@ -213,7 +221,7 @@
                     </div>
                 </div>
 
-                <!-- Desafios Card (Nova Posição) -->
+                <!-- Desafios Card -->
                 <div class="md:col-span-2 glass-panel rounded-xl p-4 flex flex-col relative overflow-hidden mt-0">
                     <div class="absolute top-0 right-0 p-2 opacity-10"><i class="fa-solid fa-trophy text-6xl text-yellow-500"></i></div>
                     <h3 class="text-gray-500 dark:text-gray-400 text-xs font-bold uppercase tracking-wide mb-3 flex items-center gap-2">
@@ -285,36 +293,14 @@
                     <div><label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">Nome do Concurso</label><input type="text" id="config-title" class="w-full border dark:border-slate-600 rounded p-2 text-sm bg-gray-50 dark:bg-slate-700 dark:text-white"></div>
                     <div><label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">Cargo</label><input type="text" id="config-role" class="w-full border dark:border-slate-600 rounded p-2 text-sm bg-gray-50 dark:bg-slate-700 dark:text-white"></div>
                     <div><label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">Data da Prova</label><input type="date" id="config-date" class="w-full border dark:border-slate-600 rounded p-2 text-sm bg-gray-50 dark:bg-slate-700 dark:text-white"></div>
+                    <div><label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">Início do Cronograma (Dia 1)</label><input type="date" id="config-start-date" class="w-full border dark:border-slate-600 rounded p-2 text-sm bg-gray-50 dark:bg-slate-700 dark:text-white"></div>
                     <div class="pt-4 border-t dark:border-slate-700"><button onclick="saveSettings()" class="w-full bg-blue-600 text-white py-2 rounded text-sm font-bold">Salvar</button></div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div id="sync-modal" class="modal opacity-0 pointer-events-none fixed w-full h-full top-0 left-0 flex items-center justify-center z-[150]">
-        <div class="modal-overlay absolute w-full h-full bg-gray-900 opacity-50 dark:opacity-80" onclick="closeModal('sync-modal')"></div>
-        <div class="modal-container bg-white dark:bg-slate-800 w-11/12 md:max-w-md mx-auto rounded shadow-lg z-[151] overflow-y-auto animate-fade-in-down transition-colors">
-            <div class="modal-content py-6 text-left px-6">
-                <div class="flex justify-between items-center pb-3 border-b dark:border-slate-700 mb-4"><p class="text-lg font-bold text-slate-800 dark:text-white gap-2 flex items-center"><i class="fa-solid fa-cloud text-blue-500"></i> Sincronização (ID)</p><div class="cursor-pointer z-50 text-gray-500 dark:text-gray-400" onclick="closeModal('sync-modal')"><i class="fa-solid fa-xmark"></i></div></div>
-                <div class="space-y-4">
-                    <div id="sync-active-ui" class="hidden">
-                        <div class="bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 rounded p-4 mb-4">
-                            <p class="text-green-800 dark:text-green-400 font-bold text-sm mb-2">Conectado!</p>
-                            <p class="text-xs text-green-700 dark:text-green-500">Seu ID para outros dispositivos:</p>
-                            <div class="flex gap-2 mt-1"><input type="text" id="current-sync-id-display" readonly class="w-full bg-white dark:bg-slate-700 border border-green-300 dark:border-green-700 rounded p-2 text-lg font-mono font-bold text-center dark:text-white"><button onclick="copySyncId()" class="bg-green-600 text-white px-3 rounded"><i class="fa-regular fa-copy"></i></button></div>
-                        </div>
-                        <div class="border-t dark:border-slate-700 pt-4"><p class="text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Carregar outro ID:</p><div class="flex gap-2"><input type="text" id="input-sync-id" class="w-full border dark:border-slate-600 rounded p-2 text-sm font-mono uppercase bg-white dark:bg-slate-700 dark:text-white" placeholder="Cole o ID aqui..."><button onclick="loadFromSyncId()" class="bg-blue-600 text-white px-4 py-2 rounded text-sm font-bold">Carregar</button></div></div>
-                    </div>
-                    <div id="sync-setup-ui">
-                        <p class="text-sm text-gray-500 dark:text-gray-300 mb-2">Para ativar a nuvem, cole a configuração do Firebase (JSON):</p>
-                        <textarea id="firebase-config-input" class="w-full h-32 border dark:border-slate-600 rounded p-2 text-xs font-mono bg-slate-50 dark:bg-slate-700 dark:text-white" placeholder='{"apiKey": "...", "authDomain": "...", ...}'></textarea>
-                        <button onclick="saveFirebaseConfig()" class="w-full bg-blue-600 text-white py-2 rounded text-sm font-bold mt-2">Ativar Nuvem</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
+    <!-- Modals -->
     <div id="note-modal" class="modal opacity-0 pointer-events-none fixed w-full h-full top-0 left-0 flex items-center justify-center z-50">
         <div class="modal-overlay absolute w-full h-full bg-gray-900 opacity-50 dark:opacity-80" onclick="closeModal('note-modal')"></div>
         <div class="modal-container bg-white dark:bg-slate-800 w-11/12 md:max-w-md mx-auto rounded shadow-lg z-50 overflow-y-auto animate-fade-in-down transition-colors">
@@ -394,21 +380,41 @@
         </div>
     </div>
 
+    <div id="sync-modal" class="modal opacity-0 pointer-events-none fixed w-full h-full top-0 left-0 flex items-center justify-center z-[150]">
+        <div class="modal-overlay absolute w-full h-full bg-gray-900 opacity-50 dark:opacity-80" onclick="closeModal('sync-modal')"></div>
+        <div class="modal-container bg-white dark:bg-slate-800 w-11/12 md:max-w-md mx-auto rounded shadow-lg z-[151] overflow-y-auto animate-fade-in-down transition-colors">
+            <div class="modal-content py-6 text-left px-6">
+                <div class="flex justify-between items-center pb-3 border-b dark:border-slate-700 mb-4"><p class="text-lg font-bold text-slate-800 dark:text-white gap-2 flex items-center"><i class="fa-solid fa-cloud text-blue-500"></i> Sincronização (ID)</p><div class="cursor-pointer z-50 text-gray-500 dark:text-gray-400" onclick="closeModal('sync-modal')"><i class="fa-solid fa-xmark"></i></div></div>
+                <div class="space-y-4">
+                    <div id="sync-active-ui" class="hidden">
+                        <div class="bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 rounded p-4 mb-4">
+                            <p class="text-green-800 dark:text-green-400 font-bold text-sm mb-2">Conectado!</p>
+                            <p class="text-xs text-green-700 dark:text-green-500">Seu ID para outros dispositivos:</p>
+                            <div class="flex gap-2 mt-1"><input type="text" id="current-sync-id-display" readonly class="w-full bg-white dark:bg-slate-700 border border-green-300 dark:border-green-700 rounded p-2 text-lg font-mono font-bold text-center dark:text-white"><button onclick="copySyncId()" class="bg-green-600 text-white px-3 rounded"><i class="fa-regular fa-copy"></i></button></div>
+                        </div>
+                        <div class="border-t dark:border-slate-700 pt-4"><p class="text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Carregar outro ID:</p><div class="flex gap-2"><input type="text" id="input-sync-id" class="w-full border dark:border-slate-600 rounded p-2 text-sm font-mono uppercase bg-white dark:bg-slate-700 dark:text-white" placeholder="Cole o ID aqui..."><button onclick="loadFromSyncId()" class="bg-blue-600 text-white px-4 py-2 rounded text-sm font-bold">Carregar</button></div></div>
+                    </div>
+                    <div id="sync-setup-ui">
+                        <p class="text-sm text-gray-500 dark:text-gray-300 mb-2">Para ativar a nuvem, cole a configuração do Firebase (JSON):</p>
+                        <textarea id="firebase-config-input" class="w-full h-32 border dark:border-slate-600 rounded p-2 text-xs font-mono bg-slate-50 dark:bg-slate-700 dark:text-white" placeholder='{"apiKey": "...", "authDomain": "...", ...}'></textarea>
+                        <button onclick="saveFirebaseConfig()" class="w-full bg-blue-600 text-white py-2 rounded text-sm font-bold mt-2">Ativar Nuvem</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div id="toast-container" class="fixed bottom-5 right-5 z-[200] flex flex-col gap-2"></div>
 
     <script>
-        // --- GLOBAL VARIABLES ---
-        let app = null, db = null, auth = null;
-        let useFirebase = false;
-        let currentSyncId = localStorage.getItem('pcpi_sync_id') || generateId();
-        let unsubscribeSnapshot = null;
-        let expandedDisciplines = new Set(), expandedSections = new Set();
-        let currentFilterDiscipline = 'all', currentFilterStatus = 'all';
-        let currentEditingId = null;
-        let chartInstances = {};
-        let userFirebaseConfig = localStorage.getItem('pcpi_firebase_config'); // Corrigido: Adicionado de volta ao escopo global
-
-        // Schedule Data
+        // --- FUNCTIONS DECLARATIONS (Hoisted) ---
+        function generateId() { return Array.from(crypto.getRandomValues(new Uint8Array(4))).map(b=>b.toString(16).padStart(2,'0')).join(''); }
+        function initTheme() { const saved = localStorage.getItem('theme'); if(saved==='dark'||(!saved&&window.matchMedia('(prefers-color-scheme: dark)').matches)) document.documentElement.classList.add('dark'); updateThemeIcon(); }
+        function updateThemeIcon() { const i=document.getElementById('theme-icon'); if(document.documentElement.classList.contains('dark')){i.classList.remove('fa-sun');i.classList.add('fa-moon');}else{i.classList.remove('fa-moon');i.classList.add('fa-sun');} }
+        
+        // --- GLOBAL CONSTANTS ---
+        const defaultDisciplines = [{id:'port',name:'Língua Portuguesa'},{id:'rlm',name:'Raciocínio Lógico-Matemático'},{id:'info',name:'Informática'},{id:'regional',name:'Conhecimentos Regionais (PI)'},{id:'penal',name:'Direito Penal'},{id:'procpenal',name:'Direito Processual Penal'},{id:'const',name:'Direito Constitucional'},{id:'adm',name:'Direito Administrativo'},{id:'leginst',name:'Legislação Institucional'},{id:'dh',name:'Direitos Humanos'},{id:'crim',name:'Criminologia'},{id:'medlegal',name:'Medicina Legal'}];
+        const rawTopics = [{d:'port',t:'Interpretação de texto'},{d:'port',t:'Gramática'},{d:'rlm',t:'Lógica Proposicional'},{d:'rlm',t:'Conjuntos'},{d:'info',t:'Hardware'},{d:'info',t:'Software'},{d:'regional',t:'História do Piauí'},{d:'regional',t:'Geografia do Piauí'},{d:'penal',t:'Aplicação da Lei Penal'},{d:'penal',t:'Crimes'},{d:'procpenal',t:'Inquérito'},{d:'procpenal',t:'Prisões'},{d:'const',t:'Direitos Fundamentais'},{d:'const',t:'Organização do Estado'},{d:'adm',t:'Atos Administrativos'},{d:'adm',t:'Poderes'},{d:'leginst',t:'Estatuto PC-PI'},{d:'dh',t:'Declaração Universal'},{d:'crim',t:'Escolas Criminológicas'},{d:'medlegal',t:'Traumatologia'}];
         const studySchedule = [
             { day: 1, tasks: ["Direitos Humanos: Itens 1 a 5", "Leg. Trânsito: Itens 1 a 4"] },
             { day: 2, tasks: ["Língua Portuguesa: Itens 1 a 5", "RLM: Itens 1 a 4"] },
@@ -423,24 +429,83 @@
             { day: 11, tasks: ["Língua Portuguesa: Itens 11 a 15", "RLM: Itens 10 a 14"] },
             { day: 12, tasks: ["Direitos Humanos: Itens 21 a 25", "Dir. Ambiental: Itens 5 a 8"] },
             { day: 13, tasks: ["Redação: 1 Redação (Tema: Trânsito)", "Leg. Trânsito: Itens 15 a 19"] },
-            { day: 14, tasks: ["Dir. Constitucional: Itens 11 a 15", "Dir. Penal: Itens 5 a 8"] }
+            { day: 14, tasks: ["Dir. Constitucional: Itens 11 a 15", "Dir. Penal: Itens 5 a 8"] },
+            // Week 3
+            { day: 15, tasks: ["Direitos Humanos: Itens 26 a 30", "Informática: Itens 10 a 14"] },
+            { day: 16, tasks: ["Língua Portuguesa: Itens 16 a 20", "RLM: Itens 15 a 19"] },
+            { day: 17, tasks: ["Leg. Trânsito: Itens 20 a 24", "Dir. Administrativo: Itens 11 a 15"] },
+            { day: 18, tasks: ["Direitos Humanos: Itens 31 a 35", "Dir. Ambiental: Itens 9 a 12"] },
+            { day: 19, tasks: ["Dir. Constitucional: Itens 16 a 20", "Estatuto Geral Guardas: Itens 1 a 3"] },
+            { day: 20, tasks: ["Redação: 1 Redação Treino", "Dir. Penal: Itens 9 a 13"] },
+            { day: 21, tasks: ["Leg. Trânsito: Itens 25 a 29", "Informática: Itens 15 a 19"] },
+            // Week 4
+            { day: 22, tasks: ["Língua Portuguesa: Itens 21 a 25", "RLM: Itens 20 a 24"] },
+            { day: 23, tasks: ["Direitos Humanos: Itens 36 a 40", "Dir. Administrativo: Itens 16 a 20"] },
+            { day: 24, tasks: ["Feriado/Descanso ou Leitura leve"] },
+            { day: 25, tasks: ["Dir. Penal: Itens 14 a 18", "Estatuto Geral Guardas: Itens 4 a 5 (FIM)"] },
+            { day: 26, tasks: ["Leg. Trânsito: Itens 30 a 34", "Dir. Ambiental: Itens 13 a 16"] },
+            { day: 27, tasks: ["Redação: 1 Redação Treino", "Dir. Constitucional: Itens 21 a 25"] },
+            { day: 28, tasks: ["Direitos Humanos: Itens 41 a 45", "Informática: Itens 20 a 24"] },
+            // Week 5
+            { day: 29, tasks: ["Língua Portuguesa: Itens 26 a 30", "RLM: Itens 25 a 29"] },
+            { day: 30, tasks: ["Dir. Penal: Itens 19 a 22", "Leg. Mun. Caxias: Itens 1 a 3 (FIM)"] },
+            { day: 31, tasks: ["Feriado/Descanso"] },
+            { day: 32, tasks: ["Dir. Penal: Itens 23 a 26 (FIM)", "Leg. Trânsito: Itens 35 a 39"] },
+            { day: 33, tasks: ["Dir. Administrativo: Itens 21 a 25", "Dir. Ambiental: Itens 17 a 20"] },
+            { day: 34, tasks: ["Redação: 1 Redação Treino", "Dir. Constitucional: Itens 26 a 30"] },
+            { day: 35, tasks: ["Direitos Humanos: Itens 46 a 55", "Informática: Itens 25 a 29"] },
+            // Week 6
+            { day: 36, tasks: ["Língua Portuguesa: Itens 31 a 38", "RLM: Itens 30 a 37"] },
+            { day: 37, tasks: ["Leg. Trânsito: Itens 40 a 48", "Dir. Administrativo: Itens 26 a 30"] },
+            { day: 38, tasks: ["Direitos Humanos: Itens 56 a 65", "Dir. Ambiental: Itens 21 a 24"] },
+            { day: 39, tasks: ["Dir. Constitucional: Itens 31 a 38", "Informática: Itens 30 a 34"] },
+            { day: 40, tasks: ["Língua Portuguesa: Itens 39 a 46", "RLM: Itens 38 a 45"] },
+            { day: 41, tasks: ["Redação: 1 Redação Treino", "Leg. Trânsito: Itens 49 a 57"] },
+            { day: 42, tasks: ["Dir. Administrativo: Itens 31 a 38", "Dir. Ambiental: Itens 25 a 28"] },
+            // Week 7
+            { day: 43, tasks: ["Direitos Humanos: Itens 66 a 75", "Informática: Itens 35 a 40"] },
+            { day: 44, tasks: ["Língua Portuguesa: Itens 47 a 54", "RLM: Itens 46 a 53"] },
+            { day: 45, tasks: ["Dir. Constitucional: Itens 39 a 48", "Dir. Ambiental: Itens 29 a 36 (FIM)"] },
+            { day: 46, tasks: ["Leg. Trânsito: Itens 58 a 66", "Dir. Administrativo: Itens 39 a 47 (FIM)"] },
+            { day: 47, tasks: ["Informática: Itens 41 a 48 (FIM)", "Direitos Humanos: Itens 76 a 85"] },
+            { day: 48, tasks: ["Redação: 1 Redação Treino", "Conhec. Locais: Item 1 (FIM)"] },
+            { day: 49, tasks: ["Língua Portuguesa: Itens 55 a 63 (FIM)", "RLM: Itens 54 a 60"] },
+            // Week 8
+            { day: 50, tasks: ["Leg. Trânsito: Itens 67 a 76 (FIM)", "Dir. Constitucional: Itens 49 a 57"] },
+            { day: 51, tasks: ["Direitos Humanos: Itens 86 a 94 (FIM)", "RLM: Itens 61 a 67 (FIM)"] },
+            { day: 52, tasks: ["Dir. Constitucional: Itens 58 a 66 (FIM)", "EDITAL ZERADO!"] },
+            { day: 53, tasks: ["Revisão de Tampão / Atrasos"] },
+            { day: 54, tasks: ["Revisão de Tampão / Atrasos"] },
+            { day: 55, tasks: ["Revisão de Tampão / Atrasos"] },
+            { day: 56, tasks: ["Revisão de Tampão / Atrasos"] },
+            // Week 9
+            { day: 57, tasks: ["Simulado Geral 01 (Prova completa)"] },
+            { day: 58, tasks: ["Correção do Simulado e Identificação de Falhas"] },
+            { day: 59, tasks: ["Reforço Teórico: Pontos fracos"] },
+            { day: 60, tasks: ["Organização de material de revisão (Fev)"] },
+            { day: 61, tasks: ["Revisão Rápida: Estatutos e Leg. Municipal"] },
+            { day: 62, tasks: ["Redação Final", "FIM DA FASE TEÓRICA!"] }
         ];
 
-        // --- APP STATE ---
-        const defaultDisciplines = [{id:'port',name:'Língua Portuguesa'},{id:'rlm',name:'Raciocínio Lógico-Matemático'},{id:'info',name:'Informática'},{id:'regional',name:'Conhecimentos Regionais (PI)'},{id:'penal',name:'Direito Penal'},{id:'procpenal',name:'Direito Processual Penal'},{id:'const',name:'Direito Constitucional'},{id:'adm',name:'Direito Administrativo'},{id:'leginst',name:'Legislação Institucional'},{id:'dh',name:'Direitos Humanos'},{id:'crim',name:'Criminologia'},{id:'medlegal',name:'Medicina Legal'}];
-        const rawTopics = [{d:'port',t:'Interpretação de texto'},{d:'port',t:'Gramática'},{d:'rlm',t:'Lógica Proposicional'},{d:'rlm',t:'Conjuntos'},{d:'info',t:'Hardware'},{d:'info',t:'Software'},{d:'regional',t:'História do Piauí'},{d:'regional',t:'Geografia do Piauí'},{d:'penal',t:'Aplicação da Lei Penal'},{d:'penal',t:'Crimes'},{d:'procpenal',t:'Inquérito'},{d:'procpenal',t:'Prisões'},{d:'const',t:'Direitos Fundamentais'},{d:'const',t:'Organização do Estado'},{d:'adm',t:'Atos Administrativos'},{d:'adm',t:'Poderes'},{d:'leginst',t:'Estatuto PC-PI'},{d:'dh',t:'Declaração Universal'},{d:'crim',t:'Escolas Criminológicas'},{d:'medlegal',t:'Traumatologia'}];
-        
+        // --- GLOBAL STATE VARIABLES (Defined BEFORE usage) ---
+        let app = null, db = null, auth = null;
+        let useFirebase = false;
+        let currentSyncId = localStorage.getItem('pcpi_sync_id') || generateId();
+        let unsubscribeSnapshot = null;
+        let expandedDisciplines = new Set(), expandedSections = new Set();
+        let currentFilterDiscipline = 'all', currentFilterStatus = 'all';
+        let currentEditingId = null;
+        let chartInstances = {};
+        let userFirebaseConfig = localStorage.getItem('pcpi_firebase_config');
+
+        // --- CORE APP STATE ---
         let appState = { 
             items: [], disciplines: [], lessons: [], totalHours: 0, 
             config: { title: 'PC-PI 2026', role: 'Oficial Investigador', examDate: '2026-01-25' },
             gamification: { streak: 0, lastStudyDate: null, challenges: [] }
         };
 
-        // --- FUNCTIONS DEFINITIONS (MOVED TO TOP) ---
-        function initTheme() { const saved = localStorage.getItem('theme'); if(saved==='dark'||(!saved&&window.matchMedia('(prefers-color-scheme: dark)').matches)) document.documentElement.classList.add('dark'); updateThemeIcon(); }
-        function updateThemeIcon() { const i=document.getElementById('theme-icon'); if(document.documentElement.classList.contains('dark')){i.classList.remove('fa-sun');i.classList.add('fa-moon');}else{i.classList.remove('fa-moon');i.classList.add('fa-sun');} }
-        window.toggleTheme = () => { const isDark = document.documentElement.classList.toggle('dark'); localStorage.setItem('theme', isDark ? 'dark' : 'light'); updateThemeIcon(); };
-
+        // --- CORE FUNCTIONS ---
         function initDefaultState() {
             appState.disciplines = JSON.parse(JSON.stringify(defaultDisciplines));
             appState.lessons = [];
@@ -457,8 +522,6 @@
             if(!appState.gamification) appState.gamification = { streak: 0, lastStudyDate: null, challenges: generateDailyChallenges() };
         }
 
-        function generateId() { return Array.from(crypto.getRandomValues(new Uint8Array(4))).map(b=>b.toString(16).padStart(2,'0')).join(''); }
-        
         async function saveDataInternal() {
             localStorage.setItem('pcpi_planner_v1', JSON.stringify(appState));
             if(useFirebase && db && currentSyncId) {
@@ -504,28 +567,35 @@
             initCountdown();
         }
 
-        // --- INITIALIZATION TRIGGER ---
+        // --- EVENT LISTENERS ---
         window.addEventListener('load', () => { initTheme(); initApp(); setTimeout(() => { const overlay = document.getElementById('loading-overlay'); if(overlay && !overlay.classList.contains('hidden-force')) overlay.classList.add('hidden-force'); }, 2000); });
 
-        // --- RENDERERS & LOGIC ---
+        // --- RENDERERS & UI LOGIC ---
         function renderAll() { initGamification(); renderSyllabus(); renderCharts(); renderDisciplineCards(); renderProductivity(); }
         
         function initGamification() {
             if (!appState.gamification) appState.gamification = { streak: 0, lastStudyDate: null, challenges: [] };
+            
+            // Force start date to TODAY if not set or if user wants to reset
             if (!appState.config.startDate) {
-                const tomorrow = new Date();
-                tomorrow.setDate(tomorrow.getDate() + 1);
-                appState.config.startDate = tomorrow.toISOString().split('T')[0];
+                const today = new Date();
+                // Adjust for local timezone to ensure correct YYYY-MM-DD
+                const offset = today.getTimezoneOffset();
+                const localDate = new Date(today.getTime() - (offset*60*1000));
+                appState.config.startDate = localDate.toISOString().split('T')[0];
             }
-            const today = new Date().toISOString().split('T')[0];
+
+            const todayStr = new Date().toISOString().split('T')[0];
             const lastDate = appState.gamification.lastStudyDate;
 
-            if (!lastDate || lastDate !== today) {
-                if (appState.gamification.challenges.length === 0 || lastDate !== today) appState.gamification.challenges = generateDailyChallenges();
+            if (!lastDate || lastDate !== todayStr) {
+                if (appState.gamification.challenges.length === 0 || lastDate !== todayStr) {
+                    appState.gamification.challenges = generateDailyChallenges();
+                }
                 if (lastDate) {
                     const yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1);
                     const yStr = yesterday.toISOString().split('T')[0];
-                    if (lastDate !== yStr && lastDate !== today) appState.gamification.streak = 0;
+                    if (lastDate !== yStr && lastDate !== todayStr) appState.gamification.streak = 0;
                 }
             }
             renderGamification();
@@ -554,14 +624,14 @@
                 const missionDayDisplay = document.getElementById('mission-day-display');
                 
                 if (appState.config.startDate) {
-                    const start = new Date(appState.config.startDate);
+                    const startParts = appState.config.startDate.split('-');
+                    const start = new Date(startParts[0], startParts[1] - 1, startParts[2]); 
                     const now = new Date();
-                    const utcStart = Date.UTC(start.getFullYear(), start.getMonth(), start.getDate());
-                    const utcNow = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
-                    const diffTime = utcNow - utcStart;
+                    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                    const diffTime = today - start;
                     const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1; 
                     
-                    missionDayDisplay.innerText = `Dia ${diffDays}`;
+                    missionDayDisplay.innerText = `Dia ${diffDays > 0 ? diffDays : 'Pré'}`;
                     
                     if (diffDays > 0) {
                         const todaySchedule = studySchedule.find(s => s.day === diffDays);
@@ -569,7 +639,7 @@
                              missionContent.innerHTML = '';
                              todaySchedule.tasks.forEach(task => {
                                  const p = document.createElement('p');
-                                 p.className = "text-sm font-bold text-slate-700 dark:text-slate-200 border-l-4 border-purple-500 pl-2 py-1 bg-purple-50 dark:bg-slate-800 rounded-r";
+                                 p.className = "text-sm font-bold text-slate-700 dark:text-slate-200 border-l-4 border-purple-500 pl-2 py-1 bg-purple-50 dark:bg-slate-800 rounded-r mb-1";
                                  p.innerText = task;
                                  missionContent.appendChild(p);
                              });
@@ -577,7 +647,7 @@
                                  showToast('Nova missão disponível!', 'success');
                                  sessionStorage.setItem('mission_notified_' + diffDays, 'true');
                              }
-                        } else { missionContent.innerHTML = '<p class="text-xs text-gray-400 italic">Dia livre ou revisão!</p>'; }
+                        } else { missionContent.innerHTML = '<p class="text-xs text-gray-400 italic">Dia livre ou revisão! (Ou dia não cadastrado)</p>'; }
                     } else { missionContent.innerHTML = '<p class="text-xs text-gray-400 italic">O cronograma começa em breve!</p>'; }
                 }
             }
@@ -722,12 +792,22 @@
         window.addStudyHoursInternal = (val) => { appState.totalHours += val; checkChallengeProgress('hours', val); saveDataInternal(); renderProductivity(); showToast(`+${val} horas registradas!`, 'success'); };
         window.openSyncModal = () => { document.getElementById('sync-modal').classList.remove('opacity-0', 'pointer-events-none'); document.body.classList.add('modal-active'); };
         window.openManageModal = () => { populateModalSelects(); renderDeleteDiscList(); renderBulkDeleteTopicList(); document.getElementById('manage-modal').classList.remove('opacity-0', 'pointer-events-none'); document.body.classList.add('modal-active'); };
-        window.openSettingsModal = () => { document.getElementById('config-title').value = appState.config.title; document.getElementById('config-role').value = appState.config.role; document.getElementById('config-date').value = appState.config.examDate; document.getElementById('settings-modal').classList.remove('opacity-0', 'pointer-events-none'); document.body.classList.add('modal-active'); };
+        window.openSettingsModal = () => { document.getElementById('config-title').value = appState.config.title; document.getElementById('config-role').value = appState.config.role; document.getElementById('config-date').value = appState.config.examDate; 
+            if(appState.config.startDate) document.getElementById('config-start-date').value = appState.config.startDate;
+            document.getElementById('settings-modal').classList.remove('opacity-0', 'pointer-events-none'); document.body.classList.add('modal-active'); };
         window.switchTab = (tabId) => { ['tab-add-topic', 'tab-add-lesson', 'tab-add-disc', 'tab-del-disc', 'tab-del-lesson', 'tab-del-topic'].forEach(id => { document.getElementById(id).classList.add('hidden'); document.getElementById('btn-'+id).classList.remove('tab-active'); document.getElementById('btn-'+id).classList.add('tab-inactive'); }); document.getElementById(tabId).classList.remove('hidden'); document.getElementById('btn-'+tabId).classList.add('tab-active'); document.getElementById('btn-'+tabId).classList.remove('tab-inactive'); };
         window.updateStatus = (id, newStatus) => { const item = appState.items.find(i => i.id === id); if (!item) return; item.status = newStatus; if (newStatus === 'concluido') { const today = new Date(); item.completedDate = today.toISOString(); const r1 = new Date(today); r1.setDate(r1.getDate() + 1); const r2 = new Date(today); r2.setDate(r2.getDate() + 7); const r3 = new Date(today); r3.setDate(r3.getDate() + 30); item.reviews = [ { date: r1.toISOString(), done: false, label: '24h' }, { date: r2.toISOString(), done: false, label: '7d' }, { date: r3.toISOString(), done: false, label: '30d' } ]; checkChallengeProgress('items', 1); showToast(`Status atualizado!`, 'success'); } else { item.completedDate = null; item.reviews = []; } saveDataInternal(); renderAll(); };
         window.deleteTopic = (itemId) => { showConfirm('Excluir este tópico?', () => { appState.items = appState.items.filter(i => i.id !== itemId); saveDataInternal(); renderAll(); showToast('Excluído.', 'info'); }); };
         window.saveNote = () => { if (currentEditingId !== null) { const note = document.getElementById('modal-note-input').value; const item = appState.items.find(i => i.id === currentEditingId); if(item) { item.note = note; saveDataInternal(); renderSyllabus(); closeModal('note-modal'); showToast('Salvo!', 'success'); } } };
-        window.saveSettings = () => { const title = document.getElementById('config-title').value; const role = document.getElementById('config-role').value; const date = document.getElementById('config-date').value; if(!title || !role || !date) return showToast('Preencha todos os campos.', 'error'); appState.config = { title, role, examDate: date }; saveDataInternal(); renderHeader(); initCountdown(); closeModal('settings-modal'); showToast('Dados salvos!', 'success'); };
+        window.saveSettings = () => { 
+            const title = document.getElementById('config-title').value; 
+            const role = document.getElementById('config-role').value; 
+            const date = document.getElementById('config-date').value;
+            const startDate = document.getElementById('config-start-date').value;
+            if(!title || !role || !date) return showToast('Preencha os campos obrigatórios.', 'error'); 
+            appState.config = { title, role, examDate: date, startDate: startDate }; 
+            saveDataInternal(); renderHeader(); renderGamification(); initCountdown(); closeModal('settings-modal'); showToast('Dados salvos!', 'success'); 
+        };
         window.resetHours = () => { showConfirm('Zerar horas estudadas?', () => { appState.totalHours = 0; saveDataInternal(); renderProductivity(); showToast('Zerado.', 'info'); }); };
         window.resetData = () => { showConfirm('ATENÇÃO: Resetar todo o progresso?', () => { appState.totalHours = 0; appState.items.forEach(item => { item.status = 'pendente'; item.completedDate = null; item.reviews = []; }); saveDataInternal(); renderAll(); showToast('Resetado.', 'success'); }); };
         window.filterByDisciplineFromCard = (id) => { expandedSections.add(id); currentFilterDiscipline = id; document.getElementById('filter-discipline').value = id; renderSyllabus(); document.getElementById('syllabus-section').scrollIntoView({ behavior: 'smooth' }); };
@@ -736,6 +816,19 @@
         window.deleteSelectedTopics = () => { const cbs = document.querySelectorAll('.delete-topic-checkbox:checked'); if(cbs.length === 0) return showToast('Selecione itens.', 'error'); showConfirm(`Excluir ${cbs.length} tópicos selecionados?`, () => { const ids = Array.from(cbs).map(c => parseInt(c.value)); appState.items = appState.items.filter(i => !ids.includes(i.id)); saveDataInternal(); renderAll(); renderBulkDeleteTopicList(); showToast('Excluídos.', 'info'); }); };
         window.addNewDiscipline = () => { const txt = document.getElementById('new-disc-name').value; if(!txt.trim()) return showToast('Digite nomes.', 'error'); const names = txt.split('\n').map(t=>t.trim()).filter(t=>t.length>0); if(names.length===0) return; let cnt=0; names.forEach((n,i) => { const id = 'custom_'+(Date.now()+i); appState.disciplines.push({id: id, name: n}); appState.lessons.push({id: `l_${id}_01`, disciplineId: id, name: 'Aula 01'}); cnt++; }); saveDataInternal(); document.getElementById('new-disc-name').value=''; showToast(`${cnt} criadas!`, 'success'); populateModalSelects(); renderAll(); switchTab('tab-add-topic'); };
         window.editLessonName = (lessonId, event) => { event.stopPropagation(); const lesson = appState.lessons.find(l => l.id === lessonId); if(!lesson) return; showPrompt('Renomear Aula', lesson.name, (newName) => { lesson.name = newName; saveDataInternal(); renderSyllabus(); populateModalSelects(); renderDeleteLessonList(); showToast('Renomeado!', 'success'); }); };
+        
+        window.configureScheduleStart = () => {
+            const current = appState.config.startDate || new Date().toISOString().split('T')[0];
+            showPrompt('Data de Início do Cronograma', current, (newDate) => {
+                if(newDate) {
+                    appState.config.startDate = newDate;
+                    saveDataInternal();
+                    renderAll();
+                    showToast('Data de início atualizada!', 'success');
+                }
+            }, 'date');
+        };
+
         window.updateStatusIndicator = function(online) { const t = online ? "Online" : "Offline"; const c = online ? "text-green-400" : "text-gray-400"; document.getElementById('header-sync-status').innerText = t; document.getElementById('header-sync-status-mobile').innerText = t; document.getElementById('status-icon-desktop').className = `fa-solid fa-wifi ${c}`; document.getElementById('status-icon-mobile').className = `fa-solid fa-wifi ${c} mr-1`; }
         window.updateSyncUI = function(isActive) { const a = document.getElementById('sync-active-ui'); const s = document.getElementById('sync-setup-ui'); if (isActive) { a.classList.remove('hidden'); s.classList.add('hidden'); document.getElementById('current-sync-id-display').value = currentSyncId; } else { a.classList.add('hidden'); s.classList.remove('hidden'); if(userFirebaseConfig) document.getElementById('firebase-config-input').value = userFirebaseConfig; } }
         window.loadFromSyncId = () => { if(!useFirebase) return showToast("Configure o Firebase primeiro.", 'error'); const newId = document.getElementById('input-sync-id').value.trim(); if(!newId) return; showConfirm("Carregar este ID?", () => { localStorage.setItem('pcpi_sync_id', newId); currentSyncId = newId; setupRealtimeListener(newId); updateSyncUI(true); closeModal('sync-modal'); showToast("Conectando...", "info"); }); };
