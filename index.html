@@ -178,10 +178,10 @@
                     </h3>
                     <div class="flex gap-2">
                         <button onclick="openPdfModal()" class="text-xs bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-800 px-2 py-1 rounded transition flex items-center gap-1 font-bold" title="Abrir PDF">
-                            <i class="fa-solid fa-file-pdf"></i> Cronograma Completo
+                            <i class="fa-solid fa-file-pdf"></i> Cronograma
                         </button>
                         <button onclick="configureScheduleStart()" class="text-xs bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-300 hover:bg-purple-200 dark:hover:bg-purple-800 px-2 py-1 rounded transition flex items-center gap-1" title="Configurar Dia 1">
-                            <i class="fa-solid fa-calendar-check"></i> Definir Início
+                            <i class="fa-solid fa-calendar-check"></i> Início
                         </button>
                     </div>
                 </div>
@@ -208,21 +208,25 @@
                     </div>
                 </div>
 
-                <!-- Productivity Card -->
-                <div class="glass-panel rounded-xl p-4 flex flex-col justify-center">
-                    <h3 class="text-gray-500 dark:text-gray-400 text-xs font-bold uppercase tracking-wide mb-2 flex justify-between items-center">
+                <!-- Productivity Card + Cronômetro -->
+                <div class="glass-panel rounded-xl p-4 flex flex-col justify-center relative">
+                    <h3 class="text-gray-500 dark:text-gray-400 text-xs font-bold uppercase tracking-wide mb-1 flex justify-between items-center">
                         <span>Banco de Horas</span>
                         <button onclick="resetHours()" class="text-gray-400 hover:text-red-500 transition" title="Zerar Horas"><i class="fa-solid fa-trash-can"></i></button>
                     </h3>
-                    <div class="flex items-center gap-4">
-                        <div>
-                            <span id="total-hours" class="text-3xl font-bold text-slate-800 dark:text-white">0</span>
-                            <span class="text-xs text-gray-500 dark:text-gray-400">hrs líquidas</span>
+                    
+                    <div class="flex items-end gap-2 mb-2">
+                         <span id="total-hours" class="text-3xl font-bold text-slate-800 dark:text-white leading-none">0.0</span>
+                         <span class="text-xs text-gray-500 dark:text-gray-400 mb-1">hrs totais</span>
+                    </div>
+
+                    <!-- Cronômetro UI -->
+                    <div class="bg-slate-100 dark:bg-slate-700/50 rounded-lg p-2 flex items-center justify-between border border-slate-200 dark:border-slate-600">
+                        <span id="timer-display" class="font-mono text-lg font-bold text-slate-700 dark:text-white w-20 text-center">00:00:00</span>
+                        <div class="flex gap-1">
+                            <button onclick="toggleTimer()" id="btn-timer-toggle" class="w-8 h-8 rounded-full bg-green-500 hover:bg-green-600 text-white flex items-center justify-center transition shadow-sm"><i class="fa-solid fa-play text-xs"></i></button>
+                            <button onclick="stopTimer()" class="w-8 h-8 rounded-full bg-red-500 hover:bg-red-600 text-white flex items-center justify-center transition shadow-sm"><i class="fa-solid fa-stop text-xs"></i></button>
                         </div>
-                        <form id="hours-form" class="flex-1 flex gap-2">
-                            <input type="number" id="study-input" step="0.5" min="0" placeholder="Hrs hoje..." class="w-full border dark:border-slate-600 rounded p-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-slate-700 dark:text-white dark:placeholder-gray-400">
-                            <button type="submit" class="bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500 text-white px-3 py-1 rounded text-xs transition font-bold"><i class="fa-solid fa-plus"></i></button>
-                        </form>
                     </div>
                 </div>
 
@@ -298,6 +302,7 @@
                     <div><label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">Nome do Concurso</label><input type="text" id="config-title" class="w-full border dark:border-slate-600 rounded p-2 text-sm bg-gray-50 dark:bg-slate-700 dark:text-white"></div>
                     <div><label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">Cargo</label><input type="text" id="config-role" class="w-full border dark:border-slate-600 rounded p-2 text-sm bg-gray-50 dark:bg-slate-700 dark:text-white"></div>
                     <div><label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">Data da Prova</label><input type="date" id="config-date" class="w-full border dark:border-slate-600 rounded p-2 text-sm bg-gray-50 dark:bg-slate-700 dark:text-white"></div>
+                    <div><label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">Início do Cronograma (Dia 1)</label><input type="date" id="config-start-date" class="w-full border dark:border-slate-600 rounded p-2 text-sm bg-gray-50 dark:bg-slate-700 dark:text-white"></div>
                     <div class="pt-4 border-t dark:border-slate-700"><button onclick="saveSettings()" class="w-full bg-blue-600 text-white py-2 rounded text-sm font-bold">Salvar</button></div>
                 </div>
             </div>
@@ -453,7 +458,55 @@
             { day: 11, tasks: ["Língua Portuguesa: Itens 11 a 15", "RLM: Itens 10 a 14"] },
             { day: 12, tasks: ["Direitos Humanos: Itens 21 a 25", "Dir. Ambiental: Itens 5 a 8"] },
             { day: 13, tasks: ["Redação: 1 Redação (Tema: Trânsito)", "Leg. Trânsito: Itens 15 a 19"] },
-            { day: 14, tasks: ["Dir. Constitucional: Itens 11 a 15", "Dir. Penal: Itens 5 a 8"] }
+            { day: 14, tasks: ["Dir. Constitucional: Itens 11 a 15", "Dir. Penal: Itens 5 a 8"] },
+            { day: 15, tasks: ["Direitos Humanos: Itens 26 a 30", "Informática: Itens 10 a 14"] },
+            { day: 16, tasks: ["Língua Portuguesa: Itens 16 a 20", "RLM: Itens 15 a 19"] },
+            { day: 17, tasks: ["Leg. Trânsito: Itens 20 a 24", "Dir. Administrativo: Itens 11 a 15"] },
+            { day: 18, tasks: ["Direitos Humanos: Itens 31 a 35", "Dir. Ambiental: Itens 9 a 12"] },
+            { day: 19, tasks: ["Dir. Constitucional: Itens 16 a 20", "Estatuto Geral Guardas: Itens 1 a 3"] },
+            { day: 20, tasks: ["Redação: 1 Redação Treino", "Dir. Penal: Itens 9 a 13"] },
+            { day: 21, tasks: ["Leg. Trânsito: Itens 25 a 29", "Informática: Itens 15 a 19"] },
+            { day: 22, tasks: ["Língua Portuguesa: Itens 21 a 25", "RLM: Itens 20 a 24"] },
+            { day: 23, tasks: ["Direitos Humanos: Itens 36 a 40", "Dir. Administrativo: Itens 16 a 20"] },
+            { day: 24, tasks: ["Feriado/Descanso ou Leitura leve"] },
+            { day: 25, tasks: ["Dir. Penal: Itens 14 a 18", "Estatuto Geral Guardas: Itens 4 a 5 (FIM)"] },
+            { day: 26, tasks: ["Leg. Trânsito: Itens 30 a 34", "Dir. Ambiental: Itens 13 a 16"] },
+            { day: 27, tasks: ["Redação: 1 Redação Treino", "Dir. Constitucional: Itens 21 a 25"] },
+            { day: 28, tasks: ["Direitos Humanos: Itens 41 a 45", "Informática: Itens 20 a 24"] },
+            { day: 29, tasks: ["Língua Portuguesa: Itens 26 a 30", "RLM: Itens 25 a 29"] },
+            { day: 30, tasks: ["Dir. Penal: Itens 19 a 22", "Leg. Mun. Caxias: Itens 1 a 3 (FIM)"] },
+            { day: 31, tasks: ["Feriado/Descanso"] },
+            { day: 32, tasks: ["Dir. Penal: Itens 23 a 26 (FIM)", "Leg. Trânsito: Itens 35 a 39"] },
+            { day: 33, tasks: ["Dir. Administrativo: Itens 21 a 25", "Dir. Ambiental: Itens 17 a 20"] },
+            { day: 34, tasks: ["Redação: 1 Redação Treino", "Dir. Constitucional: Itens 26 a 30"] },
+            { day: 35, tasks: ["Direitos Humanos: Itens 46 a 55", "Informática: Itens 25 a 29"] },
+            { day: 36, tasks: ["Língua Portuguesa: Itens 31 a 38", "RLM: Itens 30 a 37"] },
+            { day: 37, tasks: ["Leg. Trânsito: Itens 40 a 48", "Dir. Administrativo: Itens 26 a 30"] },
+            { day: 38, tasks: ["Direitos Humanos: Itens 56 a 65", "Dir. Ambiental: Itens 21 a 24"] },
+            { day: 39, tasks: ["Dir. Constitucional: Itens 31 a 38", "Informática: Itens 30 a 34"] },
+            { day: 40, tasks: ["Língua Portuguesa: Itens 39 a 46", "RLM: Itens 38 a 45"] },
+            { day: 41, tasks: ["Redação: 1 Redação Treino", "Leg. Trânsito: Itens 49 a 57"] },
+            { day: 42, tasks: ["Dir. Administrativo: Itens 31 a 38", "Dir. Ambiental: Itens 25 a 28"] },
+            { day: 43, tasks: ["Direitos Humanos: Itens 66 a 75", "Informática: Itens 35 a 40"] },
+            { day: 44, tasks: ["Língua Portuguesa: Itens 47 a 54", "RLM: Itens 46 a 53"] },
+            { day: 45, tasks: ["Dir. Constitucional: Itens 39 a 48", "Dir. Ambiental: Itens 29 a 36 (FIM)"] },
+            { day: 46, tasks: ["Leg. Trânsito: Itens 58 a 66", "Dir. Administrativo: Itens 39 a 47 (FIM)"] },
+            { day: 47, tasks: ["Informática: Itens 41 a 48 (FIM)", "Direitos Humanos: Itens 76 a 85"] },
+            { day: 48, tasks: ["Redação: 1 Redação Treino", "Conhec. Locais: Item 1 (FIM)"] },
+            { day: 49, tasks: ["Língua Portuguesa: Itens 55 a 63 (FIM)", "RLM: Itens 54 a 60"] },
+            { day: 50, tasks: ["Leg. Trânsito: Itens 67 a 76 (FIM)", "Dir. Constitucional: Itens 49 a 57"] },
+            { day: 51, tasks: ["Direitos Humanos: Itens 86 a 94 (FIM)", "RLM: Itens 61 a 67 (FIM)"] },
+            { day: 52, tasks: ["Dir. Constitucional: Itens 58 a 66 (FIM)", "EDITAL ZERADO!"] },
+            { day: 53, tasks: ["Revisão de Tampão / Atrasos"] },
+            { day: 54, tasks: ["Revisão de Tampão / Atrasos"] },
+            { day: 55, tasks: ["Revisão de Tampão / Atrasos"] },
+            { day: 56, tasks: ["Revisão de Tampão / Atrasos"] },
+            { day: 57, tasks: ["Simulado Geral 01 (Prova completa)"] },
+            { day: 58, tasks: ["Correção do Simulado e Identificação de Falhas"] },
+            { day: 59, tasks: ["Reforço Teórico: Pontos fracos"] },
+            { day: 60, tasks: ["Organização de material de revisão (Fev)"] },
+            { day: 61, tasks: ["Revisão Rápida: Estatutos e Leg. Municipal"] },
+            { day: 62, tasks: ["Redação Final", "FIM DA FASE TEÓRICA!"] }
         ];
 
         // --- GLOBAL STATE VARIABLES (Defined BEFORE usage) ---
@@ -466,6 +519,9 @@
         let currentEditingId = null;
         let chartInstances = {};
         let userFirebaseConfig = localStorage.getItem('pcpi_firebase_config');
+        let timerInterval = null;
+        let isTimerRunning = false;
+        let timerSeconds = 0;
 
         // --- CORE APP STATE ---
         let appState = { 
@@ -535,6 +591,55 @@
             } else { updateSyncUI(false); }
             initCountdown();
         }
+
+        // --- TIMER FUNCTIONS ---
+        function formatTime(totalSeconds) {
+            const h = Math.floor(totalSeconds / 3600).toString().padStart(2, '0');
+            const m = Math.floor((totalSeconds % 3600) / 60).toString().padStart(2, '0');
+            const s = (totalSeconds % 60).toString().padStart(2, '0');
+            return `${h}:${m}:${s}`;
+        }
+
+        window.toggleTimer = () => {
+            const btn = document.getElementById('btn-timer-toggle');
+            if(isTimerRunning) {
+                // Pause
+                clearInterval(timerInterval);
+                isTimerRunning = false;
+                btn.innerHTML = '<i class="fa-solid fa-play text-xs"></i>';
+                btn.classList.remove('bg-yellow-500', 'hover:bg-yellow-600');
+                btn.classList.add('bg-green-500', 'hover:bg-green-600');
+            } else {
+                // Start
+                isTimerRunning = true;
+                btn.innerHTML = '<i class="fa-solid fa-pause text-xs"></i>';
+                btn.classList.remove('bg-green-500', 'hover:bg-green-600');
+                btn.classList.add('bg-yellow-500', 'hover:bg-yellow-600');
+                timerInterval = setInterval(() => {
+                    timerSeconds++;
+                    document.getElementById('timer-display').innerText = formatTime(timerSeconds);
+                }, 1000);
+            }
+        };
+
+        window.stopTimer = () => {
+            if(timerSeconds === 0) return;
+            if(confirm(`Parar e salvar ${formatTime(timerSeconds)}?`)) {
+                clearInterval(timerInterval);
+                isTimerRunning = false;
+                document.getElementById('btn-timer-toggle').innerHTML = '<i class="fa-solid fa-play text-xs"></i>';
+                document.getElementById('btn-timer-toggle').classList.remove('bg-yellow-500', 'hover:bg-yellow-600');
+                document.getElementById('btn-timer-toggle').classList.add('bg-green-500', 'hover:bg-green-600');
+                
+                // Add hours
+                const hoursToAdd = parseFloat((timerSeconds / 3600).toFixed(2));
+                addStudyHoursInternal(hoursToAdd);
+                
+                // Reset
+                timerSeconds = 0;
+                document.getElementById('timer-display').innerText = "00:00:00";
+            }
+        };
 
         // --- EVENT LISTENERS ---
         window.addEventListener('load', () => { initTheme(); initApp(); setTimeout(() => { const overlay = document.getElementById('loading-overlay'); if(overlay && !overlay.classList.contains('hidden-force')) overlay.classList.add('hidden-force'); }, 2000); });
