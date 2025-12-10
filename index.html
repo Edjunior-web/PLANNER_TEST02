@@ -217,7 +217,7 @@
                     
                     <div class="flex items-end gap-2 mb-2">
                          <span id="total-hours" class="text-3xl font-bold text-slate-800 dark:text-white leading-none">0.0</span>
-                         <span class="text-xs text-gray-500 dark:text-gray-400 mb-1">hrs totais</span>
+                         <span class="text-xs text-gray-500 dark:text-gray-400 mb-1">hrs líquidas</span>
                     </div>
 
                     <!-- Cronômetro UI -->
@@ -293,6 +293,7 @@
         </div>
     </div>
 
+    <!-- Modals -->
     <div id="settings-modal" class="modal opacity-0 pointer-events-none fixed w-full h-full top-0 left-0 flex items-center justify-center z-[150]">
         <div class="modal-overlay absolute w-full h-full bg-gray-900 opacity-50 dark:opacity-80" onclick="closeModal('settings-modal')"></div>
         <div class="modal-container bg-white dark:bg-slate-800 w-11/12 md:max-w-md mx-auto rounded shadow-lg z-[151] overflow-y-auto animate-fade-in-down transition-colors">
@@ -333,7 +334,7 @@
         </div>
     </div>
 
-    <!-- PDF Modal (NOVO) -->
+    <!-- PDF Modal -->
     <div id="pdf-modal" class="modal opacity-0 pointer-events-none fixed w-full h-full top-0 left-0 flex items-center justify-center z-[200]">
         <div class="modal-overlay absolute w-full h-full bg-gray-900 opacity-90" onclick="closeModal('pdf-modal')"></div>
         <div class="modal-container bg-white dark:bg-slate-800 w-11/12 md:max-w-4xl h-[85vh] mx-auto rounded shadow-lg z-[201] overflow-hidden animate-fade-in-down transition-colors flex flex-col">
@@ -522,6 +523,7 @@
         let timerInterval = null;
         let isTimerRunning = false;
         let timerSeconds = 0;
+        let timerStartTime = null;
 
         // --- CORE APP STATE ---
         let appState = { 
@@ -592,7 +594,7 @@
             initCountdown();
         }
 
-        // --- TIMER FUNCTIONS ---
+        // --- TIMER FUNCTIONS (UPDATED FOR BACKGROUND) ---
         function formatTime(totalSeconds) {
             const h = Math.floor(totalSeconds / 3600).toString().padStart(2, '0');
             const m = Math.floor((totalSeconds % 3600) / 60).toString().padStart(2, '0');
@@ -603,30 +605,55 @@
         window.toggleTimer = () => {
             const btn = document.getElementById('btn-timer-toggle');
             if(isTimerRunning) {
-                // Pause
+                // Pause Logic
                 clearInterval(timerInterval);
                 isTimerRunning = false;
+                timerStartTime = null; // Clear start timestamp
                 btn.innerHTML = '<i class="fa-solid fa-play text-xs"></i>';
                 btn.classList.remove('bg-yellow-500', 'hover:bg-yellow-600');
                 btn.classList.add('bg-green-500', 'hover:bg-green-600');
             } else {
-                // Start
+                // Start Logic
                 isTimerRunning = true;
+                timerStartTime = Date.now() - (timerSeconds * 1000); // Resume from accumulated time
                 btn.innerHTML = '<i class="fa-solid fa-pause text-xs"></i>';
                 btn.classList.remove('bg-green-500', 'hover:bg-green-600');
                 btn.classList.add('bg-yellow-500', 'hover:bg-yellow-600');
+                
+                // Interval check (UI updates)
                 timerInterval = setInterval(() => {
-                    timerSeconds++;
+                    const now = Date.now();
+                    const diff = Math.floor((now - timerStartTime) / 1000);
+                    timerSeconds = diff;
                     document.getElementById('timer-display').innerText = formatTime(timerSeconds);
                 }, 1000);
             }
         };
 
+        // Handle page visibility change (background/foreground)
+        document.addEventListener('visibilitychange', () => {
+             if (document.visibilityState === 'visible' && isTimerRunning && timerStartTime) {
+                 // Recalculate time when coming back to foreground
+                 const now = Date.now();
+                 const diff = Math.floor((now - timerStartTime) / 1000);
+                 timerSeconds = diff;
+                 document.getElementById('timer-display').innerText = formatTime(timerSeconds);
+             }
+        });
+
         window.stopTimer = () => {
-            if(timerSeconds === 0) return;
+            if(timerSeconds === 0 && !isTimerRunning) return;
+            
+            // Recalculate one last time if running to be precise
+            if (isTimerRunning && timerStartTime) {
+                 const now = Date.now();
+                 timerSeconds = Math.floor((now - timerStartTime) / 1000);
+            }
+
             if(confirm(`Parar e salvar ${formatTime(timerSeconds)}?`)) {
                 clearInterval(timerInterval);
                 isTimerRunning = false;
+                timerStartTime = null;
                 document.getElementById('btn-timer-toggle').innerHTML = '<i class="fa-solid fa-play text-xs"></i>';
                 document.getElementById('btn-timer-toggle').classList.remove('bg-yellow-500', 'hover:bg-yellow-600');
                 document.getElementById('btn-timer-toggle').classList.add('bg-green-500', 'hover:bg-green-600');
@@ -649,20 +676,26 @@
         
         function initGamification() {
             if (!appState.gamification) appState.gamification = { streak: 0, lastStudyDate: null, challenges: [] };
+            
+            // Check start date for schedule. If not set, use today as default but user can change it.
             if (!appState.config.startDate) {
-                const tomorrow = new Date();
-                tomorrow.setDate(tomorrow.getDate() + 1);
-                appState.config.startDate = tomorrow.toISOString().split('T')[0];
+                const today = new Date();
+                const offset = today.getTimezoneOffset();
+                const localDate = new Date(today.getTime() - (offset*60*1000));
+                appState.config.startDate = localDate.toISOString().split('T')[0];
             }
-            const today = new Date().toISOString().split('T')[0];
+
+            const todayStr = new Date().toISOString().split('T')[0];
             const lastDate = appState.gamification.lastStudyDate;
 
-            if (!lastDate || lastDate !== today) {
-                if (appState.gamification.challenges.length === 0 || lastDate !== today) appState.gamification.challenges = generateDailyChallenges();
+            if (!lastDate || lastDate !== todayStr) {
+                if (appState.gamification.challenges.length === 0 || lastDate !== todayStr) {
+                    appState.gamification.challenges = generateDailyChallenges();
+                }
                 if (lastDate) {
                     const yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1);
                     const yStr = yesterday.toISOString().split('T')[0];
-                    if (lastDate !== yStr && lastDate !== today) appState.gamification.streak = 0;
+                    if (lastDate !== yStr && lastDate !== todayStr) appState.gamification.streak = 0;
                 }
             }
             renderGamification();
