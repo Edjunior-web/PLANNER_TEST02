@@ -6,7 +6,17 @@
     <title>Planner de Estudos</title>
     
     <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.tailwindcss.com">
+        document.getElementById('mocks-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const v = parseInt(document.getElementById('mocks-input').value, 10);
+            if(!isNaN(v)) {
+                document.getElementById('mocks-input').value='';
+                addMocksInternal(v);
+            }
+        });
+
+    </script>
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -18,10 +28,30 @@
                 }
             }
         }
+    
+        document.getElementById('mocks-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const v = parseInt(document.getElementById('mocks-input').value, 10);
+            if(!isNaN(v)) {
+                document.getElementById('mocks-input').value='';
+                addMocksInternal(v);
+            }
+        });
+
     </script>
     
     <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js">
+        document.getElementById('mocks-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const v = parseInt(document.getElementById('mocks-input').value, 10);
+            if(!isNaN(v)) {
+                document.getElementById('mocks-input').value='';
+                addMocksInternal(v);
+            }
+        });
+
+    </script>
 
     <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -143,7 +173,7 @@
         </div>
 
         <!-- Dashboard Section -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <!-- Progress Card -->
             <div class="glass-panel rounded-xl p-4 flex items-center justify-between">
                 <div>
@@ -167,13 +197,87 @@
                     </button>
                 </h3>
                 <div class="flex items-center gap-4">
-                    <div>
+                    <div class="min-w-[120px]">
                         <span id="total-hours" class="text-3xl font-bold text-slate-800 dark:text-white">0</span>
                         <span class="text-xs text-gray-500 dark:text-gray-400">hrs líquidas</span>
+                        <div class="mt-2">
+                            <div class="flex justify-between text-[10px]">
+                                <span>Meta: <span id="hours-goal">100</span>h</span>
+                                <span id="hours-percent">0%</span>
+                            </div>
+                            <div class="w-full bg-gray-200 dark:bg-slate-700 rounded-full h-2 mt-1">
+                                <div id="hours-progress-bar" class="bg-blue-600 h-2 rounded-full" style="width:0%"></div>
+                            </div>
+                        </div>
                     </div>
-                    <form id="hours-form" class="flex-1 flex gap-2">
-                        <input type="number" id="study-input" step="0.5" min="0" placeholder="Hrs hoje..." class="w-full border dark:border-slate-600 rounded p-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-slate-700 dark:text-white dark:placeholder-gray-400">
-                        <button type="submit" class="bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500 text-white px-3 py-1 rounded text-xs transition font-bold">
+                    <form id="hours-form" class="flex-1 flex flex-col gap-2">
+                        <div class="flex gap-2">
+                            <input type="number" id="study-input" step="0.5" min="0" placeholder="Hrs hoje..." class="w-full border dark:border-slate-600 rounded p-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-slate-700 dark:text-white dark:placeholder-gray-400">
+                            <button type="submit" class="bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500 text-white px-3 py-1 rounded text-xs transition font-bold">
+                                <i class="fa-solid fa-plus"></i>
+                            </button>
+                        </div>
+                        <input type="number" id="hours-goal-input" min="1" placeholder="Meta de horas" class="w-full border dark:border-slate-600 rounded p-2 text-xs bg-white dark:bg-slate-700 dark:text-white">
+                        <button type="button" onclick="updateHoursGoal()" class="bg-slate-700 hover:bg-slate-800 text-white py-2 rounded text-xs font-bold">
+                            Atualizar Meta
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Questions Card -->
+            <div class="glass-panel rounded-xl p-4 flex flex-col justify-center">
+                <h3 class="text-gray-500 dark:text-gray-400 text-xs font-bold uppercase tracking-wide mb-2 flex justify-between items-center">
+                    <span>Banco de Questões</span>
+                    <button onclick="resetQuestions()" class="text-gray-400 hover:text-red-500 transition" title="Zerar Questões">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                </h3>
+                <div class="flex items-center gap-4">
+                    <div class="min-w-[120px]">
+                        <span id="total-questions" class="text-3xl font-bold text-slate-800 dark:text-white">0</span>
+                        <span class="text-xs text-gray-500 dark:text-gray-400">questões</span>
+                        <div class="mt-2">
+                            <div class="flex justify-between text-[10px]">
+                                <span>Meta: <span id="questions-goal">1000</span></span>
+                                <span id="questions-percent">0%</span>
+                            </div>
+                            <div class="w-full bg-gray-200 dark:bg-slate-700 rounded-full h-2 mt-1">
+                                <div id="questions-progress-bar" class="bg-green-600 h-2 rounded-full" style="width:0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <form id="questions-form" class="flex-1 flex flex-col gap-2">
+                        <div class="flex gap-2">
+                            <input type="number" id="questions-input" step="1" min="0" placeholder="Qtd hoje..." class="w-full border dark:border-slate-600 rounded p-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-slate-700 dark:text-white dark:placeholder-gray-400">
+                            <button type="submit" class="bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500 text-white px-3 py-1 rounded text-xs transition font-bold">
+                                <i class="fa-solid fa-plus"></i>
+                            </button>
+                        </div>
+                        <input type="number" id="questions-goal-input" min="1" placeholder="Meta de questões" class="w-full border dark:border-slate-600 rounded p-2 text-xs bg-white dark:bg-slate-700 dark:text-white">
+                        <button type="button" onclick="updateQuestionsGoal()" class="bg-slate-700 hover:bg-slate-800 text-white py-2 rounded text-xs font-bold">
+                            Atualizar Meta
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Simulados Card -->
+            <div class="glass-panel rounded-xl p-4 flex flex-col justify-center">
+                <h3 class="text-gray-500 dark:text-gray-400 text-xs font-bold uppercase tracking-wide mb-2 flex justify-between items-center">
+                    <span>Simulados Realizados</span>
+                    <button onclick="resetMocks()" class="text-gray-400 hover:text-red-500 transition" title="Zerar Simulados">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                </h3>
+                <div class="flex items-center gap-4">
+                    <div>
+                        <span id="total-mocks" class="text-3xl font-bold text-slate-800 dark:text-white">0</span>
+                        <span class="text-xs text-gray-500 dark:text-gray-400">simulados</span>
+                    </div>
+                    <form id="mocks-form" class="flex-1 flex gap-2">
+                        <input type="number" id="mocks-input" step="1" min="0" placeholder="Qtd hoje..." class="w-full border dark:border-slate-600 rounded p-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-slate-700 dark:text-white dark:placeholder-gray-400">
+                        <button type="submit" class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded text-xs transition font-bold">
                             <i class="fa-solid fa-plus"></i>
                         </button>
                     </form>
@@ -453,7 +557,8 @@
         ];
 
         let appState = {
-            items: [], disciplines: [], totalHours: 0,
+            items: [], disciplines: [], totalHours: 0, totalQuestions: 0, totalMocks: 0,
+            goals: { hours: 100, questions: 1000 },
             config: { title: 'PC-PI 2026', role: 'Oficial Investigador', examDate: '2026-01-25' }
         };
 
@@ -806,22 +911,26 @@
             chartInstances.progress = new Chart(ctx, { type: 'doughnut', data: { labels: ['Concluído', 'Restante'], datasets: [{ data: [completed, total-completed], backgroundColor: ['#10b981', '#e2e8f0'], borderWidth: 0, cutout: '75%' }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { enabled: false } } } });
         }
 
-        function renderDisciplineCards() {
-            const c = document.getElementById('discipline-cards-container'); c.innerHTML = '';
-            appState.disciplines.forEach(d => {
-                const items = appState.items.filter(i => i.disciplineId === d.id);
-                const total = items.length;
-                const comp = items.filter(i => i.status === 'concluido').length;
-                const pct = total === 0 ? 0 : Math.round((comp / total) * 100);
-                const el = document.createElement('div');
-                el.className = "bg-white dark:bg-slate-800 border dark:border-slate-700 rounded-lg p-4 shadow-sm transition cursor-pointer relative overflow-hidden group disc-card";
-                el.onclick = () => window.filterByDisciplineFromCard(d.id);
-                el.innerHTML = `<div class="flex justify-between items-end mb-2"><h4 class="font-bold text-slate-700 dark:text-gray-200 text-sm truncate pr-2 flex-1">${d.name}</h4><span class="text-xs font-bold ${pct===100?'text-green-600':'text-blue-600'}">${pct}%</span></div><div class="w-full bg-gray-100 dark:bg-slate-700 rounded-full h-2 overflow-hidden"><div class="bg-blue-500 h-2 rounded-full" style="width: ${pct}%"></div></div><div class="flex justify-between items-center mt-3"><span class="text-[10px] text-gray-400 uppercase">Progresso</span><span class="text-[10px] text-gray-500 font-bold">${comp}/${total}</span></div>`;
-                c.appendChild(el);
-            });
-        }
+        function renderProductivity() { 
+            document.getElementById('total-hours').innerText = appState.totalHours.toFixed(1); 
+            document.getElementById('total-questions').innerText = appState.totalQuestions ? appState.totalQuestions : 0;
+            document.getElementById('total-mocks').innerText = appState.totalMocks ? appState.totalMocks : 0;
 
-        function renderProductivity() { document.getElementById('total-hours').innerText = appState.totalHours.toFixed(1); }
+            const hoursGoal = appState.goals?.hours || 100;
+            const questionsGoal = appState.goals?.questions || 1000;
+
+            document.getElementById('hours-goal').innerText = hoursGoal;
+            document.getElementById('questions-goal').innerText = questionsGoal;
+
+            const hoursPercent = Math.min(100, Math.round((appState.totalHours / hoursGoal) * 100));
+            const questionsPercent = Math.min(100, Math.round(((appState.totalQuestions || 0) / questionsGoal) * 100));
+
+            document.getElementById('hours-percent').innerText = hoursPercent + '%';
+            document.getElementById('questions-percent').innerText = questionsPercent + '%';
+
+            document.getElementById('hours-progress-bar').style.width = hoursPercent + '%';
+            document.getElementById('questions-progress-bar').style.width = questionsPercent + '%';
+        }
         
         function populateModalSelects() {
             const d1 = document.getElementById('new-topic-disc-select');
@@ -839,6 +948,7 @@
         window.closeModal = (id) => { document.getElementById(id).classList.add('opacity-0', 'pointer-events-none'); document.body.classList.remove('modal-active'); if(id==='note-modal') currentEditingId=null; };
         window.toggleReview = (id, idx) => { const i = appState.items.find(x => x.id === id); if (i && i.reviews[idx]) { i.reviews[idx].done = !i.reviews[idx].done; saveDataInternal(); renderSyllabus(); } };
         window.addStudyHoursInternal = (val) => { appState.totalHours += val; saveDataInternal(); renderProductivity(); showToast(`+${val} horas!`, 'success'); };
+        window.addQuestionsInternal = (val) => { if(!appState.totalQuestions) appState.totalQuestions = 0; appState.totalQuestions += val; saveDataInternal(); renderProductivity(); showToast(`+${val} questões!`, 'success'); };
         window.openSyncModal = () => { updateSyncUI(useFirebase); document.getElementById('sync-modal').classList.remove('opacity-0', 'pointer-events-none'); document.body.classList.add('modal-active'); };
         window.openManageModal = () => { populateModalSelects(); renderDeleteDiscList(); renderBulkDeleteTopicList(); document.getElementById('manage-modal').classList.remove('opacity-0', 'pointer-events-none'); document.body.classList.add('modal-active'); };
         window.openSettingsModal = () => { document.getElementById('config-title').value = appState.config.title; document.getElementById('config-role').value = appState.config.role; document.getElementById('config-date').value = appState.config.examDate; document.getElementById('settings-modal').classList.remove('opacity-0', 'pointer-events-none'); document.body.classList.add('modal-active'); };
@@ -847,7 +957,36 @@
         window.saveNote = () => { if (currentEditingId !== null) { const n = document.getElementById('modal-note-input').value; const i = appState.items.find(x => x.id === currentEditingId); if(i) { i.note = n; saveDataInternal(); renderSyllabus(); closeModal('note-modal'); showToast('Salvo!', 'success'); } } };
         window.saveSettings = () => { const t = document.getElementById('config-title').value; const r = document.getElementById('config-role').value; const d = document.getElementById('config-date').value; if(!t || !r || !d) return alert('Preencha tudo.'); appState.config = { title: t, role: r, examDate: d }; saveDataInternal(); renderHeader(); initCountdown(); closeModal('settings-modal'); showToast('Dados salvos!', 'success'); };
         window.resetHours = () => { if(confirm('Zerar horas?')) { appState.totalHours = 0; saveDataInternal(); renderProductivity(); showToast('Zerado.', 'info'); } };
-        window.resetData = () => { if(confirm('Resetar tudo?')) { appState.totalHours = 0; appState.items.forEach(i => { i.status = 'pendente'; i.completedDate = null; i.reviews = []; }); saveDataInternal(); renderAll(); showToast('Resetado.', 'success'); } };
+        window.resetQuestions = () => { if(confirm('Zerar questões?')) { appState.totalQuestions = 0; saveDataInternal(); renderProductivity(); showToast('Zerado.', 'info'); } };
+        window.resetMocks = () => { if(confirm('Zerar simulados?')) { appState.totalMocks = 0; saveDataInternal(); renderProductivity(); showToast('Zerado.', 'info'); } };
+
+        window.updateHoursGoal = () => {
+            const value = parseFloat(document.getElementById('hours-goal-input').value);
+            if(isNaN(value) || value <= 0) return showToast('Digite uma meta válida.', 'error');
+            appState.goals.hours = value;
+            saveDataInternal();
+            renderProductivity();
+            showToast('Meta de horas atualizada!', 'success');
+        };
+
+        window.updateQuestionsGoal = () => {
+            const value = parseInt(document.getElementById('questions-goal-input').value);
+            if(isNaN(value) || value <= 0) return showToast('Digite uma meta válida.', 'error');
+            appState.goals.questions = value;
+            saveDataInternal();
+            renderProductivity();
+            showToast('Meta de questões atualizada!', 'success');
+        };
+
+        window.addMocksInternal = (val) => {
+            if(!appState.totalMocks) appState.totalMocks = 0;
+            appState.totalMocks += val;
+            saveDataInternal();
+            renderProductivity();
+            showToast(`+${val} simulados!`, 'success');
+        };
+
+        window.resetData = () => { if(confirm('Resetar tudo?')) { appState.totalHours = 0; appState.totalQuestions = 0; appState.items.forEach(i => { i.status = 'pendente'; i.completedDate = null; i.reviews = []; }); saveDataInternal(); renderAll(); showToast('Resetado.', 'success'); } };
         window.filterByDisciplineFromCard = (id) => { expandedDisciplines.add(id); currentFilterDiscipline = id; document.getElementById('filter-discipline').value = id; renderSyllabus(); document.getElementById('syllabus-section').scrollIntoView({ behavior: 'smooth' }); };
         window.filterStatus = (s) => { currentFilterStatus = s; renderSyllabus(); };
         window.renderDeleteDiscList = () => { const l = document.getElementById('delete-disc-list'); l.innerHTML = ''; appState.disciplines.forEach(d => { const el = document.createElement('div'); el.className = "flex justify-between items-center bg-gray-50 dark:bg-slate-700/50 p-2 rounded border dark:border-slate-600"; el.innerHTML = `<span class="text-sm text-gray-700 dark:text-gray-200">${d.name}</span><button onclick="deleteDiscipline('${d.id}')" class="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 text-sm px-2"><i class="fa-solid fa-trash"></i></button>`; l.appendChild(el); }); };
@@ -888,6 +1027,17 @@
         function showToast(msg, type='info') { const c = document.getElementById('toast-container'); const e = document.createElement('div'); const cl = type === 'success' ? 'bg-green-600' : (type === 'error' ? 'bg-red-600' : 'bg-slate-800 dark:bg-slate-700'); e.className = `${cl} text-white text-sm px-4 py-3 rounded shadow-lg transition transform translate-y-2 opacity-0 flex items-center gap-2`; e.innerHTML = `<i class="fa-solid fa-circle-info"></i> ${msg}`; c.appendChild(e); requestAnimationFrame(() => e.classList.remove('translate-y-2', 'opacity-0')); setTimeout(() => { e.classList.add('opacity-0', 'translate-x-full'); setTimeout(() => e.remove(), 300); }, 3000); }
         function initCountdown() { const d = (appState.config?appState.config.examDate:'2026-01-25')+'T00:00:00'; const t = new Date(d); const u = () => { const n = new Date(); const diff = t - n; const days = Math.ceil(diff / (1000*60*60*24)); const txt = days > 0 ? `${days} dias` : 'Hoje!'; document.getElementById('countdown-mobile').innerText = txt; document.getElementById('countdown-desktop').innerText = txt; }; u(); }
         document.getElementById('hours-form').addEventListener('submit', (e) => { e.preventDefault(); const v = parseFloat(document.getElementById('study-input').value); if(!isNaN(v)) { document.getElementById('study-input').value=''; addStudyHoursInternal(v); } });
+        document.getElementById('questions-form').addEventListener('submit', (e) => { e.preventDefault(); const v = parseInt(document.getElementById('questions-input').value, 10); if(!isNaN(v)) { document.getElementById('questions-input').value=''; addQuestionsInternal(v); } });
+    
+        document.getElementById('mocks-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const v = parseInt(document.getElementById('mocks-input').value, 10);
+            if(!isNaN(v)) {
+                document.getElementById('mocks-input').value='';
+                addMocksInternal(v);
+            }
+        });
+
     </script>
 </body>
 </html>
