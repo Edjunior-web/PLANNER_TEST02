@@ -6,17 +6,7 @@
     <title>Planner de Estudos</title>
     
     <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com">
-        document.getElementById('mocks-form').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const v = parseInt(document.getElementById('mocks-input').value, 10);
-            if(!isNaN(v)) {
-                document.getElementById('mocks-input').value='';
-                addMocksInternal(v);
-            }
-        });
-
-    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -28,30 +18,10 @@
                 }
             }
         }
-    
-        document.getElementById('mocks-form').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const v = parseInt(document.getElementById('mocks-input').value, 10);
-            if(!isNaN(v)) {
-                document.getElementById('mocks-input').value='';
-                addMocksInternal(v);
-            }
-        });
-
     </script>
     
     <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js">
-        document.getElementById('mocks-form').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const v = parseInt(document.getElementById('mocks-input').value, 10);
-            if(!isNaN(v)) {
-                document.getElementById('mocks-input').value='';
-                addMocksInternal(v);
-            }
-        });
-
-    </script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -173,7 +143,7 @@
         </div>
 
         <!-- Dashboard Section -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
             <!-- Progress Card -->
             <div class="glass-panel rounded-xl p-4 flex items-center justify-between">
                 <div>
@@ -188,100 +158,82 @@
                 </div>
             </div>
 
-            <!-- Productivity Card -->
+            <!-- Productivity Card: Horas -->
             <div class="glass-panel rounded-xl p-4 flex flex-col justify-center">
                 <h3 class="text-gray-500 dark:text-gray-400 text-xs font-bold uppercase tracking-wide mb-2 flex justify-between items-center">
-                    <span>Banco de Horas</span>
+                    <span class="flex items-center gap-1">Horas <i onclick="editGoal('hours')" class="fa-solid fa-pen text-[10px] cursor-pointer text-gray-400 hover:text-blue-500 transition ml-1" title="Editar Meta"></i></span>
                     <button onclick="resetHours()" class="text-gray-400 hover:text-red-500 transition" title="Zerar Horas">
                         <i class="fa-solid fa-trash-can"></i>
                     </button>
                 </h3>
-                <div class="flex items-center gap-4">
-                    <div class="min-w-[120px]">
-                        <span id="total-hours" class="text-3xl font-bold text-slate-800 dark:text-white">0</span>
-                        <span class="text-xs text-gray-500 dark:text-gray-400">hrs líquidas</span>
-                        <div class="mt-2">
-                            <div class="flex justify-between text-[10px]">
-                                <span>Meta: <span id="hours-goal">100</span>h</span>
-                                <span id="hours-percent">0%</span>
-                            </div>
-                            <div class="w-full bg-gray-200 dark:bg-slate-700 rounded-full h-2 mt-1">
-                                <div id="hours-progress-bar" class="bg-blue-600 h-2 rounded-full" style="width:0%"></div>
-                            </div>
-                        </div>
+                <div class="flex items-center gap-4 mb-2">
+                    <div class="min-w-[60px]">
+                        <span id="total-hours" class="text-2xl font-bold text-slate-800 dark:text-white">0</span>
+                        <span class="text-[10px] text-gray-500 dark:text-gray-400">/ <span id="goal-hours">0</span>h</span>
                     </div>
-                    <form id="hours-form" class="flex-1 flex flex-col gap-2">
-                        <div class="flex gap-2">
-                            <input type="number" id="study-input" step="0.5" min="0" placeholder="Hrs hoje..." class="w-full border dark:border-slate-600 rounded p-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-slate-700 dark:text-white dark:placeholder-gray-400">
-                            <button type="submit" class="bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500 text-white px-3 py-1 rounded text-xs transition font-bold">
-                                <i class="fa-solid fa-plus"></i>
-                            </button>
-                        </div>
-                        <input type="number" id="hours-goal-input" min="1" placeholder="Meta de horas" class="w-full border dark:border-slate-600 rounded p-2 text-xs bg-white dark:bg-slate-700 dark:text-white">
-                        <button type="button" onclick="updateHoursGoal()" class="bg-slate-700 hover:bg-slate-800 text-white py-2 rounded text-xs font-bold">
-                            Atualizar Meta
-                        </button>
-                    </form>
-                </div>
-            </div>
-
-            <!-- Questions Card -->
-            <div class="glass-panel rounded-xl p-4 flex flex-col justify-center">
-                <h3 class="text-gray-500 dark:text-gray-400 text-xs font-bold uppercase tracking-wide mb-2 flex justify-between items-center">
-                    <span>Banco de Questões</span>
-                    <button onclick="resetQuestions()" class="text-gray-400 hover:text-red-500 transition" title="Zerar Questões">
-                        <i class="fa-solid fa-trash-can"></i>
-                    </button>
-                </h3>
-                <div class="flex items-center gap-4">
-                    <div class="min-w-[120px]">
-                        <span id="total-questions" class="text-3xl font-bold text-slate-800 dark:text-white">0</span>
-                        <span class="text-xs text-gray-500 dark:text-gray-400">questões</span>
-                        <div class="mt-2">
-                            <div class="flex justify-between text-[10px]">
-                                <span>Meta: <span id="questions-goal">1000</span></span>
-                                <span id="questions-percent">0%</span>
-                            </div>
-                            <div class="w-full bg-gray-200 dark:bg-slate-700 rounded-full h-2 mt-1">
-                                <div id="questions-progress-bar" class="bg-green-600 h-2 rounded-full" style="width:0%"></div>
-                            </div>
-                        </div>
-                    </div>
-                    <form id="questions-form" class="flex-1 flex flex-col gap-2">
-                        <div class="flex gap-2">
-                            <input type="number" id="questions-input" step="1" min="0" placeholder="Qtd hoje..." class="w-full border dark:border-slate-600 rounded p-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-slate-700 dark:text-white dark:placeholder-gray-400">
-                            <button type="submit" class="bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500 text-white px-3 py-1 rounded text-xs transition font-bold">
-                                <i class="fa-solid fa-plus"></i>
-                            </button>
-                        </div>
-                        <input type="number" id="questions-goal-input" min="1" placeholder="Meta de questões" class="w-full border dark:border-slate-600 rounded p-2 text-xs bg-white dark:bg-slate-700 dark:text-white">
-                        <button type="button" onclick="updateQuestionsGoal()" class="bg-slate-700 hover:bg-slate-800 text-white py-2 rounded text-xs font-bold">
-                            Atualizar Meta
-                        </button>
-                    </form>
-                </div>
-            </div>
-
-            <!-- Simulados Card -->
-            <div class="glass-panel rounded-xl p-4 flex flex-col justify-center">
-                <h3 class="text-gray-500 dark:text-gray-400 text-xs font-bold uppercase tracking-wide mb-2 flex justify-between items-center">
-                    <span>Simulados Realizados</span>
-                    <button onclick="resetMocks()" class="text-gray-400 hover:text-red-500 transition" title="Zerar Simulados">
-                        <i class="fa-solid fa-trash-can"></i>
-                    </button>
-                </h3>
-                <div class="flex items-center gap-4">
-                    <div>
-                        <span id="total-mocks" class="text-3xl font-bold text-slate-800 dark:text-white">0</span>
-                        <span class="text-xs text-gray-500 dark:text-gray-400">simulados</span>
-                    </div>
-                    <form id="mocks-form" class="flex-1 flex gap-2">
-                        <input type="number" id="mocks-input" step="1" min="0" placeholder="Qtd hoje..." class="w-full border dark:border-slate-600 rounded p-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-slate-700 dark:text-white dark:placeholder-gray-400">
-                        <button type="submit" class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded text-xs transition font-bold">
+                    <form id="hours-form" class="flex-1 flex gap-2">
+                        <input type="number" id="study-input" step="0.5" min="0" placeholder="Hrs..." class="w-full border dark:border-slate-600 rounded p-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-slate-700 dark:text-white dark:placeholder-gray-400">
+                        <button type="submit" class="bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500 text-white px-3 py-1 rounded text-xs transition font-bold">
                             <i class="fa-solid fa-plus"></i>
                         </button>
                     </form>
                 </div>
+                <div class="w-full bg-gray-200 dark:bg-slate-700 rounded-full h-1.5 mt-1">
+                    <div id="pb-hours" class="bg-blue-500 h-1.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+                </div>
+                <div class="text-right text-[10px] text-gray-500 dark:text-gray-400 mt-1"><span id="pct-hours">0</span>% atingido</div>
+            </div>
+
+            <!-- Productivity Card: Questões -->
+            <div class="glass-panel rounded-xl p-4 flex flex-col justify-center">
+                <h3 class="text-gray-500 dark:text-gray-400 text-xs font-bold uppercase tracking-wide mb-2 flex justify-between items-center">
+                    <span class="flex items-center gap-1">Questões <i onclick="editGoal('questions')" class="fa-solid fa-pen text-[10px] cursor-pointer text-gray-400 hover:text-blue-500 transition ml-1" title="Editar Meta"></i></span>
+                    <button onclick="resetQuestions()" class="text-gray-400 hover:text-red-500 transition" title="Zerar Questões">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                </h3>
+                <div class="flex items-center gap-4 mb-2">
+                    <div class="min-w-[60px]">
+                        <span id="total-questions" class="text-2xl font-bold text-slate-800 dark:text-white">0</span>
+                        <span class="text-[10px] text-gray-500 dark:text-gray-400">/ <span id="goal-questions">0</span>q</span>
+                    </div>
+                    <form id="questions-form" class="flex-1 flex gap-2">
+                        <input type="number" id="questions-input" step="1" min="0" placeholder="Qtd..." class="w-full border dark:border-slate-600 rounded p-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-slate-700 dark:text-white dark:placeholder-gray-400">
+                        <button type="submit" class="bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500 text-white px-3 py-1 rounded text-xs transition font-bold">
+                            <i class="fa-solid fa-plus"></i>
+                        </button>
+                    </form>
+                </div>
+                <div class="w-full bg-gray-200 dark:bg-slate-700 rounded-full h-1.5 mt-1">
+                    <div id="pb-questions" class="bg-purple-500 h-1.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+                </div>
+                <div class="text-right text-[10px] text-gray-500 dark:text-gray-400 mt-1"><span id="pct-questions">0</span>% atingido</div>
+            </div>
+
+            <!-- Productivity Card: Simulados -->
+            <div class="glass-panel rounded-xl p-4 flex flex-col justify-center">
+                <h3 class="text-gray-500 dark:text-gray-400 text-xs font-bold uppercase tracking-wide mb-2 flex justify-between items-center">
+                    <span class="flex items-center gap-1">Simulados <i onclick="editGoal('exams')" class="fa-solid fa-pen text-[10px] cursor-pointer text-gray-400 hover:text-blue-500 transition ml-1" title="Editar Meta"></i></span>
+                    <button onclick="resetExams()" class="text-gray-400 hover:text-red-500 transition" title="Zerar Simulados">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                </h3>
+                <div class="flex items-center gap-4 mb-2">
+                    <div class="min-w-[60px]">
+                        <span id="total-exams" class="text-2xl font-bold text-slate-800 dark:text-white">0</span>
+                        <span class="text-[10px] text-gray-500 dark:text-gray-400">/ <span id="goal-exams">0</span>s</span>
+                    </div>
+                    <form id="exams-form" class="flex-1 flex gap-2">
+                        <input type="number" id="exams-input" step="1" min="0" placeholder="Qtd..." class="w-full border dark:border-slate-600 rounded p-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-slate-700 dark:text-white dark:placeholder-gray-400">
+                        <button type="submit" class="bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500 text-white px-3 py-1 rounded text-xs transition font-bold">
+                            <i class="fa-solid fa-plus"></i>
+                        </button>
+                    </form>
+                </div>
+                <div class="w-full bg-gray-200 dark:bg-slate-700 rounded-full h-1.5 mt-1">
+                    <div id="pb-exams" class="bg-green-500 h-1.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+                </div>
+                <div class="text-right text-[10px] text-gray-500 dark:text-gray-400 mt-1"><span id="pct-exams">0</span>% atingido</div>
             </div>
         </div>
 
@@ -557,8 +509,7 @@
         ];
 
         let appState = {
-            items: [], disciplines: [], totalHours: 0, totalQuestions: 0, totalMocks: 0,
-            goals: { hours: 100, questions: 1000 },
+            items: [], disciplines: [], totalHours: 0, totalQuestions: 0,
             config: { title: 'PC-PI 2026', role: 'Oficial Investigador', examDate: '2026-01-25' }
         };
 
@@ -914,22 +865,6 @@
         function renderProductivity() { 
             document.getElementById('total-hours').innerText = appState.totalHours.toFixed(1); 
             document.getElementById('total-questions').innerText = appState.totalQuestions ? appState.totalQuestions : 0;
-            document.getElementById('total-mocks').innerText = appState.totalMocks ? appState.totalMocks : 0;
-
-            const hoursGoal = appState.goals?.hours || 100;
-            const questionsGoal = appState.goals?.questions || 1000;
-
-            document.getElementById('hours-goal').innerText = hoursGoal;
-            document.getElementById('questions-goal').innerText = questionsGoal;
-
-            const hoursPercent = Math.min(100, Math.round((appState.totalHours / hoursGoal) * 100));
-            const questionsPercent = Math.min(100, Math.round(((appState.totalQuestions || 0) / questionsGoal) * 100));
-
-            document.getElementById('hours-percent').innerText = hoursPercent + '%';
-            document.getElementById('questions-percent').innerText = questionsPercent + '%';
-
-            document.getElementById('hours-progress-bar').style.width = hoursPercent + '%';
-            document.getElementById('questions-progress-bar').style.width = questionsPercent + '%';
         }
         
         function populateModalSelects() {
@@ -958,34 +893,6 @@
         window.saveSettings = () => { const t = document.getElementById('config-title').value; const r = document.getElementById('config-role').value; const d = document.getElementById('config-date').value; if(!t || !r || !d) return alert('Preencha tudo.'); appState.config = { title: t, role: r, examDate: d }; saveDataInternal(); renderHeader(); initCountdown(); closeModal('settings-modal'); showToast('Dados salvos!', 'success'); };
         window.resetHours = () => { if(confirm('Zerar horas?')) { appState.totalHours = 0; saveDataInternal(); renderProductivity(); showToast('Zerado.', 'info'); } };
         window.resetQuestions = () => { if(confirm('Zerar questões?')) { appState.totalQuestions = 0; saveDataInternal(); renderProductivity(); showToast('Zerado.', 'info'); } };
-        window.resetMocks = () => { if(confirm('Zerar simulados?')) { appState.totalMocks = 0; saveDataInternal(); renderProductivity(); showToast('Zerado.', 'info'); } };
-
-        window.updateHoursGoal = () => {
-            const value = parseFloat(document.getElementById('hours-goal-input').value);
-            if(isNaN(value) || value <= 0) return showToast('Digite uma meta válida.', 'error');
-            appState.goals.hours = value;
-            saveDataInternal();
-            renderProductivity();
-            showToast('Meta de horas atualizada!', 'success');
-        };
-
-        window.updateQuestionsGoal = () => {
-            const value = parseInt(document.getElementById('questions-goal-input').value);
-            if(isNaN(value) || value <= 0) return showToast('Digite uma meta válida.', 'error');
-            appState.goals.questions = value;
-            saveDataInternal();
-            renderProductivity();
-            showToast('Meta de questões atualizada!', 'success');
-        };
-
-        window.addMocksInternal = (val) => {
-            if(!appState.totalMocks) appState.totalMocks = 0;
-            appState.totalMocks += val;
-            saveDataInternal();
-            renderProductivity();
-            showToast(`+${val} simulados!`, 'success');
-        };
-
         window.resetData = () => { if(confirm('Resetar tudo?')) { appState.totalHours = 0; appState.totalQuestions = 0; appState.items.forEach(i => { i.status = 'pendente'; i.completedDate = null; i.reviews = []; }); saveDataInternal(); renderAll(); showToast('Resetado.', 'success'); } };
         window.filterByDisciplineFromCard = (id) => { expandedDisciplines.add(id); currentFilterDiscipline = id; document.getElementById('filter-discipline').value = id; renderSyllabus(); document.getElementById('syllabus-section').scrollIntoView({ behavior: 'smooth' }); };
         window.filterStatus = (s) => { currentFilterStatus = s; renderSyllabus(); };
@@ -1028,16 +935,98 @@
         function initCountdown() { const d = (appState.config?appState.config.examDate:'2026-01-25')+'T00:00:00'; const t = new Date(d); const u = () => { const n = new Date(); const diff = t - n; const days = Math.ceil(diff / (1000*60*60*24)); const txt = days > 0 ? `${days} dias` : 'Hoje!'; document.getElementById('countdown-mobile').innerText = txt; document.getElementById('countdown-desktop').innerText = txt; }; u(); }
         document.getElementById('hours-form').addEventListener('submit', (e) => { e.preventDefault(); const v = parseFloat(document.getElementById('study-input').value); if(!isNaN(v)) { document.getElementById('study-input').value=''; addStudyHoursInternal(v); } });
         document.getElementById('questions-form').addEventListener('submit', (e) => { e.preventDefault(); const v = parseInt(document.getElementById('questions-input').value, 10); if(!isNaN(v)) { document.getElementById('questions-input').value=''; addQuestionsInternal(v); } });
+    </script>
     
-        document.getElementById('mocks-form').addEventListener('submit', (e) => {
+    <!-- EXTENSÃO: METAS E SIMULADOS -->
+    <script>
+        // Criação de estado isolado para não conflitar com a base existente
+        let extState = JSON.parse(localStorage.getItem('plannerExtState')) || {
+            goals: { hours: 100, questions: 1000, exams: 10 },
+            exams: 0
+        };
+
+        function saveExtState() {
+            localStorage.setItem('plannerExtState', JSON.stringify(extState));
+        }
+
+        // Função universal para edição das metas
+        function editGoal(type) {
+            let label = type === 'hours' ? 'horas' : (type === 'questions' ? 'questões' : 'simulados');
+            let current = extState.goals[type];
+            let input = prompt(`Defina sua meta para ${label}:`, current);
+            
+            if (input !== null && !isNaN(input) && input > 0) {
+                extState.goals[type] = parseFloat(input);
+                saveExtState();
+                updateGoalsDisplay();
+            }
+        }
+
+        // Formulário isolado do novo contador (Simulados)
+        document.getElementById('exams-form').addEventListener('submit', (e) => {
             e.preventDefault();
-            const v = parseInt(document.getElementById('mocks-input').value, 10);
-            if(!isNaN(v)) {
-                document.getElementById('mocks-input').value='';
-                addMocksInternal(v);
+            const v = parseFloat(document.getElementById('exams-input').value);
+            if(!isNaN(v) && v > 0) {
+                extState.exams += v;
+                document.getElementById('exams-input').value = '';
+                saveExtState();
+                updateGoalsDisplay();
+                // Integração visual usando o componente de notificação existente se possível
+                if(typeof showToast === 'function') showToast(`Adicionado ${v} simulado(s)!`, 'success');
             }
         });
 
+        function resetExams() {
+            if(confirm('Tem certeza que deseja zerar o contador de simulados?')) {
+                extState.exams = 0;
+                saveExtState();
+                updateGoalsDisplay();
+                if(typeof showToast === 'function') showToast('Simulados zerados.', 'info');
+            }
+        }
+
+        // Motor gráfico: Atualiza visualmente valores e barras
+        function updateGoalsDisplay() {
+            const types = [
+                { id: 'hours', totalObj: document.getElementById('total-hours'), val: extState.goals.hours },
+                { id: 'questions', totalObj: document.getElementById('total-questions'), val: extState.goals.questions },
+                { id: 'exams', val: extState.goals.exams, forceVal: extState.exams }
+            ];
+
+            types.forEach(item => {
+                let currentTotal = item.forceVal !== undefined ? item.forceVal : (item.totalObj ? parseFloat(item.totalObj.innerText) || 0 : 0);
+                let currentGoal = item.val;
+                let pct = currentGoal > 0 ? Math.min((currentTotal / currentGoal) * 100, 100) : 0;
+
+                if (item.id === 'exams') {
+                    let totalEl = document.getElementById('total-exams');
+                    if (totalEl) totalEl.innerText = currentTotal;
+                }
+
+                let goalEl = document.getElementById(`goal-${item.id}`);
+                if (goalEl) goalEl.innerText = currentGoal;
+
+                let pbEl = document.getElementById(`pb-${item.id}`);
+                if (pbEl) pbEl.style.width = `${pct}%`;
+
+                let pctEl = document.getElementById(`pct-${item.id}`);
+                if (pctEl) pctEl.innerText = pct.toFixed(1);
+            });
+        }
+
+        // Observer Reativo: Escuta mudanças nas variáveis que já existem no seu planner (Horas/Questões)
+        const observer = new MutationObserver(() => { updateGoalsDisplay(); });
+        
+        window.addEventListener('DOMContentLoaded', () => {
+            const th = document.getElementById('total-hours');
+            const tq = document.getElementById('total-questions');
+            if(th) observer.observe(th, { characterData: true, childList: true, subtree: true });
+            if(tq) observer.observe(tq, { characterData: true, childList: true, subtree: true });
+            updateGoalsDisplay();
+        });
+
+        // Chamada de precaução
+        setTimeout(updateGoalsDisplay, 500);
     </script>
 </body>
 </html>
