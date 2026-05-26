@@ -143,8 +143,7 @@
         </div>
 
         <!-- Dashboard Section -->
-        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-            <!-- Progress Card -->
+       <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
             <div class="glass-panel rounded-xl p-4 flex items-center justify-between">
                 <div>
                     <h3 class="text-gray-500 dark:text-gray-400 text-xs font-bold uppercase tracking-wide mb-1">Progresso Geral</h3>
@@ -158,7 +157,6 @@
                 </div>
             </div>
 
-            <!-- Productivity Card: Horas -->
             <div class="glass-panel rounded-xl p-4 flex flex-col justify-center">
                 <h3 class="text-gray-500 dark:text-gray-400 text-xs font-bold uppercase tracking-wide mb-2 flex justify-between items-center">
                     <span class="flex items-center gap-1">Horas <i onclick="editGoal('hours')" class="fa-solid fa-pen text-[10px] cursor-pointer text-gray-400 hover:text-blue-500 transition ml-1" title="Editar Meta"></i></span>
@@ -184,7 +182,6 @@
                 <div class="text-right text-[10px] text-gray-500 dark:text-gray-400 mt-1"><span id="pct-hours">0</span>% atingido</div>
             </div>
 
-            <!-- Productivity Card: Questões -->
             <div class="glass-panel rounded-xl p-4 flex flex-col justify-center">
                 <h3 class="text-gray-500 dark:text-gray-400 text-xs font-bold uppercase tracking-wide mb-2 flex justify-between items-center">
                     <span class="flex items-center gap-1">Questões <i onclick="editGoal('questions')" class="fa-solid fa-pen text-[10px] cursor-pointer text-gray-400 hover:text-blue-500 transition ml-1" title="Editar Meta"></i></span>
@@ -210,7 +207,6 @@
                 <div class="text-right text-[10px] text-gray-500 dark:text-gray-400 mt-1"><span id="pct-questions">0</span>% atingido</div>
             </div>
 
-            <!-- Productivity Card: Simulados -->
             <div class="glass-panel rounded-xl p-4 flex flex-col justify-center">
                 <h3 class="text-gray-500 dark:text-gray-400 text-xs font-bold uppercase tracking-wide mb-2 flex justify-between items-center">
                     <span class="flex items-center gap-1">Simulados <i onclick="editGoal('exams')" class="fa-solid fa-pen text-[10px] cursor-pointer text-gray-400 hover:text-blue-500 transition ml-1" title="Editar Meta"></i></span>
@@ -509,7 +505,7 @@
         ];
 
         let appState = {
-            items: [], disciplines: [], totalHours: 0, totalQuestions: 0,
+            items: [], disciplines: [], totalHours: 0,
             config: { title: 'PC-PI 2026', role: 'Oficial Investigador', examDate: '2026-01-25' }
         };
 
@@ -862,10 +858,22 @@
             chartInstances.progress = new Chart(ctx, { type: 'doughnut', data: { labels: ['Concluído', 'Restante'], datasets: [{ data: [completed, total-completed], backgroundColor: ['#10b981', '#e2e8f0'], borderWidth: 0, cutout: '75%' }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { enabled: false } } } });
         }
 
-        function renderProductivity() { 
-            document.getElementById('total-hours').innerText = appState.totalHours.toFixed(1); 
-            document.getElementById('total-questions').innerText = appState.totalQuestions ? appState.totalQuestions : 0;
+        function renderDisciplineCards() {
+            const c = document.getElementById('discipline-cards-container'); c.innerHTML = '';
+            appState.disciplines.forEach(d => {
+                const items = appState.items.filter(i => i.disciplineId === d.id);
+                const total = items.length;
+                const comp = items.filter(i => i.status === 'concluido').length;
+                const pct = total === 0 ? 0 : Math.round((comp / total) * 100);
+                const el = document.createElement('div');
+                el.className = "bg-white dark:bg-slate-800 border dark:border-slate-700 rounded-lg p-4 shadow-sm transition cursor-pointer relative overflow-hidden group disc-card";
+                el.onclick = () => window.filterByDisciplineFromCard(d.id);
+                el.innerHTML = `<div class="flex justify-between items-end mb-2"><h4 class="font-bold text-slate-700 dark:text-gray-200 text-sm truncate pr-2 flex-1">${d.name}</h4><span class="text-xs font-bold ${pct===100?'text-green-600':'text-blue-600'}">${pct}%</span></div><div class="w-full bg-gray-100 dark:bg-slate-700 rounded-full h-2 overflow-hidden"><div class="bg-blue-500 h-2 rounded-full" style="width: ${pct}%"></div></div><div class="flex justify-between items-center mt-3"><span class="text-[10px] text-gray-400 uppercase">Progresso</span><span class="text-[10px] text-gray-500 font-bold">${comp}/${total}</span></div>`;
+                c.appendChild(el);
+            });
         }
+
+        function renderProductivity() { document.getElementById('total-hours').innerText = appState.totalHours.toFixed(1); }
         
         function populateModalSelects() {
             const d1 = document.getElementById('new-topic-disc-select');
@@ -883,7 +891,6 @@
         window.closeModal = (id) => { document.getElementById(id).classList.add('opacity-0', 'pointer-events-none'); document.body.classList.remove('modal-active'); if(id==='note-modal') currentEditingId=null; };
         window.toggleReview = (id, idx) => { const i = appState.items.find(x => x.id === id); if (i && i.reviews[idx]) { i.reviews[idx].done = !i.reviews[idx].done; saveDataInternal(); renderSyllabus(); } };
         window.addStudyHoursInternal = (val) => { appState.totalHours += val; saveDataInternal(); renderProductivity(); showToast(`+${val} horas!`, 'success'); };
-        window.addQuestionsInternal = (val) => { if(!appState.totalQuestions) appState.totalQuestions = 0; appState.totalQuestions += val; saveDataInternal(); renderProductivity(); showToast(`+${val} questões!`, 'success'); };
         window.openSyncModal = () => { updateSyncUI(useFirebase); document.getElementById('sync-modal').classList.remove('opacity-0', 'pointer-events-none'); document.body.classList.add('modal-active'); };
         window.openManageModal = () => { populateModalSelects(); renderDeleteDiscList(); renderBulkDeleteTopicList(); document.getElementById('manage-modal').classList.remove('opacity-0', 'pointer-events-none'); document.body.classList.add('modal-active'); };
         window.openSettingsModal = () => { document.getElementById('config-title').value = appState.config.title; document.getElementById('config-role').value = appState.config.role; document.getElementById('config-date').value = appState.config.examDate; document.getElementById('settings-modal').classList.remove('opacity-0', 'pointer-events-none'); document.body.classList.add('modal-active'); };
@@ -892,8 +899,7 @@
         window.saveNote = () => { if (currentEditingId !== null) { const n = document.getElementById('modal-note-input').value; const i = appState.items.find(x => x.id === currentEditingId); if(i) { i.note = n; saveDataInternal(); renderSyllabus(); closeModal('note-modal'); showToast('Salvo!', 'success'); } } };
         window.saveSettings = () => { const t = document.getElementById('config-title').value; const r = document.getElementById('config-role').value; const d = document.getElementById('config-date').value; if(!t || !r || !d) return alert('Preencha tudo.'); appState.config = { title: t, role: r, examDate: d }; saveDataInternal(); renderHeader(); initCountdown(); closeModal('settings-modal'); showToast('Dados salvos!', 'success'); };
         window.resetHours = () => { if(confirm('Zerar horas?')) { appState.totalHours = 0; saveDataInternal(); renderProductivity(); showToast('Zerado.', 'info'); } };
-        window.resetQuestions = () => { if(confirm('Zerar questões?')) { appState.totalQuestions = 0; saveDataInternal(); renderProductivity(); showToast('Zerado.', 'info'); } };
-        window.resetData = () => { if(confirm('Resetar tudo?')) { appState.totalHours = 0; appState.totalQuestions = 0; appState.items.forEach(i => { i.status = 'pendente'; i.completedDate = null; i.reviews = []; }); saveDataInternal(); renderAll(); showToast('Resetado.', 'success'); } };
+        window.resetData = () => { if(confirm('Resetar tudo?')) { appState.totalHours = 0; appState.items.forEach(i => { i.status = 'pendente'; i.completedDate = null; i.reviews = []; }); saveDataInternal(); renderAll(); showToast('Resetado.', 'success'); } };
         window.filterByDisciplineFromCard = (id) => { expandedDisciplines.add(id); currentFilterDiscipline = id; document.getElementById('filter-discipline').value = id; renderSyllabus(); document.getElementById('syllabus-section').scrollIntoView({ behavior: 'smooth' }); };
         window.filterStatus = (s) => { currentFilterStatus = s; renderSyllabus(); };
         window.renderDeleteDiscList = () => { const l = document.getElementById('delete-disc-list'); l.innerHTML = ''; appState.disciplines.forEach(d => { const el = document.createElement('div'); el.className = "flex justify-between items-center bg-gray-50 dark:bg-slate-700/50 p-2 rounded border dark:border-slate-600"; el.innerHTML = `<span class="text-sm text-gray-700 dark:text-gray-200">${d.name}</span><button onclick="deleteDiscipline('${d.id}')" class="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 text-sm px-2"><i class="fa-solid fa-trash"></i></button>`; l.appendChild(el); }); };
@@ -934,11 +940,13 @@
         function showToast(msg, type='info') { const c = document.getElementById('toast-container'); const e = document.createElement('div'); const cl = type === 'success' ? 'bg-green-600' : (type === 'error' ? 'bg-red-600' : 'bg-slate-800 dark:bg-slate-700'); e.className = `${cl} text-white text-sm px-4 py-3 rounded shadow-lg transition transform translate-y-2 opacity-0 flex items-center gap-2`; e.innerHTML = `<i class="fa-solid fa-circle-info"></i> ${msg}`; c.appendChild(e); requestAnimationFrame(() => e.classList.remove('translate-y-2', 'opacity-0')); setTimeout(() => { e.classList.add('opacity-0', 'translate-x-full'); setTimeout(() => e.remove(), 300); }, 3000); }
         function initCountdown() { const d = (appState.config?appState.config.examDate:'2026-01-25')+'T00:00:00'; const t = new Date(d); const u = () => { const n = new Date(); const diff = t - n; const days = Math.ceil(diff / (1000*60*60*24)); const txt = days > 0 ? `${days} dias` : 'Hoje!'; document.getElementById('countdown-mobile').innerText = txt; document.getElementById('countdown-desktop').innerText = txt; }; u(); }
         document.getElementById('hours-form').addEventListener('submit', (e) => { e.preventDefault(); const v = parseFloat(document.getElementById('study-input').value); if(!isNaN(v)) { document.getElementById('study-input').value=''; addStudyHoursInternal(v); } });
-        document.getElementById('questions-form').addEventListener('submit', (e) => { e.preventDefault(); const v = parseInt(document.getElementById('questions-input').value, 10); if(!isNaN(v)) { document.getElementById('questions-input').value=''; addQuestionsInternal(v); } });
     </script>
-    
-    <!-- EXTENSÃO: METAS E SIMULADOS -->
-    <script>
+	
+	
+	<!-- Script novo abaixo -->
+	
+	
+	<script>
         // Criação de estado isolado para não conflitar com a base existente
         let extState = JSON.parse(localStorage.getItem('plannerExtState')) || {
             goals: { hours: 100, questions: 1000, exams: 10 },
@@ -1027,6 +1035,12 @@
 
         // Chamada de precaução
         setTimeout(updateGoalsDisplay, 500);
+		
+		
     </script>
+	
+	
+	
+	
 </body>
 </html>
