@@ -1042,5 +1042,92 @@
 	
 	
 	
+
+<script>
+(function(){
+function initPlannerCounters(){
+    let extState = JSON.parse(localStorage.getItem('plannerExtState') || '{}');
+    extState.goals = extState.goals || {hours:100,questions:1000,exams:10};
+    extState.hours = Number(extState.hours || 0);
+    extState.questions = Number(extState.questions || 0);
+    extState.exams = Number(extState.exams || 0);
+
+    function save(){
+        localStorage.setItem('plannerExtState', JSON.stringify(extState));
+        render();
+    }
+
+    function render(){
+        const gh=extState.goals.hours||0,gq=extState.goals.questions||0,ge=extState.goals.exams||0;
+
+        if(document.getElementById('total-hours')) document.getElementById('total-hours').innerText=extState.hours.toFixed(1);
+        if(document.getElementById('total-questions')) document.getElementById('total-questions').innerText=extState.questions;
+        if(document.getElementById('total-exams')) document.getElementById('total-exams').innerText=extState.exams;
+
+        if(document.getElementById('goal-hours')) document.getElementById('goal-hours').innerText=gh;
+        if(document.getElementById('goal-questions')) document.getElementById('goal-questions').innerText=gq;
+        if(document.getElementById('goal-exams')) document.getElementById('goal-exams').innerText=ge;
+
+        let ph=gh?Math.min(100,(extState.hours/gh)*100):0;
+        let pq=gq?Math.min(100,(extState.questions/gq)*100):0;
+        let pe=ge?Math.min(100,(extState.exams/ge)*100):0;
+
+        if(document.getElementById('pb-hours')) document.getElementById('pb-hours').style.width=ph+'%';
+        if(document.getElementById('pb-questions')) document.getElementById('pb-questions').style.width=pq+'%';
+        if(document.getElementById('pb-exams')) document.getElementById('pb-exams').style.width=pe+'%';
+
+        if(document.getElementById('pct-hours')) document.getElementById('pct-hours').innerText=Math.round(ph);
+        if(document.getElementById('pct-questions')) document.getElementById('pct-questions').innerText=Math.round(pq);
+        if(document.getElementById('pct-exams')) document.getElementById('pct-exams').innerText=Math.round(pe);
+    }
+
+    window.editGoal=function(type){
+        const current=extState.goals[type]||0;
+        const val=prompt('Nova meta:', current);
+        if(val!==null && !isNaN(val)){
+            extState.goals[type]=Number(val);
+            save();
+        }
+    };
+
+    window.resetQuestions=function(){ extState.questions=0; save(); };
+    window.resetExams=function(){ extState.exams=0; save(); };
+
+    const hf=document.getElementById('hours-form');
+    if(hf && !hf.dataset.bound){
+        hf.dataset.bound='1';
+        hf.addEventListener('submit',e=>{
+            e.preventDefault();
+            const v=parseFloat(document.getElementById('study-input').value||0);
+            if(v>0){ extState.hours+=v; document.getElementById('study-input').value=''; save(); }
+        });
+    }
+
+    const qf=document.getElementById('questions-form');
+    if(qf && !qf.dataset.bound){
+        qf.dataset.bound='1';
+        qf.addEventListener('submit',e=>{
+            e.preventDefault();
+            const v=parseInt(document.getElementById('questions-input').value||0);
+            if(v>0){ extState.questions+=v; document.getElementById('questions-input').value=''; save(); }
+        });
+    }
+
+    const ef=document.getElementById('exams-form');
+    if(ef && !ef.dataset.bound){
+        ef.dataset.bound='1';
+        ef.addEventListener('submit',e=>{
+            e.preventDefault();
+            const v=parseInt(document.getElementById('exams-input').value||0);
+            if(v>0){ extState.exams+=v; document.getElementById('exams-input').value=''; save(); }
+        });
+    }
+
+    render();
+}
+window.addEventListener('load', ()=>setTimeout(initPlannerCounters,1000));
+})();
+</script>
+
 </body>
 </html>
