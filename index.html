@@ -873,7 +873,7 @@
             });
         }
 
-        function renderProductivity() { document.getElementById('total-hours').innerText = appState.totalHours.toFixed(1); }
+        function renderProductivity() { /* total-hours gerenciado pelo script de contadores unificado */ }
         
         function populateModalSelects() {
             const d1 = document.getElementById('new-topic-disc-select');
@@ -898,7 +898,7 @@
         window.updateStatus = (id, s) => { const i = appState.items.find(x => x.id === id); if (!i) return; i.status = s; if (s === 'concluido') { const t = new Date(); i.completedDate = t.toISOString(); i.reviews = [ { date: new Date(t.setDate(t.getDate()+1)).toISOString(), done: false, label: '24h' }, { date: new Date(t.setDate(t.getDate()+6)).toISOString(), done: false, label: '7d' }, { date: new Date(t.setDate(t.getDate()+23)).toISOString(), done: false, label: '30d' } ]; showToast('Concluído!', 'success'); } else { i.completedDate = null; i.reviews = []; } saveDataInternal(); renderAll(); };
         window.saveNote = () => { if (currentEditingId !== null) { const n = document.getElementById('modal-note-input').value; const i = appState.items.find(x => x.id === currentEditingId); if(i) { i.note = n; saveDataInternal(); renderSyllabus(); closeModal('note-modal'); showToast('Salvo!', 'success'); } } };
         window.saveSettings = () => { const t = document.getElementById('config-title').value; const r = document.getElementById('config-role').value; const d = document.getElementById('config-date').value; if(!t || !r || !d) return alert('Preencha tudo.'); appState.config = { title: t, role: r, examDate: d }; saveDataInternal(); renderHeader(); initCountdown(); closeModal('settings-modal'); showToast('Dados salvos!', 'success'); };
-        window.resetHours = () => { if(confirm('Zerar horas?')) { appState.totalHours = 0; saveDataInternal(); renderProductivity(); showToast('Zerado.', 'info'); } };
+        window.resetHours = () => { if(confirm('Zerar horas?')) { if(window._resetHoursCounter) window._resetHoursCounter(); else showToast('Zerado.', 'info'); } };
         window.resetData = () => { if(confirm('Resetar tudo?')) { appState.totalHours = 0; appState.items.forEach(i => { i.status = 'pendente'; i.completedDate = null; i.reviews = []; }); saveDataInternal(); renderAll(); showToast('Resetado.', 'success'); } };
         window.filterByDisciplineFromCard = (id) => { expandedDisciplines.add(id); currentFilterDiscipline = id; document.getElementById('filter-discipline').value = id; renderSyllabus(); document.getElementById('syllabus-section').scrollIntoView({ behavior: 'smooth' }); };
         window.filterStatus = (s) => { currentFilterStatus = s; renderSyllabus(); };
@@ -939,107 +939,8 @@
 
         function showToast(msg, type='info') { const c = document.getElementById('toast-container'); const e = document.createElement('div'); const cl = type === 'success' ? 'bg-green-600' : (type === 'error' ? 'bg-red-600' : 'bg-slate-800 dark:bg-slate-700'); e.className = `${cl} text-white text-sm px-4 py-3 rounded shadow-lg transition transform translate-y-2 opacity-0 flex items-center gap-2`; e.innerHTML = `<i class="fa-solid fa-circle-info"></i> ${msg}`; c.appendChild(e); requestAnimationFrame(() => e.classList.remove('translate-y-2', 'opacity-0')); setTimeout(() => { e.classList.add('opacity-0', 'translate-x-full'); setTimeout(() => e.remove(), 300); }, 3000); }
         function initCountdown() { const d = (appState.config?appState.config.examDate:'2026-01-25')+'T00:00:00'; const t = new Date(d); const u = () => { const n = new Date(); const diff = t - n; const days = Math.ceil(diff / (1000*60*60*24)); const txt = days > 0 ? `${days} dias` : 'Hoje!'; document.getElementById('countdown-mobile').innerText = txt; document.getElementById('countdown-desktop').innerText = txt; }; u(); }
-        document.getElementById('hours-form').addEventListener('submit', (e) => { e.preventDefault(); const v = parseFloat(document.getElementById('study-input').value); if(!isNaN(v)) { document.getElementById('study-input').value=''; addStudyHoursInternal(v); } });
+        // hours-form listener removido daqui — gerenciado pelo script de contadores abaixo
     </script>
-	
-	
-	<!-- Script novo abaixo -->
-	
-	
-	<script>
-        // Criação de estado isolado para não conflitar com a base existente
-        let extState = JSON.parse(localStorage.getItem('plannerExtState')) || {
-            goals: { hours: 100, questions: 1000, exams: 10 },
-            exams: 0
-        };
-
-        function saveExtState() {
-            localStorage.setItem('plannerExtState', JSON.stringify(extState));
-        }
-
-        // Função universal para edição das metas
-        function editGoal(type) {
-            let label = type === 'hours' ? 'horas' : (type === 'questions' ? 'questões' : 'simulados');
-            let current = extState.goals[type];
-            let input = prompt(`Defina sua meta para ${label}:`, current);
-            
-            if (input !== null && !isNaN(input) && input > 0) {
-                extState.goals[type] = parseFloat(input);
-                saveExtState();
-                updateGoalsDisplay();
-            }
-        }
-
-        // Formulário isolado do novo contador (Simulados)
-        document.getElementById('exams-form').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const v = parseFloat(document.getElementById('exams-input').value);
-            if(!isNaN(v) && v > 0) {
-                extState.exams += v;
-                document.getElementById('exams-input').value = '';
-                saveExtState();
-                updateGoalsDisplay();
-                // Integração visual usando o componente de notificação existente se possível
-                if(typeof showToast === 'function') showToast(`Adicionado ${v} simulado(s)!`, 'success');
-            }
-        });
-
-        function resetExams() {
-            if(confirm('Tem certeza que deseja zerar o contador de simulados?')) {
-                extState.exams = 0;
-                saveExtState();
-                updateGoalsDisplay();
-                if(typeof showToast === 'function') showToast('Simulados zerados.', 'info');
-            }
-        }
-
-        // Motor gráfico: Atualiza visualmente valores e barras
-        function updateGoalsDisplay() {
-            const types = [
-                { id: 'hours', totalObj: document.getElementById('total-hours'), val: extState.goals.hours },
-                { id: 'questions', totalObj: document.getElementById('total-questions'), val: extState.goals.questions },
-                { id: 'exams', val: extState.goals.exams, forceVal: extState.exams }
-            ];
-
-            types.forEach(item => {
-                let currentTotal = item.forceVal !== undefined ? item.forceVal : (item.totalObj ? parseFloat(item.totalObj.innerText) || 0 : 0);
-                let currentGoal = item.val;
-                let pct = currentGoal > 0 ? Math.min((currentTotal / currentGoal) * 100, 100) : 0;
-
-                if (item.id === 'exams') {
-                    let totalEl = document.getElementById('total-exams');
-                    if (totalEl) totalEl.innerText = currentTotal;
-                }
-
-                let goalEl = document.getElementById(`goal-${item.id}`);
-                if (goalEl) goalEl.innerText = currentGoal;
-
-                let pbEl = document.getElementById(`pb-${item.id}`);
-                if (pbEl) pbEl.style.width = `${pct}%`;
-
-                let pctEl = document.getElementById(`pct-${item.id}`);
-                if (pctEl) pctEl.innerText = pct.toFixed(1);
-            });
-        }
-
-        // Observer Reativo: Escuta mudanças nas variáveis que já existem no seu planner (Horas/Questões)
-        const observer = new MutationObserver(() => { updateGoalsDisplay(); });
-        
-        window.addEventListener('DOMContentLoaded', () => {
-            const th = document.getElementById('total-hours');
-            const tq = document.getElementById('total-questions');
-            if(th) observer.observe(th, { characterData: true, childList: true, subtree: true });
-            if(tq) observer.observe(tq, { characterData: true, childList: true, subtree: true });
-            updateGoalsDisplay();
-        });
-
-        // Chamada de precaução
-        setTimeout(updateGoalsDisplay, 500);
-		
-		
-    </script>
-	
-	
 	
 	
 
@@ -1090,8 +991,10 @@ function initPlannerCounters(){
         }
     };
 
-    window.resetQuestions=function(){ extState.questions=0; save(); };
-    window.resetExams=function(){ extState.exams=0; save(); };
+    window.resetQuestions=function(){ extState.questions=0; save(); if(typeof showToast==='function') showToast('Questões zeradas.','info'); };
+    window.resetExams=function(){ extState.exams=0; save(); if(typeof showToast==='function') showToast('Simulados zerados.','info'); };
+    window.resetHours=function(){ if(confirm('Zerar horas?')){ extState.hours=0; save(); if(typeof showToast==='function') showToast('Horas zeradas.','info'); } };
+    window._resetHoursCounter=function(){ extState.hours=0; save(); if(typeof showToast==='function') showToast('Horas zeradas.','info'); };
 
     const hf=document.getElementById('hours-form');
     if(hf && !hf.dataset.bound){
