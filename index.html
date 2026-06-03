@@ -148,8 +148,9 @@
             </div>
         </div>
 
-        <!-- Dashboard Section -->
-       <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+        <!-- Dashboard Section — Contadores Totais -->
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+            <!-- Progresso Geral -->
             <div class="glass-panel rounded-xl p-4 flex items-center justify-between">
                 <div>
                     <h3 class="text-gray-500 dark:text-gray-400 text-xs font-bold uppercase tracking-wide mb-1">Progresso Geral</h3>
@@ -163,12 +164,11 @@
                 </div>
             </div>
 
+            <!-- Horas Total -->
             <div class="glass-panel rounded-xl p-4 flex flex-col justify-center">
                 <h3 class="text-gray-500 dark:text-gray-400 text-xs font-bold uppercase tracking-wide mb-2 flex justify-between items-center">
-                    <span class="flex items-center gap-1">Horas <i onclick="editGoal('hours')" class="fa-solid fa-pen text-[10px] cursor-pointer text-gray-400 hover:text-blue-500 transition ml-1" title="Editar Meta"></i></span>
-                    <button onclick="resetHours()" class="text-gray-400 hover:text-red-500 transition" title="Zerar Horas">
-                        <i class="fa-solid fa-trash-can"></i>
-                    </button>
+                    <span class="flex items-center gap-1"><i class="fa-solid fa-clock text-blue-400 mr-1"></i>Horas Totais <i onclick="editGoal('hours')" class="fa-solid fa-pen text-[10px] cursor-pointer text-gray-400 hover:text-blue-500 transition ml-1" title="Editar Meta"></i></span>
+                    <button onclick="resetHours()" class="text-gray-400 hover:text-red-500 transition" title="Zerar Horas"><i class="fa-solid fa-trash-can"></i></button>
                 </h3>
                 <div class="flex items-center gap-4 mb-2">
                     <div class="min-w-[60px]">
@@ -177,23 +177,20 @@
                     </div>
                     <form id="hours-form" class="flex-1 flex gap-2">
                         <input type="number" id="study-input" step="0.5" min="0" placeholder="Hrs..." class="w-full border dark:border-slate-600 rounded p-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-slate-700 dark:text-white dark:placeholder-gray-400">
-                        <button type="submit" class="bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500 text-white px-3 py-1 rounded text-xs transition font-bold">
-                            <i class="fa-solid fa-plus"></i>
-                        </button>
+                        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs transition font-bold"><i class="fa-solid fa-plus"></i></button>
                     </form>
                 </div>
                 <div class="w-full bg-gray-200 dark:bg-slate-700 rounded-full h-1.5 mt-1">
-                    <div id="pb-hours" class="bg-blue-500 h-1.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+                    <div id="pb-hours" class="bg-blue-500 h-1.5 rounded-full transition-all duration-500" style="width:0%"></div>
                 </div>
                 <div class="text-right text-[10px] text-gray-500 dark:text-gray-400 mt-1"><span id="pct-hours">0</span>% atingido</div>
             </div>
 
+            <!-- Questões Total -->
             <div class="glass-panel rounded-xl p-4 flex flex-col justify-center">
                 <h3 class="text-gray-500 dark:text-gray-400 text-xs font-bold uppercase tracking-wide mb-2 flex justify-between items-center">
-                    <span class="flex items-center gap-1">Questões <i onclick="editGoal('questions')" class="fa-solid fa-pen text-[10px] cursor-pointer text-gray-400 hover:text-blue-500 transition ml-1" title="Editar Meta"></i></span>
-                    <button onclick="resetQuestions()" class="text-gray-400 hover:text-red-500 transition" title="Zerar Questões">
-                        <i class="fa-solid fa-trash-can"></i>
-                    </button>
+                    <span class="flex items-center gap-1"><i class="fa-solid fa-list-check text-purple-400 mr-1"></i>Questões Totais <i onclick="editGoal('questions')" class="fa-solid fa-pen text-[10px] cursor-pointer text-gray-400 hover:text-blue-500 transition ml-1" title="Editar Meta"></i></span>
+                    <button onclick="resetQuestions()" class="text-gray-400 hover:text-red-500 transition" title="Zerar Questões"><i class="fa-solid fa-trash-can"></i></button>
                 </h3>
                 <div class="flex items-center gap-4 mb-2">
                     <div class="min-w-[60px]">
@@ -202,23 +199,20 @@
                     </div>
                     <form id="questions-form" class="flex-1 flex gap-2">
                         <input type="number" id="questions-input" step="1" min="0" placeholder="Qtd..." class="w-full border dark:border-slate-600 rounded p-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-slate-700 dark:text-white dark:placeholder-gray-400">
-                        <button type="submit" class="bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500 text-white px-3 py-1 rounded text-xs transition font-bold">
-                            <i class="fa-solid fa-plus"></i>
-                        </button>
+                        <button type="submit" class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded text-xs transition font-bold"><i class="fa-solid fa-plus"></i></button>
                     </form>
                 </div>
                 <div class="w-full bg-gray-200 dark:bg-slate-700 rounded-full h-1.5 mt-1">
-                    <div id="pb-questions" class="bg-purple-500 h-1.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+                    <div id="pb-questions" class="bg-purple-500 h-1.5 rounded-full transition-all duration-500" style="width:0%"></div>
                 </div>
                 <div class="text-right text-[10px] text-gray-500 dark:text-gray-400 mt-1"><span id="pct-questions">0</span>% atingido</div>
             </div>
 
+            <!-- Simulados -->
             <div class="glass-panel rounded-xl p-4 flex flex-col justify-center">
                 <h3 class="text-gray-500 dark:text-gray-400 text-xs font-bold uppercase tracking-wide mb-2 flex justify-between items-center">
-                    <span class="flex items-center gap-1">Simulados <i onclick="editGoal('exams')" class="fa-solid fa-pen text-[10px] cursor-pointer text-gray-400 hover:text-blue-500 transition ml-1" title="Editar Meta"></i></span>
-                    <button onclick="resetExams()" class="text-gray-400 hover:text-red-500 transition" title="Zerar Simulados">
-                        <i class="fa-solid fa-trash-can"></i>
-                    </button>
+                    <span class="flex items-center gap-1"><i class="fa-solid fa-file-pen text-green-400 mr-1"></i>Simulados <i onclick="editGoal('exams')" class="fa-solid fa-pen text-[10px] cursor-pointer text-gray-400 hover:text-blue-500 transition ml-1" title="Editar Meta"></i></span>
+                    <button onclick="resetExams()" class="text-gray-400 hover:text-red-500 transition" title="Zerar Simulados"><i class="fa-solid fa-trash-can"></i></button>
                 </h3>
                 <div class="flex items-center gap-4 mb-2">
                     <div class="min-w-[60px]">
@@ -227,15 +221,72 @@
                     </div>
                     <form id="exams-form" class="flex-1 flex gap-2">
                         <input type="number" id="exams-input" step="1" min="0" placeholder="Qtd..." class="w-full border dark:border-slate-600 rounded p-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-slate-700 dark:text-white dark:placeholder-gray-400">
-                        <button type="submit" class="bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500 text-white px-3 py-1 rounded text-xs transition font-bold">
-                            <i class="fa-solid fa-plus"></i>
-                        </button>
+                        <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-xs transition font-bold"><i class="fa-solid fa-plus"></i></button>
                     </form>
                 </div>
                 <div class="w-full bg-gray-200 dark:bg-slate-700 rounded-full h-1.5 mt-1">
-                    <div id="pb-exams" class="bg-green-500 h-1.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+                    <div id="pb-exams" class="bg-green-500 h-1.5 rounded-full transition-all duration-500" style="width:0%"></div>
                 </div>
                 <div class="text-right text-[10px] text-gray-500 dark:text-gray-400 mt-1"><span id="pct-exams">0</span>% atingido</div>
+            </div>
+        </div>
+
+        <!-- Contadores do Dia -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Horas do Dia -->
+            <div class="glass-panel rounded-xl p-4 flex flex-col justify-center border-l-4 border-orange-400">
+                <h3 class="text-gray-500 dark:text-gray-400 text-xs font-bold uppercase tracking-wide mb-2 flex justify-between items-center">
+                    <span class="flex items-center gap-1">
+                        <i class="fa-solid fa-sun text-orange-400 mr-1"></i>Horas de Hoje
+                        <i onclick="editGoal('hoursToday')" class="fa-solid fa-pen text-[10px] cursor-pointer text-gray-400 hover:text-orange-500 transition ml-1" title="Editar Meta Diária"></i>
+                    </span>
+                    <button onclick="resetHoursToday()" class="text-gray-400 hover:text-red-500 transition" title="Zerar Horas do Dia"><i class="fa-solid fa-rotate-left"></i></button>
+                </h3>
+                <div class="flex items-center gap-4 mb-2">
+                    <div class="min-w-[60px]">
+                        <span id="total-hours-today" class="text-2xl font-bold text-orange-500 dark:text-orange-400">0</span>
+                        <span class="text-[10px] text-gray-500 dark:text-gray-400">/ <span id="goal-hours-today">4</span>h</span>
+                    </div>
+                    <form id="hours-today-form" class="flex-1 flex gap-2">
+                        <input type="number" id="study-today-input" step="0.5" min="0" placeholder="Hrs hoje..." class="w-full border dark:border-slate-600 rounded p-2 text-xs focus:outline-none focus:ring-2 focus:ring-orange-400 bg-white dark:bg-slate-700 dark:text-white dark:placeholder-gray-400">
+                        <button type="submit" class="bg-orange-500 hover:bg-orange-600 text-white px-3 py-1 rounded text-xs transition font-bold"><i class="fa-solid fa-plus"></i></button>
+                    </form>
+                </div>
+                <div class="w-full bg-gray-200 dark:bg-slate-700 rounded-full h-1.5 mt-1">
+                    <div id="pb-hours-today" class="bg-orange-400 h-1.5 rounded-full transition-all duration-500" style="width:0%"></div>
+                </div>
+                <div class="flex justify-between text-[10px] text-gray-500 dark:text-gray-400 mt-1">
+                    <span>Meta diária</span>
+                    <span><span id="pct-hours-today">0</span>% atingido</span>
+                </div>
+            </div>
+
+            <!-- Questões do Dia -->
+            <div class="glass-panel rounded-xl p-4 flex flex-col justify-center border-l-4 border-pink-400">
+                <h3 class="text-gray-500 dark:text-gray-400 text-xs font-bold uppercase tracking-wide mb-2 flex justify-between items-center">
+                    <span class="flex items-center gap-1">
+                        <i class="fa-solid fa-bolt text-pink-400 mr-1"></i>Questões de Hoje
+                        <i onclick="editGoal('questionsToday')" class="fa-solid fa-pen text-[10px] cursor-pointer text-gray-400 hover:text-pink-500 transition ml-1" title="Editar Meta Diária"></i>
+                    </span>
+                    <button onclick="resetQuestionsToday()" class="text-gray-400 hover:text-red-500 transition" title="Zerar Questões do Dia"><i class="fa-solid fa-rotate-left"></i></button>
+                </h3>
+                <div class="flex items-center gap-4 mb-2">
+                    <div class="min-w-[60px]">
+                        <span id="total-questions-today" class="text-2xl font-bold text-pink-500 dark:text-pink-400">0</span>
+                        <span class="text-[10px] text-gray-500 dark:text-gray-400">/ <span id="goal-questions-today">40</span>q</span>
+                    </div>
+                    <form id="questions-today-form" class="flex-1 flex gap-2">
+                        <input type="number" id="questions-today-input" step="1" min="0" placeholder="Qtd hoje..." class="w-full border dark:border-slate-600 rounded p-2 text-xs focus:outline-none focus:ring-2 focus:ring-pink-400 bg-white dark:bg-slate-700 dark:text-white dark:placeholder-gray-400">
+                        <button type="submit" class="bg-pink-500 hover:bg-pink-600 text-white px-3 py-1 rounded text-xs transition font-bold"><i class="fa-solid fa-plus"></i></button>
+                    </form>
+                </div>
+                <div class="w-full bg-gray-200 dark:bg-slate-700 rounded-full h-1.5 mt-1">
+                    <div id="pb-questions-today" class="bg-pink-400 h-1.5 rounded-full transition-all duration-500" style="width:0%"></div>
+                </div>
+                <div class="flex justify-between text-[10px] text-gray-500 dark:text-gray-400 mt-1">
+                    <span>Meta diária · zera à meia-noite</span>
+                    <span><span id="pct-questions-today">0</span>% atingido</span>
+                </div>
             </div>
         </div>
 
@@ -997,100 +1048,140 @@
 <script>
 (function(){
     // ================================================================
-    // CONTADORES — sincronizados com Google Sheets via Apps Script
+    // CONTADORES V2 — Google Sheets via Apps Script
+    // Inclui: totais (horas, questões, simulados) + diários (horas/dia, questões/dia)
+    // + configurações do concurso (nome, cargo, data) lidas do Sheets
     // ================================================================
 
     var SHEETS_URL = 'https://script.google.com/macros/s/AKfycbxDs7RwpE-hyIbxpgJM3a_zC8r1kXS59JjqQ0fzqwG50UOpHhkgO5l1jCBTHeeF-OC4/exec';
 
-    // Estado local dos contadores (espelho do Sheets)
+    // Estado completo
     var state = {
-        hours:     0,
-        questions: 0,
-        exams:     0,
-        goals: { hours: 100, questions: 1000, exams: 10 }
+        hours:          0,
+        questions:      0,
+        exams:          0,
+        hoursToday:     0,
+        questionsToday: 0,
+        lastResetDate:  '',       // data do último reset diário (YYYY-MM-DD)
+        goals: {
+            hours:          100,
+            questions:      1000,
+            exams:          10,
+            hoursToday:     4,
+            questionsToday: 40
+        }
     };
 
-    var saveTimer = null; // debounce para não spammar o Sheets
+    var saveTimer = null;
 
     // ---------------------------------------------------------------
-    // RENDER — atualiza a UI com os valores do state local
+    // DATA ATUAL (YYYY-MM-DD)
     // ---------------------------------------------------------------
-    function render() {
-        var c = state, g = state.goals;
-        var gh = g.hours||0, gq = g.questions||0, ge = g.exams||0;
+    function today(){ return new Date().toISOString().slice(0,10); }
 
-        function set(id, v){ var el=document.getElementById(id); if(el) el.innerText=v; }
-        function setW(id, v){ var el=document.getElementById(id); if(el) el.style.width=v+'%'; }
-
-        set('total-hours',     c.hours.toFixed ? c.hours.toFixed(1) : c.hours);
-        set('total-questions', c.questions);
-        set('total-exams',     c.exams);
-        set('goal-hours',      gh);
-        set('goal-questions',  gq);
-        set('goal-exams',      ge);
-
-        var ph = gh ? Math.min(100, (c.hours     / gh) * 100) : 0;
-        var pq = gq ? Math.min(100, (c.questions / gq) * 100) : 0;
-        var pe = ge ? Math.min(100, (c.exams     / ge) * 100) : 0;
-
-        setW('pb-hours',     ph); setW('pb-questions', pq); setW('pb-exams', pe);
-        set('pct-hours', Math.round(ph)); set('pct-questions', Math.round(pq)); set('pct-exams', Math.round(pe));
+    // ---------------------------------------------------------------
+    // RESET DIÁRIO AUTOMÁTICO — zera contadores do dia se mudou a data
+    // ---------------------------------------------------------------
+    function checkDailyReset(){
+        if(state.lastResetDate !== today()){
+            state.hoursToday     = 0;
+            state.questionsToday = 0;
+            state.lastResetDate  = today();
+            saveToSheets();
+        }
     }
 
     // ---------------------------------------------------------------
-    // SHEETS — salva extState no Google Sheets (com debounce 800ms)
+    // RENDER
     // ---------------------------------------------------------------
-    function saveToSheets() {
+    function render(){
+        var g = state.goals;
+        function set(id,v){ var el=document.getElementById(id); if(el) el.innerText=v; }
+        function setW(id,v){ var el=document.getElementById(id); if(el) el.style.width=v+'%'; }
+
+        // Totais
+        set('total-hours',     (state.hours||0).toFixed(1));
+        set('total-questions', state.questions||0);
+        set('total-exams',     state.exams||0);
+        set('goal-hours',      g.hours||0);
+        set('goal-questions',  g.questions||0);
+        set('goal-exams',      g.exams||0);
+
+        var ph = g.hours    ? Math.min(100,((state.hours||0)    /g.hours)    *100) : 0;
+        var pq = g.questions? Math.min(100,((state.questions||0)/g.questions)*100) : 0;
+        var pe = g.exams    ? Math.min(100,((state.exams||0)    /g.exams)    *100) : 0;
+        setW('pb-hours',ph); setW('pb-questions',pq); setW('pb-exams',pe);
+        set('pct-hours',Math.round(ph)); set('pct-questions',Math.round(pq)); set('pct-exams',Math.round(pe));
+
+        // Diários
+        set('total-hours-today',     (state.hoursToday||0).toFixed(1));
+        set('total-questions-today', state.questionsToday||0);
+        set('goal-hours-today',      g.hoursToday||4);
+        set('goal-questions-today',  g.questionsToday||40);
+
+        var phd = g.hoursToday    ? Math.min(100,((state.hoursToday||0)    /g.hoursToday)    *100) : 0;
+        var pqd = g.questionsToday? Math.min(100,((state.questionsToday||0)/g.questionsToday)*100) : 0;
+        setW('pb-hours-today',phd); setW('pb-questions-today',pqd);
+        set('pct-hours-today',Math.round(phd)); set('pct-questions-today',Math.round(pqd));
+    }
+
+    // ---------------------------------------------------------------
+    // SALVAR NO SHEETS (debounce 800ms)
+    // ---------------------------------------------------------------
+    function saveToSheets(){
+        localStorage.setItem('plannerExtState', JSON.stringify(state));
         clearTimeout(saveTimer);
         saveTimer = setTimeout(function(){
-            // Salva também no localStorage como fallback offline
-            localStorage.setItem('plannerExtState', JSON.stringify(state));
-
             fetch(SHEETS_URL, {
                 method: 'POST',
-                mode: 'no-cors', // Apps Script não envia CORS header no redirect
+                mode: 'no-cors',
                 headers: { 'Content-Type': 'text/plain' },
                 body: JSON.stringify({ type: 'extState', payload: state })
-            }).catch(function(){ /* silencia erro de rede */ });
+            }).catch(function(){});
         }, 800);
     }
 
     // ---------------------------------------------------------------
-    // SHEETS — carrega extState do Google Sheets (doGet)
+    // CARREGAR DO SHEETS
     // ---------------------------------------------------------------
-    function loadFromSheets() {
+    function loadFromSheets(){
         setSyncIcon('loading');
-
         fetch(SHEETS_URL + '?t=' + Date.now())
             .then(function(r){ return r.json(); })
             .then(function(data){
+                // --- extState (contadores) ---
                 if(data.extState){
-                    var remote = (typeof data.extState === 'string')
-                        ? JSON.parse(data.extState)
-                        : data.extState;
-
-                    // Mescla: remote tem prioridade, mas preserva goals se remote não tiver
-                    state.hours     = Number(remote.hours     || 0);
-                    state.questions = Number(remote.questions || 0);
-                    state.exams     = Number(remote.exams     || 0);
-                    if(remote.goals){
-                        state.goals.hours     = Number(remote.goals.hours     || 100);
-                        state.goals.questions = Number(remote.goals.questions || 1000);
-                        state.goals.exams     = Number(remote.goals.exams     || 10);
+                    var r = typeof data.extState==='string' ? JSON.parse(data.extState) : data.extState;
+                    state.hours          = Number(r.hours          || 0);
+                    state.questions      = Number(r.questions      || 0);
+                    state.exams          = Number(r.exams          || 0);
+                    state.hoursToday     = Number(r.hoursToday     || 0);
+                    state.questionsToday = Number(r.questionsToday || 0);
+                    state.lastResetDate  = r.lastResetDate || '';
+                    if(r.goals){
+                        state.goals.hours          = Number(r.goals.hours          || 100);
+                        state.goals.questions      = Number(r.goals.questions      || 1000);
+                        state.goals.exams          = Number(r.goals.exams          || 10);
+                        state.goals.hoursToday     = Number(r.goals.hoursToday     || 4);
+                        state.goals.questionsToday = Number(r.goals.questionsToday || 40);
                     }
-
-                    // Persiste localmente também
                     localStorage.setItem('plannerExtState', JSON.stringify(state));
                 } else {
-                    // Sheets vazio — tenta carregar do localStorage
                     loadFromLocal();
                 }
+
+                // --- concursoInfo (nome, cargo, data da prova) ---
+                if(data.concursoInfo){
+                    applyConcursoInfo(data.concursoInfo);
+                }
+
+                checkDailyReset();
                 render();
                 setSyncIcon('online');
             })
             .catch(function(){
-                // Sem rede — carrega do localStorage
                 loadFromLocal();
+                checkDailyReset();
                 render();
                 setSyncIcon('offline');
             });
@@ -1098,66 +1189,109 @@
 
     function loadFromLocal(){
         try {
-            var saved = JSON.parse(localStorage.getItem('plannerExtState') || '{}');
-            state.hours     = Number(saved.hours     || 0);
-            state.questions = Number(saved.questions || 0);
-            state.exams     = Number(saved.exams     || 0);
-            if(saved.goals){
-                state.goals.hours     = Number(saved.goals.hours     || 100);
-                state.goals.questions = Number(saved.goals.questions || 1000);
-                state.goals.exams     = Number(saved.goals.exams     || 10);
+            var s = JSON.parse(localStorage.getItem('plannerExtState') || '{}');
+            state.hours          = Number(s.hours          || 0);
+            state.questions      = Number(s.questions      || 0);
+            state.exams          = Number(s.exams          || 0);
+            state.hoursToday     = Number(s.hoursToday     || 0);
+            state.questionsToday = Number(s.questionsToday || 0);
+            state.lastResetDate  = s.lastResetDate || '';
+            if(s.goals){
+                state.goals.hours          = Number(s.goals.hours          || 100);
+                state.goals.questions      = Number(s.goals.questions      || 1000);
+                state.goals.exams          = Number(s.goals.exams          || 10);
+                state.goals.hoursToday     = Number(s.goals.hoursToday     || 4);
+                state.goals.questionsToday = Number(s.goals.questionsToday || 40);
             }
         } catch(e){}
     }
 
     // ---------------------------------------------------------------
-    // ÍCONE de status Sheets (reutiliza o badge de sync existente)
+    // APLICAR DADOS DO CONCURSO vindos do Sheets → atualiza header
     // ---------------------------------------------------------------
-    function setSyncIcon(status){
-        var badge = document.getElementById('sheets-sync-badge');
-        if(!badge) return;
-        if(status === 'online')  { badge.className = 'fa-brands fa-google text-green-400';  badge.title = 'Sheets: sincronizado ✓'; }
-        if(status === 'offline') { badge.className = 'fa-brands fa-google text-gray-400';   badge.title = 'Sheets: offline (usando cache local)'; }
-        if(status === 'loading') { badge.className = 'fa-brands fa-google text-yellow-400'; badge.title = 'Sheets: sincronizando...'; }
+    function applyConcursoInfo(info){
+        if(!info) return;
+
+        // Título e cargo no header
+        if(info.nome){
+            var t = document.getElementById('header-title');
+            if(t) t.innerText = info.nome;
+            document.title = info.nome + ' | Planner';
+        }
+        if(info.cargo){
+            var s = document.getElementById('header-subtitle');
+            if(s) s.innerText = info.cargo;
+        }
+
+        // Data da prova — converte para DD/MM/AAAA se vier no formato do Sheets
+        if(info.dataProva){
+            var raw = String(info.dataProva).trim();
+            var formatted = raw;
+
+            // Tenta converter Date do Sheets (pode vir como "Mon Jan 25 2026 00:00:00 GMT...")
+            // ou como "25/01/2026" ou "2026-01-25"
+            if(raw.match(/^\d{4}-\d{2}-\d{2}$/)){
+                var p = raw.split('-');
+                formatted = p[2]+'/'+p[1]+'/'+p[0];
+            } else {
+                var d = new Date(raw);
+                if(!isNaN(d.getTime())){
+                    formatted = ('0'+d.getDate()).slice(-2)+'/'+('0'+(d.getMonth()+1)).slice(-2)+'/'+d.getFullYear();
+                }
+            }
+
+            var hd = document.getElementById('header-date');
+            if(hd) hd.innerText = formatted;
+            var hdm = document.getElementById('header-date-mobile');
+            if(hdm) hdm.innerText = formatted;
+
+            // Atualiza countdown usando a data
+            var examDate = new Date(raw);
+            if(!isNaN(examDate)){
+                var diff = Math.ceil((examDate - new Date()) / (1000*60*60*24));
+                var txt = diff > 0 ? diff + ' dias' : 'Hoje!';
+                var cd = document.getElementById('countdown-desktop');
+                var cm = document.getElementById('countdown-mobile');
+                if(cd) cd.innerText = txt;
+                if(cm) cm.innerText = txt;
+            }
+        }
     }
 
     // ---------------------------------------------------------------
-    // FUNÇÕES GLOBAIS (chamadas pelos botões do HTML)
+    // ÍCONE DE STATUS
+    // ---------------------------------------------------------------
+    function setSyncIcon(status){
+        var b = document.getElementById('sheets-sync-badge');
+        if(!b) return;
+        if(status==='online')  { b.className='fa-brands fa-google text-green-400';  b.title='Sheets: sincronizado ✓'; }
+        if(status==='offline') { b.className='fa-brands fa-google text-gray-400';   b.title='Sheets: offline (cache local)'; }
+        if(status==='loading') { b.className='fa-brands fa-google text-yellow-400'; b.title='Sheets: sincronizando...'; }
+    }
+
+    // ---------------------------------------------------------------
+    // FUNÇÕES GLOBAIS DOS BOTÕES
     // ---------------------------------------------------------------
     window.editGoal = function(type){
-        var labels = { hours:'horas', questions:'questões', exams:'simulados' };
+        var labels = { hours:'horas totais', questions:'questões totais', exams:'simulados',
+                       hoursToday:'horas por dia', questionsToday:'questões por dia' };
         var val = prompt('Nova meta para ' + (labels[type]||type) + ':', state.goals[type]);
-        if(val !== null && !isNaN(val) && Number(val) > 0){
+        if(val!==null && !isNaN(val) && Number(val)>0){
             state.goals[type] = Number(val);
-            render();
-            saveToSheets();
-            if(typeof showToast==='function') showToast('Meta atualizada e salva no Sheets!','success');
+            render(); saveToSheets();
+            if(typeof showToast==='function') showToast('Meta atualizada!','success');
         }
     };
 
-    window.resetHours = function(){
-        if(confirm('Zerar horas?')){
-            state.hours = 0; render(); saveToSheets();
-            if(typeof showToast==='function') showToast('Horas zeradas.','info');
-        }
-    };
-    window.resetQuestions = function(){
-        if(confirm('Zerar questões?')){
-            state.questions = 0; render(); saveToSheets();
-            if(typeof showToast==='function') showToast('Questões zeradas.','info');
-        }
-    };
-    window.resetExams = function(){
-        if(confirm('Zerar simulados?')){
-            state.exams = 0; render(); saveToSheets();
-            if(typeof showToast==='function') showToast('Simulados zerados.','info');
-        }
-    };
+    window.resetHours         = function(){ if(confirm('Zerar horas totais?'))         { state.hours=0;          render(); saveToSheets(); if(typeof showToast==='function') showToast('Horas zeradas.','info'); } };
+    window.resetQuestions      = function(){ if(confirm('Zerar questões totais?'))      { state.questions=0;      render(); saveToSheets(); if(typeof showToast==='function') showToast('Questões zeradas.','info'); } };
+    window.resetExams          = function(){ if(confirm('Zerar simulados?'))            { state.exams=0;          render(); saveToSheets(); if(typeof showToast==='function') showToast('Simulados zerados.','info'); } };
+    window.resetHoursToday     = function(){ if(confirm('Zerar horas de hoje?'))       { state.hoursToday=0;     render(); saveToSheets(); if(typeof showToast==='function') showToast('Horas do dia zeradas.','info'); } };
+    window.resetQuestionsToday = function(){ if(confirm('Zerar questões de hoje?'))    { state.questionsToday=0; render(); saveToSheets(); if(typeof showToast==='function') showToast('Questões do dia zeradas.','info'); } };
 
-    // Botão de sync manual (pode colocar no HTML se quiser)
     window.syncCountersNow = function(){
         loadFromSheets();
-        if(typeof showToast==='function') showToast('Sincronizando com o Sheets...','info');
+        if(typeof showToast==='function') showToast('Sincronizando com Sheets...','info');
     };
 
     // ---------------------------------------------------------------
@@ -1173,9 +1307,8 @@
                 if(v > 0){
                     document.getElementById(inputId).value = '';
                     state[key] += v;
-                    render();
-                    saveToSheets();
-                    if(typeof showToast==='function') showToast('+' + v + ' salvo no Sheets!','success');
+                    render(); saveToSheets();
+                    if(typeof showToast==='function') showToast('+'+v+' registrado!','success');
                 }
             });
         }
@@ -1185,27 +1318,30 @@
     // INIT
     // ---------------------------------------------------------------
     function init(){
-        // 1. Carrega local imediatamente (sem piscar zerado)
         loadFromLocal();
+        checkDailyReset();
         render();
-
-        // 2. Puxa do Sheets e atualiza (sobrescreve se houver dado remoto)
         loadFromSheets();
 
-        // 3. Bind nos formulários
-        bindForm('hours-form',    'study-input',     'hours',     parseFloat);
-        bindForm('questions-form', 'questions-input', 'questions', parseInt);
-        bindForm('exams-form',     'exams-input',     'exams',     parseInt);
+        bindForm('hours-form',         'study-input',          'hours',          parseFloat);
+        bindForm('questions-form',     'questions-input',      'questions',      parseInt);
+        bindForm('exams-form',         'exams-input',          'exams',          parseInt);
+        bindForm('hours-today-form',   'study-today-input',    'hoursToday',     parseFloat);
+        bindForm('questions-today-form','questions-today-input','questionsToday', parseInt);
 
-        // 4. Auto-refresh a cada 60s (para pegar mudanças feitas em outro dispositivo)
+        // Auto-refresh a cada 60s
         setInterval(loadFromSheets, 60000);
+
+        // Verifica reset diário a cada 5 min
+        setInterval(function(){
+            checkDailyReset();
+            render();
+        }, 5 * 60 * 1000);
     }
 
-    // Aguarda DOM pronto
     if(document.readyState === 'loading'){
         document.addEventListener('DOMContentLoaded', init);
     } else {
-        // Pequeno delay para o resto do planner terminar de inicializar
         setTimeout(init, 600);
     }
 })();
