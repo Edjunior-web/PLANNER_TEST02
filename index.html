@@ -106,11 +106,17 @@
             
             <div class="flex items-center gap-6">
                 <div class="hidden md:flex items-center gap-6 text-right">
-                    <div class="cursor-pointer hover:bg-slate-800 dark:hover:bg-slate-900 p-1 rounded transition" onclick="openSyncModal()" title="Status da Conexão">
+                    <div class="cursor-pointer hover:bg-slate-800 dark:hover:bg-slate-900 p-1 rounded transition" onclick="openSyncModal()" title="Status Firebase">
                         <p class="text-[10px] text-slate-400 uppercase tracking-wider flex items-center justify-end gap-1">
-                            <i id="status-icon-desktop" class="fa-solid fa-wifi text-gray-400"></i> Status
+                            <i id="status-icon-desktop" class="fa-solid fa-wifi text-gray-400"></i> Firebase
                         </p>
                         <p id="header-sync-status" class="font-mono font-bold text-white text-sm tracking-wider">Verificando...</p>
+                    </div>
+                    <div class="cursor-pointer hover:bg-slate-800 dark:hover:bg-slate-900 p-1 rounded transition" onclick="syncCountersNow()" title="Clique para sincronizar contadores com Google Sheets">
+                        <p class="text-[10px] text-slate-400 uppercase tracking-wider flex items-center justify-end gap-1">
+                            <i id="sheets-sync-badge" class="fa-brands fa-google text-yellow-400"></i> Sheets
+                        </p>
+                        <p class="font-mono font-bold text-white text-sm tracking-wider">Contadores</p>
                     </div>
                     <div>
                         <p class="text-[10px] text-slate-400 uppercase tracking-wider">Data da Prova</p>
@@ -506,7 +512,9 @@
 
         let appState = {
             items: [], disciplines: [], totalHours: 0,
-            config: { title: 'PC-PI 2026', role: 'Oficial Investigador', examDate: '2026-01-25' }
+            config: { title: 'PC-PI 2026', role: 'Oficial Investigador', examDate: '2026-01-25' },
+            counters: { hours: 0, questions: 0, exams: 0 },
+            goals: { hours: 100, questions: 1000, exams: 10 }
         };
 
         // --- INIT ---
@@ -599,6 +607,20 @@
 
         function migrateStructure() {
             if(!appState.config) appState.config = { title: 'PC-PI 2026', role: 'Oficial Investigador', examDate: '2026-01-25' };
+            if(!appState.counters) appState.counters = { hours: 0, questions: 0, exams: 0 };
+            if(!appState.goals) appState.goals = { hours: 100, questions: 1000, exams: 10 };
+            // Migrate from old plannerExtState if first time
+            try {
+                const ext = JSON.parse(localStorage.getItem('plannerExtState') || '{}');
+                if(ext.hours > 0 && appState.counters.hours === 0) appState.counters.hours = Number(ext.hours) || 0;
+                if(ext.questions > 0 && appState.counters.questions === 0) appState.counters.questions = Number(ext.questions) || 0;
+                if(ext.exams > 0 && appState.counters.exams === 0) appState.counters.exams = Number(ext.exams) || 0;
+                if(ext.goals) {
+                    if(ext.goals.hours && appState.goals.hours === 100) appState.goals.hours = Number(ext.goals.hours) || 100;
+                    if(ext.goals.questions && appState.goals.questions === 1000) appState.goals.questions = Number(ext.goals.questions) || 1000;
+                    if(ext.goals.exams && appState.goals.exams === 10) appState.goals.exams = Number(ext.goals.exams) || 10;
+                }
+            } catch(e) {}
         }
 
         function setupRealtimeListener(id) {
@@ -611,6 +633,7 @@
                     appState = JSON.parse(snap.data().json);
                     migrateStructure(); // Ensure compatibility
                     renderAll(); renderHeader(); initCountdown();
+                    if(window.__plannerBridge && window.__plannerBridge.onFirebaseUpdate) window.__plannerBridge.onFirebaseUpdate();
                 } else {
                     if(appState.items.length===0) initDefaultState();
                     saveDataInternal();
@@ -732,7 +755,7 @@
         };
 
         // --- RENDERERS ---
-        function renderAll() { renderSyllabus(); renderCharts(); renderDisciplineCards(); renderProductivity(); }
+        function renderAll() { renderSyllabus(); renderCharts(); renderDisciplineCards(); renderProductivity(); renderCountersUI(); }
         function renderHeader() { 
             if(!appState.config) return;
             document.getElementById('header-title').innerText = appState.config.title;
@@ -898,7 +921,7 @@
         window.updateStatus = (id, s) => { const i = appState.items.find(x => x.id === id); if (!i) return; i.status = s; if (s === 'concluido') { const t = new Date(); i.completedDate = t.toISOString(); i.reviews = [ { date: new Date(t.setDate(t.getDate()+1)).toISOString(), done: false, label: '24h' }, { date: new Date(t.setDate(t.getDate()+6)).toISOString(), done: false, label: '7d' }, { date: new Date(t.setDate(t.getDate()+23)).toISOString(), done: false, label: '30d' } ]; showToast('Concluído!', 'success'); } else { i.completedDate = null; i.reviews = []; } saveDataInternal(); renderAll(); };
         window.saveNote = () => { if (currentEditingId !== null) { const n = document.getElementById('modal-note-input').value; const i = appState.items.find(x => x.id === currentEditingId); if(i) { i.note = n; saveDataInternal(); renderSyllabus(); closeModal('note-modal'); showToast('Salvo!', 'success'); } } };
         window.saveSettings = () => { const t = document.getElementById('config-title').value; const r = document.getElementById('config-role').value; const d = document.getElementById('config-date').value; if(!t || !r || !d) return alert('Preencha tudo.'); appState.config = { title: t, role: r, examDate: d }; saveDataInternal(); renderHeader(); initCountdown(); closeModal('settings-modal'); showToast('Dados salvos!', 'success'); };
-        window.resetHours = () => { if(confirm('Zerar horas?')) { if(window._resetHoursCounter) window._resetHoursCounter(); else showToast('Zerado.', 'info'); } };
+        // resetHours definido no script de contadores abaixo
         window.resetData = () => { if(confirm('Resetar tudo?')) { appState.totalHours = 0; appState.items.forEach(i => { i.status = 'pendente'; i.completedDate = null; i.reviews = []; }); saveDataInternal(); renderAll(); showToast('Resetado.', 'success'); } };
         window.filterByDisciplineFromCard = (id) => { expandedDisciplines.add(id); currentFilterDiscipline = id; document.getElementById('filter-discipline').value = id; renderSyllabus(); document.getElementById('syllabus-section').scrollIntoView({ behavior: 'smooth' }); };
         window.filterStatus = (s) => { currentFilterStatus = s; renderSyllabus(); };
@@ -937,7 +960,34 @@
             showToast(`Conectando ao ID: ${id}`, "info"); 
         };
 
-        function showToast(msg, type='info') { const c = document.getElementById('toast-container'); const e = document.createElement('div'); const cl = type === 'success' ? 'bg-green-600' : (type === 'error' ? 'bg-red-600' : 'bg-slate-800 dark:bg-slate-700'); e.className = `${cl} text-white text-sm px-4 py-3 rounded shadow-lg transition transform translate-y-2 opacity-0 flex items-center gap-2`; e.innerHTML = `<i class="fa-solid fa-circle-info"></i> ${msg}`; c.appendChild(e); requestAnimationFrame(() => e.classList.remove('translate-y-2', 'opacity-0')); setTimeout(() => { e.classList.add('opacity-0', 'translate-x-full'); setTimeout(() => e.remove(), 300); }, 3000); }
+        // --- BRIDGE: exposes appState access and save to non-module scripts ---
+        window.__plannerBridge = {
+            getCounters: () => appState.counters,
+            getGoals: () => appState.goals,
+            setCounter: (key, val) => { appState.counters[key] = val; saveDataInternal(); renderCountersUI(); },
+            setGoal: (key, val) => { appState.goals[key] = val; saveDataInternal(); renderCountersUI(); },
+            onFirebaseUpdate: null  // will be called by setupRealtimeListener after remote update
+        };
+
+        function renderCountersUI() {
+            const c = appState.counters, g = appState.goals;
+            const gh=g.hours||0, gq=g.questions||0, ge=g.exams||0;
+            const set = (id, v) => { const el=document.getElementById(id); if(el) el.innerText=v; };
+            set('total-hours', c.hours.toFixed ? c.hours.toFixed(1) : c.hours);
+            set('total-questions', c.questions);
+            set('total-exams', c.exams);
+            set('goal-hours', gh); set('goal-questions', gq); set('goal-exams', ge);
+            const ph=gh?Math.min(100,(c.hours/gh)*100):0;
+            const pq=gq?Math.min(100,(c.questions/gq)*100):0;
+            const pe=ge?Math.min(100,(c.exams/ge)*100):0;
+            const setW = (id, v) => { const el=document.getElementById(id); if(el) el.style.width=v+'%'; };
+            setW('pb-hours',ph); setW('pb-questions',pq); setW('pb-exams',pe);
+            set('pct-hours', Math.round(ph)); set('pct-questions', Math.round(pq)); set('pct-exams', Math.round(pe));
+        }
+
+        // renderAll já inclui renderCountersUI — veja linha da função renderAll acima
+
+                function showToast(msg, type='info') { const c = document.getElementById('toast-container'); const e = document.createElement('div'); const cl = type === 'success' ? 'bg-green-600' : (type === 'error' ? 'bg-red-600' : 'bg-slate-800 dark:bg-slate-700'); e.className = `${cl} text-white text-sm px-4 py-3 rounded shadow-lg transition transform translate-y-2 opacity-0 flex items-center gap-2`; e.innerHTML = `<i class="fa-solid fa-circle-info"></i> ${msg}`; c.appendChild(e); requestAnimationFrame(() => e.classList.remove('translate-y-2', 'opacity-0')); setTimeout(() => { e.classList.add('opacity-0', 'translate-x-full'); setTimeout(() => e.remove(), 300); }, 3000); }
         function initCountdown() { const d = (appState.config?appState.config.examDate:'2026-01-25')+'T00:00:00'; const t = new Date(d); const u = () => { const n = new Date(); const diff = t - n; const days = Math.ceil(diff / (1000*60*60*24)); const txt = days > 0 ? `${days} dias` : 'Hoje!'; document.getElementById('countdown-mobile').innerText = txt; document.getElementById('countdown-desktop').innerText = txt; }; u(); }
         // hours-form listener removido daqui — gerenciado pelo script de contadores abaixo
     </script>
@@ -946,89 +996,218 @@
 
 <script>
 (function(){
-function initPlannerCounters(){
-    let extState = JSON.parse(localStorage.getItem('plannerExtState') || '{}');
-    extState.goals = extState.goals || {hours:100,questions:1000,exams:10};
-    extState.hours = Number(extState.hours || 0);
-    extState.questions = Number(extState.questions || 0);
-    extState.exams = Number(extState.exams || 0);
+    // ================================================================
+    // CONTADORES — sincronizados com Google Sheets via Apps Script
+    // ================================================================
 
-    function save(){
-        localStorage.setItem('plannerExtState', JSON.stringify(extState));
-        render();
+    var SHEETS_URL = 'https://script.google.com/macros/s/AKfycbxDs7RwpE-hyIbxpgJM3a_zC8r1kXS59JjqQ0fzqwG50UOpHhkgO5l1jCBTHeeF-OC4/exec';
+
+    // Estado local dos contadores (espelho do Sheets)
+    var state = {
+        hours:     0,
+        questions: 0,
+        exams:     0,
+        goals: { hours: 100, questions: 1000, exams: 10 }
+    };
+
+    var saveTimer = null; // debounce para não spammar o Sheets
+
+    // ---------------------------------------------------------------
+    // RENDER — atualiza a UI com os valores do state local
+    // ---------------------------------------------------------------
+    function render() {
+        var c = state, g = state.goals;
+        var gh = g.hours||0, gq = g.questions||0, ge = g.exams||0;
+
+        function set(id, v){ var el=document.getElementById(id); if(el) el.innerText=v; }
+        function setW(id, v){ var el=document.getElementById(id); if(el) el.style.width=v+'%'; }
+
+        set('total-hours',     c.hours.toFixed ? c.hours.toFixed(1) : c.hours);
+        set('total-questions', c.questions);
+        set('total-exams',     c.exams);
+        set('goal-hours',      gh);
+        set('goal-questions',  gq);
+        set('goal-exams',      ge);
+
+        var ph = gh ? Math.min(100, (c.hours     / gh) * 100) : 0;
+        var pq = gq ? Math.min(100, (c.questions / gq) * 100) : 0;
+        var pe = ge ? Math.min(100, (c.exams     / ge) * 100) : 0;
+
+        setW('pb-hours',     ph); setW('pb-questions', pq); setW('pb-exams', pe);
+        set('pct-hours', Math.round(ph)); set('pct-questions', Math.round(pq)); set('pct-exams', Math.round(pe));
     }
 
-    function render(){
-        const gh=extState.goals.hours||0,gq=extState.goals.questions||0,ge=extState.goals.exams||0;
+    // ---------------------------------------------------------------
+    // SHEETS — salva extState no Google Sheets (com debounce 800ms)
+    // ---------------------------------------------------------------
+    function saveToSheets() {
+        clearTimeout(saveTimer);
+        saveTimer = setTimeout(function(){
+            // Salva também no localStorage como fallback offline
+            localStorage.setItem('plannerExtState', JSON.stringify(state));
 
-        if(document.getElementById('total-hours')) document.getElementById('total-hours').innerText=extState.hours.toFixed(1);
-        if(document.getElementById('total-questions')) document.getElementById('total-questions').innerText=extState.questions;
-        if(document.getElementById('total-exams')) document.getElementById('total-exams').innerText=extState.exams;
-
-        if(document.getElementById('goal-hours')) document.getElementById('goal-hours').innerText=gh;
-        if(document.getElementById('goal-questions')) document.getElementById('goal-questions').innerText=gq;
-        if(document.getElementById('goal-exams')) document.getElementById('goal-exams').innerText=ge;
-
-        let ph=gh?Math.min(100,(extState.hours/gh)*100):0;
-        let pq=gq?Math.min(100,(extState.questions/gq)*100):0;
-        let pe=ge?Math.min(100,(extState.exams/ge)*100):0;
-
-        if(document.getElementById('pb-hours')) document.getElementById('pb-hours').style.width=ph+'%';
-        if(document.getElementById('pb-questions')) document.getElementById('pb-questions').style.width=pq+'%';
-        if(document.getElementById('pb-exams')) document.getElementById('pb-exams').style.width=pe+'%';
-
-        if(document.getElementById('pct-hours')) document.getElementById('pct-hours').innerText=Math.round(ph);
-        if(document.getElementById('pct-questions')) document.getElementById('pct-questions').innerText=Math.round(pq);
-        if(document.getElementById('pct-exams')) document.getElementById('pct-exams').innerText=Math.round(pe);
+            fetch(SHEETS_URL, {
+                method: 'POST',
+                mode: 'no-cors', // Apps Script não envia CORS header no redirect
+                headers: { 'Content-Type': 'text/plain' },
+                body: JSON.stringify({ type: 'extState', payload: state })
+            }).catch(function(){ /* silencia erro de rede */ });
+        }, 800);
     }
 
-    window.editGoal=function(type){
-        const current=extState.goals[type]||0;
-        const val=prompt('Nova meta:', current);
-        if(val!==null && !isNaN(val)){
-            extState.goals[type]=Number(val);
-            save();
+    // ---------------------------------------------------------------
+    // SHEETS — carrega extState do Google Sheets (doGet)
+    // ---------------------------------------------------------------
+    function loadFromSheets() {
+        setSyncIcon('loading');
+
+        fetch(SHEETS_URL + '?t=' + Date.now())
+            .then(function(r){ return r.json(); })
+            .then(function(data){
+                if(data.extState){
+                    var remote = (typeof data.extState === 'string')
+                        ? JSON.parse(data.extState)
+                        : data.extState;
+
+                    // Mescla: remote tem prioridade, mas preserva goals se remote não tiver
+                    state.hours     = Number(remote.hours     || 0);
+                    state.questions = Number(remote.questions || 0);
+                    state.exams     = Number(remote.exams     || 0);
+                    if(remote.goals){
+                        state.goals.hours     = Number(remote.goals.hours     || 100);
+                        state.goals.questions = Number(remote.goals.questions || 1000);
+                        state.goals.exams     = Number(remote.goals.exams     || 10);
+                    }
+
+                    // Persiste localmente também
+                    localStorage.setItem('plannerExtState', JSON.stringify(state));
+                } else {
+                    // Sheets vazio — tenta carregar do localStorage
+                    loadFromLocal();
+                }
+                render();
+                setSyncIcon('online');
+            })
+            .catch(function(){
+                // Sem rede — carrega do localStorage
+                loadFromLocal();
+                render();
+                setSyncIcon('offline');
+            });
+    }
+
+    function loadFromLocal(){
+        try {
+            var saved = JSON.parse(localStorage.getItem('plannerExtState') || '{}');
+            state.hours     = Number(saved.hours     || 0);
+            state.questions = Number(saved.questions || 0);
+            state.exams     = Number(saved.exams     || 0);
+            if(saved.goals){
+                state.goals.hours     = Number(saved.goals.hours     || 100);
+                state.goals.questions = Number(saved.goals.questions || 1000);
+                state.goals.exams     = Number(saved.goals.exams     || 10);
+            }
+        } catch(e){}
+    }
+
+    // ---------------------------------------------------------------
+    // ÍCONE de status Sheets (reutiliza o badge de sync existente)
+    // ---------------------------------------------------------------
+    function setSyncIcon(status){
+        var badge = document.getElementById('sheets-sync-badge');
+        if(!badge) return;
+        if(status === 'online')  { badge.className = 'fa-brands fa-google text-green-400';  badge.title = 'Sheets: sincronizado ✓'; }
+        if(status === 'offline') { badge.className = 'fa-brands fa-google text-gray-400';   badge.title = 'Sheets: offline (usando cache local)'; }
+        if(status === 'loading') { badge.className = 'fa-brands fa-google text-yellow-400'; badge.title = 'Sheets: sincronizando...'; }
+    }
+
+    // ---------------------------------------------------------------
+    // FUNÇÕES GLOBAIS (chamadas pelos botões do HTML)
+    // ---------------------------------------------------------------
+    window.editGoal = function(type){
+        var labels = { hours:'horas', questions:'questões', exams:'simulados' };
+        var val = prompt('Nova meta para ' + (labels[type]||type) + ':', state.goals[type]);
+        if(val !== null && !isNaN(val) && Number(val) > 0){
+            state.goals[type] = Number(val);
+            render();
+            saveToSheets();
+            if(typeof showToast==='function') showToast('Meta atualizada e salva no Sheets!','success');
         }
     };
 
-    window.resetQuestions=function(){ extState.questions=0; save(); if(typeof showToast==='function') showToast('Questões zeradas.','info'); };
-    window.resetExams=function(){ extState.exams=0; save(); if(typeof showToast==='function') showToast('Simulados zerados.','info'); };
-    window.resetHours=function(){ if(confirm('Zerar horas?')){ extState.hours=0; save(); if(typeof showToast==='function') showToast('Horas zeradas.','info'); } };
-    window._resetHoursCounter=function(){ extState.hours=0; save(); if(typeof showToast==='function') showToast('Horas zeradas.','info'); };
+    window.resetHours = function(){
+        if(confirm('Zerar horas?')){
+            state.hours = 0; render(); saveToSheets();
+            if(typeof showToast==='function') showToast('Horas zeradas.','info');
+        }
+    };
+    window.resetQuestions = function(){
+        if(confirm('Zerar questões?')){
+            state.questions = 0; render(); saveToSheets();
+            if(typeof showToast==='function') showToast('Questões zeradas.','info');
+        }
+    };
+    window.resetExams = function(){
+        if(confirm('Zerar simulados?')){
+            state.exams = 0; render(); saveToSheets();
+            if(typeof showToast==='function') showToast('Simulados zerados.','info');
+        }
+    };
 
-    const hf=document.getElementById('hours-form');
-    if(hf && !hf.dataset.bound){
-        hf.dataset.bound='1';
-        hf.addEventListener('submit',e=>{
-            e.preventDefault();
-            const v=parseFloat(document.getElementById('study-input').value||0);
-            if(v>0){ extState.hours+=v; document.getElementById('study-input').value=''; save(); }
-        });
+    // Botão de sync manual (pode colocar no HTML se quiser)
+    window.syncCountersNow = function(){
+        loadFromSheets();
+        if(typeof showToast==='function') showToast('Sincronizando com o Sheets...','info');
+    };
+
+    // ---------------------------------------------------------------
+    // FORMULÁRIOS
+    // ---------------------------------------------------------------
+    function bindForm(formId, inputId, key, parser){
+        var f = document.getElementById(formId);
+        if(f && !f.dataset.boundSheets){
+            f.dataset.boundSheets = '1';
+            f.addEventListener('submit', function(e){
+                e.preventDefault();
+                var v = parser(document.getElementById(inputId).value || 0);
+                if(v > 0){
+                    document.getElementById(inputId).value = '';
+                    state[key] += v;
+                    render();
+                    saveToSheets();
+                    if(typeof showToast==='function') showToast('+' + v + ' salvo no Sheets!','success');
+                }
+            });
+        }
     }
 
-    const qf=document.getElementById('questions-form');
-    if(qf && !qf.dataset.bound){
-        qf.dataset.bound='1';
-        qf.addEventListener('submit',e=>{
-            e.preventDefault();
-            const v=parseInt(document.getElementById('questions-input').value||0);
-            if(v>0){ extState.questions+=v; document.getElementById('questions-input').value=''; save(); }
-        });
+    // ---------------------------------------------------------------
+    // INIT
+    // ---------------------------------------------------------------
+    function init(){
+        // 1. Carrega local imediatamente (sem piscar zerado)
+        loadFromLocal();
+        render();
+
+        // 2. Puxa do Sheets e atualiza (sobrescreve se houver dado remoto)
+        loadFromSheets();
+
+        // 3. Bind nos formulários
+        bindForm('hours-form',    'study-input',     'hours',     parseFloat);
+        bindForm('questions-form', 'questions-input', 'questions', parseInt);
+        bindForm('exams-form',     'exams-input',     'exams',     parseInt);
+
+        // 4. Auto-refresh a cada 60s (para pegar mudanças feitas em outro dispositivo)
+        setInterval(loadFromSheets, 60000);
     }
 
-    const ef=document.getElementById('exams-form');
-    if(ef && !ef.dataset.bound){
-        ef.dataset.bound='1';
-        ef.addEventListener('submit',e=>{
-            e.preventDefault();
-            const v=parseInt(document.getElementById('exams-input').value||0);
-            if(v>0){ extState.exams+=v; document.getElementById('exams-input').value=''; save(); }
-        });
+    // Aguarda DOM pronto
+    if(document.readyState === 'loading'){
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        // Pequeno delay para o resto do planner terminar de inicializar
+        setTimeout(init, 600);
     }
-
-    render();
-}
-window.addEventListener('load', ()=>setTimeout(initPlannerCounters,1000));
 })();
 </script>
 
