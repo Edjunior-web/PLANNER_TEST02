@@ -1080,14 +1080,20 @@
     function today(){ return new Date().toISOString().slice(0,10); }
 
     // ---------------------------------------------------------------
-    // RESET DIÁRIO AUTOMÁTICO — zera contadores do dia se mudou a data
+    // RESET DIÁRIO AUTOMÁTICO
+    // Só zera se lastResetDate está preenchido E é diferente de hoje
+    // (evita zerar na primeira abertura em dispositivo novo)
     // ---------------------------------------------------------------
     function checkDailyReset(){
-        if(state.lastResetDate !== today()){
+        if(state.lastResetDate && state.lastResetDate !== today()){
             state.hoursToday     = 0;
             state.questionsToday = 0;
             state.lastResetDate  = today();
             saveToSheets();
+        } else if(!state.lastResetDate){
+            // Primeira vez: apenas registra a data, sem zerar nada
+            state.lastResetDate = today();
+            // Não salva aqui — vai salvar junto com a próxima ação do usuário
         }
     }
 
@@ -1125,10 +1131,13 @@
         set('pct-hours-today',Math.round(phd)); set('pct-questions-today',Math.round(pqd));
     }
 
+    var isLoadingFromSheets = false; // guarda: bloqueia save durante carga remota
+
     // ---------------------------------------------------------------
     // SALVAR NO SHEETS (debounce 800ms)
     // ---------------------------------------------------------------
     function saveToSheets(){
+        if(isLoadingFromSheets) return; // nunca salvar zeros durante uma carga remota
         localStorage.setItem('plannerExtState', JSON.stringify(state));
         clearTimeout(saveTimer);
         saveTimer = setTimeout(function(){
@@ -1146,41 +1155,64 @@
     // ---------------------------------------------------------------
     function loadFromSheets(){
         setSyncIcon('loading');
+        isLoadingFromSheets = true;
         fetch(SHEETS_URL + '?t=' + Date.now())
             .then(function(r){ return r.json(); })
             .then(function(data){
                 // --- extState (contadores) ---
                 if(data.extState){
                     var r = typeof data.extState==='string' ? JSON.parse(data.extState) : data.extState;
-                    state.hours          = Number(r.hours          || 0);
-                    state.questions      = Number(r.questions      || 0);
-                    state.exams          = Number(r.exams          || 0);
-                    state.hoursToday     = Number(r.hoursToday     || 0);
-                    state.questionsToday = Number(r.questionsToday || 0);
-                    state.lastResetDate  = r.lastResetDate || '';
-                    if(r.goals){
-                        state.goals.hours          = Number(r.goals.hours          || 100);
-                        state.goals.questions      = Number(r.goals.questions      || 1000);
-                        state.goals.exams          = Number(r.goals.exams          || 10);
-                        state.goals.hoursToday     = Number(r.goals.hoursToday     || 4);
-                        state.goals.questionsToday = Number(r.goals.questionsToday || 40);
+
+                    // Sheets tem dados reais se algum contador ou meta foi alterada pelo usuário
+                    var sheetsHasRealData = (
+                        Number(r.hours||0) > 0 ||
+                        Number(r.questions||0) > 0 ||
+                        Number(r.exams||0) > 0 ||
+                        r.lastResetDate ||
+                        (r.goals && (
+                            Number(r.goals.hours||100) !== 100 ||
+                            Number(r.goals.questions||1000) !== 1000 ||
+                            Number(r.goals.exams||10) !== 10
+                        ))
+                    );
+
+                    // Só sobrescreve estado local se Sheets tiver dados reais,
+                    // OU se o estado local também está zerado (dispositivo novo sem nada)
+                    var localHasData = (state.hours > 0 || state.questions > 0 || state.exams > 0);
+
+                    if(sheetsHasRealData || !localHasData){
+                        state.hours          = Number(r.hours          || 0);
+                        state.questions      = Number(r.questions      || 0);
+                        state.exams          = Number(r.exams          || 0);
+                        state.hoursToday     = Number(r.hoursToday     || 0);
+                        state.questionsToday = Number(r.questionsToday || 0);
+                        state.lastResetDate  = r.lastResetDate || '';
+                        if(r.goals){
+                            state.goals.hours          = Number(r.goals.hours          || 100);
+                            state.goals.questions      = Number(r.goals.questions      || 1000);
+                            state.goals.exams          = Number(r.goals.exams          || 10);
+                            state.goals.hoursToday     = Number(r.goals.hoursToday     || 4);
+                            state.goals.questionsToday = Number(r.goals.questionsToday || 40);
+                        }
+                        localStorage.setItem('plannerExtState', JSON.stringify(state));
                     }
-                    localStorage.setItem('plannerExtState', JSON.stringify(state));
-                } else {
-                    loadFromLocal();
+                    // Se Sheets parece zerado mas local tem dados reais → mantém local sem tocar
                 }
+                // Se data.extState é null → Sheets ainda não tem registro, mantém estado atual
 
                 // --- concursoInfo (nome, cargo, data da prova) ---
                 if(data.concursoInfo){
                     applyConcursoInfo(data.concursoInfo);
                 }
 
+                isLoadingFromSheets = false;
                 checkDailyReset();
                 render();
                 setSyncIcon('online');
             })
             .catch(function(){
-                loadFromLocal();
+                isLoadingFromSheets = false;
+                // Sem rede: mantém o que já está no state (carregado do local no init)
                 checkDailyReset();
                 render();
                 setSyncIcon('offline');
